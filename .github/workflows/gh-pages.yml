@@ -1,0 +1,49 @@
+name: Generate Doxygen and Publish to GitHub Pages
+
+on:
+  push:
+    branches: [ "main" ]
+  
+    workflow-dispatch:
+  
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  doxygen:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v3
+    
+      - name: Install Doxygen
+        run: sudo apt-get install -y doxygen graphviz
+    
+      - name: Run Doxygen
+        run: PROJECT_NUMBER=$(git log -1 --format="%h (%cd)") doxygen Doxyfile
+    
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          name: github-pages-${{ github.sha }}
+          path: ./docs/html
+  
+  deploy:
+    runs-on: ubuntu-latest
+
+    needs: doxygen
+
+    environment: github-pages
+    
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+        with:
+          artifact_name: github-pages-${{ github.sha }}
