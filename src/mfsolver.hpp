@@ -282,5 +282,45 @@ namespace MFSolver
         void assemble_rhs() override {}
         void solve() override {}
         void output_results() override {}
+
+        // Number of MPI processes.
+        const unsigned int mpi_size;
+
+        // Rank of the current MPI process.
+        const unsigned int mpi_rank;
+
+        // Triangulation.
+        // TODO: clarify difference with MatrixFreeADRSolver mesh types
+        parallel::fullydistributed::Triangulation<dim> mesh;
+
+        // Finite element space.
+        // TODO: clarify difference with MatrixFreeADRSolver fe non-pointer
+        std::unique_ptr<FiniteElement<dim>> fe;
+
+        // TODO: should we add
+        // - mapping 
+        // - affine constraints
+        // here?
+
+        // Quadrature formula.
+        std::unique_ptr<Quadrature<dim>> quadrature;
+
+        // DoF handler.
+        DoFHandler<dim> dof_handler;
+
+        // System matrix.
+        TrilinosWrappers::SparseMatrix system_matrix;
+
+        // System right-hand side.
+        TrilinosWrappers::MPI::Vector system_rhs;
+
+        // System solution, without ghost elements.
+        TrilinosWrappers::MPI::Vector solution_owned;
+
+        // System solution, with ghost elements.
+        TrilinosWrappers::MPI::Vector solution;
+
+        // Output stream for process 0.
+        ConditionalOStream pcout;
     };
 };

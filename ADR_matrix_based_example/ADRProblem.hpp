@@ -38,10 +38,10 @@ using namespace dealii;
 /**
  * Class managing the differential problem.
  */
-class ADRProblem {
+class ADRProblem : {
 public:
   // Physical dimension (1D, 2D, 3D)
-  static constexpr unsigned int dim = 1;
+  // static constexpr unsigned int dim = 1;
 
   // Constructor.
   ADRProblem (const unsigned int &N_el_,
