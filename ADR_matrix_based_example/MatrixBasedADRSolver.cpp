@@ -1,8 +1,10 @@
 #include "../src/mfsolver.hpp"
 
+// TODO: employ SIMD vectorization
+
 template <int dim, int fe_degree>
 void
-MatrixBasedADRSolver::setup () {
+MatrixBasedADRSolver::setup_system () {
   pcout << "===============================================" << std::endl;
 
   // Create the mesh.
@@ -87,7 +89,7 @@ MatrixBasedADRSolver::setup () {
 
 template <int dim, int fe_degree>
 void
-MatrixBasedADRSolver::assemble () {
+MatrixBasedADRSolver::assemble_rhs () {
   // Number of local DoFs for each element.
   const unsigned int dofs_per_cell = fe->dofs_per_cell;
 
@@ -226,15 +228,15 @@ MatrixBasedADRSolver::assemble () {
 
 }
 
+template <int dim, int fe_degree>
 void
-ADRProblem::solve_linear_system () {
+MatrixBasedADRSolver::solve () {
   TrilinosWrappers::PreconditionSSOR preconditioner;
   preconditioner.initialize (
     system_matrix, TrilinosWrappers::PreconditionSSOR::AdditionalData (1.0));
 
-  ReductionControl solver_control (/* maxiter = */ 10000,
-    /* tolerance = */ 1.0e-16,
-    /* reduce = */ 1.0e-6);
+  SolverControl solver_control (/* maxiter = */ problem.solver_max_iterations,
+    /* tolerance = */ problem.solver_tolerance_factor);
 
   SolverCG<TrilinosWrappers::MPI::Vector> solver (solver_control);
 
@@ -242,8 +244,9 @@ ADRProblem::solve_linear_system () {
   pcout << solver_control.last_step () << " CG iterations" << std::endl;
 }
 
+template <int dim, int fe_degree>
 void
-ADRProblem::output () const {
+MatrixBasedADRSolver::output_results () const {
   DataOut<dim> data_out;
 
   data_out.add_data_vector (dof_handler, solution, "solution");
@@ -265,8 +268,9 @@ ADRProblem::output () const {
     MPI_COMM_WORLD);
 }
 
+template <int dim, int fe_degree>
 void
-ADRProblem::run () {
+MatrixBasedADRSolver::run () {
   setup ();
   assemble ();
   solve_linear_system ();
