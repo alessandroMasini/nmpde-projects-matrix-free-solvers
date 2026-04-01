@@ -1,3 +1,0 @@
-/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/exercise-01.dir
-/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/edit_cache.dir
-/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/rebuild_cache.dir

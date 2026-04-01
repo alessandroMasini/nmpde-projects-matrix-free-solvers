@@ -212,7 +212,7 @@ namespace MFSolver
         /**
          * \brief Assembles the rhs of the algebraic system corresponding to the problem.
          */
-        virtual void assemble_rhs() = 0;
+        virtual void assemble() = 0;
 
         /**
          * \brief Solves the algebraic system corresponding to the problem.
@@ -242,12 +242,13 @@ namespace MFSolver
         MatrixFreeADRSolver(const ADRProblem<dim> &_problem) : ADRSolver<dim, fe_degree>(_problem)
         {
         }
+        ~MatrixFreeADRSolver() override;
 
         void run() override;
 
     private:
         void setup_system() override;
-        void assemble_rhs() override;
+        void assemble() override;
         void solve() override;
         void output_results() override;
 
@@ -303,12 +304,13 @@ namespace MFSolver
         pcout (std::cout, mpi_rank == 0)
         {
         }
+        ~MatrixBasedADRSolver();
 
         void run() override;
 
     private:
         void setup_system() override;
-        void assemble_rhs() override;
+        void assemble() override;
         void solve() override;
         void output_results() override;
 

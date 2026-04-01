@@ -17,7 +17,7 @@ main (int argc, char* argv [ ]) {
     ADRProblem<1> problem = {
         // Functions
         RealFunction<1>([](const Point<1>& /*p*/) { return 1.0; }),
-        VectorFunction<1>([](const Point<1>& p, const unsigned int i) { return p[i] - 1.0; }),
+        VectorFunction<1>([](const Point<1>& p, const unsigned i) { return p[i] - 1.0; }),
         RealFunction<1>([](const Point<1>& /*p*/) { return 1.0; }),
         // TODO: check if just removing time dependencies will make everything fine
         RealFunction<1>([](const Point<1>& p) {
