@@ -1,10 +1,17 @@
 #include "../src/mfsolver.hpp"
 
+#include <deal.II/grid/grid_generator.h>
+#include <deal.II/grid/grid_in.h>
+#include <deal.II/grid/grid_tools.h>
+#include <deal.II/fe/fe_simplex_p.h>
+
+
 // TODO: employ SIMD vectorization
 
+using namespace MFSolver;
+
 template <int dim, int fe_degree>
-void
-MatrixBasedADRSolver::setup_system () {
+void MatrixBasedADRSolver<dim, fe_degree>::setup_system () {
   pcout << "===============================================" << std::endl;
 
   // Create the mesh.
@@ -43,7 +50,7 @@ MatrixBasedADRSolver::setup_system () {
     pcout << "  DoFs per cell              = " << fe->dofs_per_cell
       << std::endl;
 
-    quadrature = std::make_unique<QGaussSimplex<dim>> (problem.num_quadrature_points);
+    quadrature = std::make_unique<QGaussSimplex<dim>> (this->problem.num_quadrature_points);
 
     pcout << "  Quadrature points per cell = " << quadrature->size ()
       << std::endl;
@@ -88,8 +95,7 @@ MatrixBasedADRSolver::setup_system () {
 }
 
 template <int dim, int fe_degree>
-void
-MatrixBasedADRSolver::assemble_rhs () {
+void MatrixBasedADRSolver<dim, fe_degree>::assemble_rhs () {
   // Number of local DoFs for each element.
   const unsigned int dofs_per_cell = fe->dofs_per_cell;
 
@@ -229,8 +235,7 @@ MatrixBasedADRSolver::assemble_rhs () {
 }
 
 template <int dim, int fe_degree>
-void
-MatrixBasedADRSolver::solve () {
+void MatrixBasedADRSolver<dim, fe_degree>::solve () {
   TrilinosWrappers::PreconditionSSOR preconditioner;
   preconditioner.initialize (
     system_matrix, TrilinosWrappers::PreconditionSSOR::AdditionalData (1.0));
@@ -245,8 +250,7 @@ MatrixBasedADRSolver::solve () {
 }
 
 template <int dim, int fe_degree>
-void
-MatrixBasedADRSolver::output_results () const {
+void MatrixBasedADRSolver<dim, fe_degree>::output_results () const {
   DataOut<dim> data_out;
 
   data_out.add_data_vector (dof_handler, solution, "solution");
@@ -269,8 +273,7 @@ MatrixBasedADRSolver::output_results () const {
 }
 
 template <int dim, int fe_degree>
-void
-MatrixBasedADRSolver::run () {
+void MatrixBasedADRSolver<dim, fe_degree>::run () {
   setup ();
   assemble ();
   solve_linear_system ();

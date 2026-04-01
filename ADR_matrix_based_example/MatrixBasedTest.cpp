@@ -17,7 +17,7 @@ main (int argc, char* argv [ ]) {
     ADRProblem<1> problem = {
         // Functions
         RealFunction<1>([](const Point<1>& /*p*/) { return 1.0; }),
-        VectorFunction<1>([](const Point<1>& p, size_t i) { return Point<1>{p[i] - 1.0}; }),
+        VectorFunction<1>([](const Point<1>& p, const unsigned int i) { return p[i] - 1.0; }),
         RealFunction<1>([](const Point<1>& /*p*/) { return 1.0; }),
         // TODO: check if just removing time dependencies will make everything fine
         RealFunction<1>([](const Point<1>& p) {
@@ -26,7 +26,7 @@ main (int argc, char* argv [ ]) {
 
         // Not used boundaries
         DirichletBoundaries<1>{},  
-        NeumannnBoundaries<1>{},
+        NeumannBoundaries<1>{},
 
         // Mesh
         std::string{},
@@ -49,7 +49,7 @@ main (int argc, char* argv [ ]) {
         1.0e-16
     };
 
-    MatrixFreeADRSolver solver = MatrixFreeADRSolver(problem);
+    MatrixBasedADRSolver<1, 2> solver(problem);
     solver.run();
 
     ///////////////////////////////////////////////////////

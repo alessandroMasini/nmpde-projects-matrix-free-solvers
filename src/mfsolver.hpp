@@ -22,6 +22,9 @@
 
 #include <deal.II/lac/trilinos_precondition.h>
 #include <deal.II/lac/trilinos_sparse_matrix.h>
+#include <deal.II/distributed/tria.h>
+#include <deal.II/distributed/fully_distributed_tria.h>
+
 
 
 /**
@@ -60,7 +63,7 @@ namespace MFSolver
          */
         std::function<double(const Point<dim> &)> lambda;
 
-        virtual double value(const Point<dim> &p, const unsigned int component = 0) const override
+        virtual double value(const Point<dim> &p, const unsigned int 	component = 0) const override
         {
             return lambda(p);
         }
@@ -80,7 +83,7 @@ namespace MFSolver
          *
          * \note Since the `Function::vector_value` default implementation calls `Function::value` for each vector component, avoid computing the entire vector and then returning the requested component inside `value` to improve performance.
          */
-        VectorFunction(const std::function<Point<dim>(const Point<dim> &, size_t)> &_lambda) : Function<dim>(), lambda(_lambda)
+        VectorFunction(const std::function<double(const Point<dim> &, const unsigned int)> &_lambda) : Function<dim>(), lambda(_lambda)
         {
         }
 
@@ -88,7 +91,7 @@ namespace MFSolver
         /**
          * \brief The closure that will be used to compute the value of the function.
          */
-        std::function<Point<dim>(const Point<dim> &, size_t)> lambda;
+        std::function<double(const Point<dim> &, const unsigned int)> lambda;
 
         virtual double value(const Point<dim> &p, const unsigned int component) const override
         {
@@ -177,7 +180,7 @@ namespace MFSolver
      * \tparam dim The dimensionality of the space the ADR problem is living in.
      * \tparam fe_degree The degree of the finite elements used to solve the problem.
      */
-    template <int dim, int fe_degree>
+    template <unsigned int dim, unsigned int fe_degree>
     class ADRSolver
     {
     public:
@@ -240,22 +243,21 @@ namespace MFSolver
         {
         }
 
-        void run() override {}
+        void run() override;
 
     private:
-        void setup_system() override {}
-        void assemble_rhs() override {}
-        void solve() override {}
-        void output_results() override {}
+        void setup_system() override;
+        void assemble_rhs() override;
+        void solve() override;
+        void output_results() override;
 
 #ifdef DEAL_II_WITH_P4EST
-        // The second "dim" is needed in case the spatial dimension
-        // is different than the FE dimension
-        parallel::distributed::Triangulation<dim, dim> triangulation;
+//         // The second "dim" is needed in case the spatial dimension
+//         // is different than the FE dimension
+        parallel::distributed::Triangulation<dim, dim> triangulation();
 #else
         Triangulation<dim> triangulation;
 #endif
-
         const FE_Q<dim> fe;
         DoFHandler<dim, dim> dof_handler;
 
@@ -293,17 +295,22 @@ namespace MFSolver
     class MatrixBasedADRSolver : public ADRSolver<dim, fe_degree>
     {
     public:
-        MatrixBasedADRSolver(const ADRProblem<dim> &_problem) : ADRSolver<dim, fe_degree>(_problem)
+        MatrixBasedADRSolver(const ADRProblem<dim> &_problem) : 
+        ADRSolver<dim, fe_degree>(_problem),
+        mpi_size(Utilities::MPI::n_mpi_processes (MPI_COMM_WORLD)),
+        mpi_rank(Utilities::MPI::this_mpi_process (MPI_COMM_WORLD)),
+        mesh(MPI_COMM_WORLD),
+        pcout (std::cout, mpi_rank == 0)
         {
         }
 
-        void run() override {}
+        void run() override;
 
     private:
-        void setup_system() override {}
-        void assemble_rhs() override {}
-        void solve() override {}
-        void output_results() override {}
+        void setup_system() override;
+        void assemble_rhs() override;
+        void solve() override;
+        void output_results() override;
 
         // Number of MPI processes.
         const unsigned int mpi_size;
