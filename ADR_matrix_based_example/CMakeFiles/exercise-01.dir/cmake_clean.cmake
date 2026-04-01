@@ -1,8 +1,8 @@
 file(REMOVE_RECURSE
-  "CMakeFiles/exercise-01.dir/ADRProblem.cpp.o"
-  "CMakeFiles/exercise-01.dir/ADRProblem.cpp.o.d"
-  "CMakeFiles/exercise-01.dir/exercise-01.cpp.o"
-  "CMakeFiles/exercise-01.dir/exercise-01.cpp.o.d"
+  "CMakeFiles/exercise-01.dir/MatrixBasedADRSolver.cpp.o"
+  "CMakeFiles/exercise-01.dir/MatrixBasedADRSolver.cpp.o.d"
+  "CMakeFiles/exercise-01.dir/MatrixBasedTest.cpp.o"
+  "CMakeFiles/exercise-01.dir/MatrixBasedTest.cpp.o.d"
   "exercise-01"
   "exercise-01.pdb"
 )

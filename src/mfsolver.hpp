@@ -1,5 +1,7 @@
 #pragma once
 
+// TODO: reorder imports in a neat way
+
 #include <unordered_map>
 #include <string>
 #include <functional>
@@ -8,6 +10,19 @@
 #include <deal.II/base/function.h>
 #include <deal.II/base/point.h>
 #include <deal.II/lac/la_parallel_vector.h>
+
+// TODO: deal.II libraries: did we actually need these?
+#include <deal.II/fe/fe_q.h>
+#include <deal.II/fe/mapping_q1.h>
+#include <deal.II/lac/affine_constraints.h>
+#include <deal.II/matrix_free/operators.h>
+#include <deal.II/multigrid/mg_constrained_dofs.h>
+#include <deal.II/base/mg_level_object.h>
+#include <deal.II/base/conditional_ostream.h>
+
+#include <deal.II/lac/trilinos_precondition.h>
+#include <deal.II/lac/trilinos_sparse_matrix.h>
+
 
 /**
  * \brief Namespace containing all the methods and type definitions used in the project.
@@ -86,14 +101,14 @@ namespace MFSolver
      * \tparam dim The dimensionality of the space the ADR problem is living in.
      */
     template <int dim>
-    using DirichletBoundary = RealFunction;
+    using DirichletBoundary = RealFunction<dim>;
 
     /**
      * \brief Represents a function tht describes a Neumann boundary condition.
      * \tparam dim The dimensionality of the space the ADR problem is living in.
      */
     template <int dim>
-    using NeumannBoundary = RealFunction;
+    using NeumannBoundary = RealFunction<dim>;
 
     /**
      * \brief Represents a mapping between boundaries (identified by boundary IDs) and the corresponding boundary condition.
@@ -170,7 +185,7 @@ namespace MFSolver
          * \brief Constructs a new instance of ADRSolver
          * \param _problem The problem this solver will solve.
          */
-        Solver(const ADRProblem<dim> &_problem)
+        ADRSolver(const ADRProblem<dim> &_problem)
             : problem(_problem)
         {
         }
@@ -178,7 +193,7 @@ namespace MFSolver
         /**
          * \brief Destructor for ADRProblem.
          */
-        virtual ~Solver() = 0;
+        virtual ~ADRSolver() = 0;
 
         /**
          * \brief Actually solve the ADRProblem.
@@ -234,24 +249,31 @@ namespace MFSolver
         void output_results() override {}
 
 #ifdef DEAL_II_WITH_P4EST
-        parallel::distributed::Triangulation<dim> triangulation;
+        // The second "dim" is needed in case the spatial dimension
+        // is different than the FE dimension
+        parallel::distributed::Triangulation<dim, dim> triangulation;
 #else
         Triangulation<dim> triangulation;
 #endif
 
         const FE_Q<dim> fe;
-        DoFHandler<dim> dof_handler;
+        DoFHandler<dim, dim> dof_handler;
 
-        const MappingQ1<dim> mapping;
+        const MappingQ1<dim, dim> mapping;
 
         AffineConstraints<double> constraints;
+        
+        // TODO: again, the number of quadrature points in 1D
+        // is known at runtime (part of the problem object), however
+        // the laplace operator type needs it a compile time
 
-        using SystemMatrixType = LaplaceOperator<dim, fe_degree, double>;
+        // TODO: last 4 arguments were set considering deal.II documentation; shall it be our implementation choice?
+        using SystemMatrixType = MatrixFreeOperators::LaplaceOperator<dim, fe_degree>;
         SystemMatrixType system_matrix;
 
         MGConstrainedDoFs mg_constrained_dofs;
 
-        using LevelMatrixType = LaplaceOperator<dim, fe_degree, float>;
+        using LevelMatrixType = MatrixFreeOperators::LaplaceOperator<dim, fe_degree>;
         MGLevelObject<LevelMatrixType> mg_matrices;
 
         DVector<double> solution;
@@ -291,7 +313,7 @@ namespace MFSolver
 
         // Triangulation.
         // TODO: clarify difference with MatrixFreeADRSolver mesh types
-        parallel::fullydistributed::Triangulation<dim> mesh;
+        parallel::fullydistributed::Triangulation<dim, dim> mesh;
 
         // Finite element space.
         // TODO: clarify difference with MatrixFreeADRSolver fe non-pointer

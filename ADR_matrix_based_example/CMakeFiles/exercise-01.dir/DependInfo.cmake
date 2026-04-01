@@ -8,8 +8,8 @@ set(CMAKE_DEPENDS_LANGUAGES
 
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
-  "/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/ADRProblem.cpp" "CMakeFiles/exercise-01.dir/ADRProblem.cpp.o" "gcc" "CMakeFiles/exercise-01.dir/ADRProblem.cpp.o.d"
-  "/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/exercise-01.cpp" "CMakeFiles/exercise-01.dir/exercise-01.cpp.o" "gcc" "CMakeFiles/exercise-01.dir/exercise-01.cpp.o.d"
+  "/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/MatrixBasedADRSolver.cpp" "CMakeFiles/exercise-01.dir/MatrixBasedADRSolver.cpp.o" "gcc" "CMakeFiles/exercise-01.dir/MatrixBasedADRSolver.cpp.o.d"
+  "/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/MatrixBasedTest.cpp" "CMakeFiles/exercise-01.dir/MatrixBasedTest.cpp.o" "gcc" "CMakeFiles/exercise-01.dir/MatrixBasedTest.cpp.o.d"
   )
 
 # Targets to which this target links which contain Fortran sources.

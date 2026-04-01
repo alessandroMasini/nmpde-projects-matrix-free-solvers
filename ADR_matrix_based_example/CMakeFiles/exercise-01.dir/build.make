@@ -69,44 +69,44 @@ include CMakeFiles/exercise-01.dir/progress.make
 # Include the compile flags for this target's objects.
 include CMakeFiles/exercise-01.dir/flags.make
 
-CMakeFiles/exercise-01.dir/exercise-01.cpp.o: CMakeFiles/exercise-01.dir/flags.make
-CMakeFiles/exercise-01.dir/exercise-01.cpp.o: exercise-01.cpp
-CMakeFiles/exercise-01.dir/exercise-01.cpp.o: CMakeFiles/exercise-01.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/exercise-01.dir/exercise-01.cpp.o"
-	/u/sw/toolchains/gcc-glibc/11.2.0/base/bin/mpicxx $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/exercise-01.dir/exercise-01.cpp.o -MF CMakeFiles/exercise-01.dir/exercise-01.cpp.o.d -o CMakeFiles/exercise-01.dir/exercise-01.cpp.o -c /home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/exercise-01.cpp
+CMakeFiles/exercise-01.dir/MatrixBasedTest.cpp.o: CMakeFiles/exercise-01.dir/flags.make
+CMakeFiles/exercise-01.dir/MatrixBasedTest.cpp.o: MatrixBasedTest.cpp
+CMakeFiles/exercise-01.dir/MatrixBasedTest.cpp.o: CMakeFiles/exercise-01.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/exercise-01.dir/MatrixBasedTest.cpp.o"
+	/u/sw/toolchains/gcc-glibc/11.2.0/base/bin/mpicxx $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/exercise-01.dir/MatrixBasedTest.cpp.o -MF CMakeFiles/exercise-01.dir/MatrixBasedTest.cpp.o.d -o CMakeFiles/exercise-01.dir/MatrixBasedTest.cpp.o -c /home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/MatrixBasedTest.cpp
 
-CMakeFiles/exercise-01.dir/exercise-01.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/exercise-01.dir/exercise-01.cpp.i"
-	/u/sw/toolchains/gcc-glibc/11.2.0/base/bin/mpicxx $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/exercise-01.cpp > CMakeFiles/exercise-01.dir/exercise-01.cpp.i
+CMakeFiles/exercise-01.dir/MatrixBasedTest.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/exercise-01.dir/MatrixBasedTest.cpp.i"
+	/u/sw/toolchains/gcc-glibc/11.2.0/base/bin/mpicxx $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/MatrixBasedTest.cpp > CMakeFiles/exercise-01.dir/MatrixBasedTest.cpp.i
 
-CMakeFiles/exercise-01.dir/exercise-01.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/exercise-01.dir/exercise-01.cpp.s"
-	/u/sw/toolchains/gcc-glibc/11.2.0/base/bin/mpicxx $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/exercise-01.cpp -o CMakeFiles/exercise-01.dir/exercise-01.cpp.s
+CMakeFiles/exercise-01.dir/MatrixBasedTest.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/exercise-01.dir/MatrixBasedTest.cpp.s"
+	/u/sw/toolchains/gcc-glibc/11.2.0/base/bin/mpicxx $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/MatrixBasedTest.cpp -o CMakeFiles/exercise-01.dir/MatrixBasedTest.cpp.s
 
-CMakeFiles/exercise-01.dir/ADRProblem.cpp.o: CMakeFiles/exercise-01.dir/flags.make
-CMakeFiles/exercise-01.dir/ADRProblem.cpp.o: ADRProblem.cpp
-CMakeFiles/exercise-01.dir/ADRProblem.cpp.o: CMakeFiles/exercise-01.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/exercise-01.dir/ADRProblem.cpp.o"
-	/u/sw/toolchains/gcc-glibc/11.2.0/base/bin/mpicxx $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/exercise-01.dir/ADRProblem.cpp.o -MF CMakeFiles/exercise-01.dir/ADRProblem.cpp.o.d -o CMakeFiles/exercise-01.dir/ADRProblem.cpp.o -c /home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/ADRProblem.cpp
+CMakeFiles/exercise-01.dir/MatrixBasedADRSolver.cpp.o: CMakeFiles/exercise-01.dir/flags.make
+CMakeFiles/exercise-01.dir/MatrixBasedADRSolver.cpp.o: MatrixBasedADRSolver.cpp
+CMakeFiles/exercise-01.dir/MatrixBasedADRSolver.cpp.o: CMakeFiles/exercise-01.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/exercise-01.dir/MatrixBasedADRSolver.cpp.o"
+	/u/sw/toolchains/gcc-glibc/11.2.0/base/bin/mpicxx $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/exercise-01.dir/MatrixBasedADRSolver.cpp.o -MF CMakeFiles/exercise-01.dir/MatrixBasedADRSolver.cpp.o.d -o CMakeFiles/exercise-01.dir/MatrixBasedADRSolver.cpp.o -c /home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/MatrixBasedADRSolver.cpp
 
-CMakeFiles/exercise-01.dir/ADRProblem.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/exercise-01.dir/ADRProblem.cpp.i"
-	/u/sw/toolchains/gcc-glibc/11.2.0/base/bin/mpicxx $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/ADRProblem.cpp > CMakeFiles/exercise-01.dir/ADRProblem.cpp.i
+CMakeFiles/exercise-01.dir/MatrixBasedADRSolver.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/exercise-01.dir/MatrixBasedADRSolver.cpp.i"
+	/u/sw/toolchains/gcc-glibc/11.2.0/base/bin/mpicxx $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/MatrixBasedADRSolver.cpp > CMakeFiles/exercise-01.dir/MatrixBasedADRSolver.cpp.i
 
-CMakeFiles/exercise-01.dir/ADRProblem.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/exercise-01.dir/ADRProblem.cpp.s"
-	/u/sw/toolchains/gcc-glibc/11.2.0/base/bin/mpicxx $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/ADRProblem.cpp -o CMakeFiles/exercise-01.dir/ADRProblem.cpp.s
+CMakeFiles/exercise-01.dir/MatrixBasedADRSolver.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/exercise-01.dir/MatrixBasedADRSolver.cpp.s"
+	/u/sw/toolchains/gcc-glibc/11.2.0/base/bin/mpicxx $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/MatrixBasedADRSolver.cpp -o CMakeFiles/exercise-01.dir/MatrixBasedADRSolver.cpp.s
 
 # Object files for target exercise-01
 exercise__01_OBJECTS = \
-"CMakeFiles/exercise-01.dir/exercise-01.cpp.o" \
-"CMakeFiles/exercise-01.dir/ADRProblem.cpp.o"
+"CMakeFiles/exercise-01.dir/MatrixBasedTest.cpp.o" \
+"CMakeFiles/exercise-01.dir/MatrixBasedADRSolver.cpp.o"
 
 # External object files for target exercise-01
 exercise__01_EXTERNAL_OBJECTS =
 
-exercise-01: CMakeFiles/exercise-01.dir/exercise-01.cpp.o
-exercise-01: CMakeFiles/exercise-01.dir/ADRProblem.cpp.o
+exercise-01: CMakeFiles/exercise-01.dir/MatrixBasedTest.cpp.o
+exercise-01: CMakeFiles/exercise-01.dir/MatrixBasedADRSolver.cpp.o
 exercise-01: CMakeFiles/exercise-01.dir/build.make
 exercise-01: /u/sw/toolchains/gcc-glibc/11.2.0/pkgs/dealii/9.5.1/lib/libdeal_II.so.9.5.1
 exercise-01: /u/sw/toolchains/gcc-glibc/11.2.0/pkgs/boost/1.76.0/lib/libboost_iostreams.so

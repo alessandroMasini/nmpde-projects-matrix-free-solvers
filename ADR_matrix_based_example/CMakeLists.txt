@@ -3,5 +3,5 @@ project(lab06 LANGUAGES CXX C)
 
 include(../common/cmake-common.cmake)
 
-add_executable(exercise-01 exercise-01.cpp MatrixBasedADRSolver.cpp)
+add_executable(exercise-01 MatrixBasedTest.cpp MatrixBasedADRSolver.cpp)
 deal_ii_setup_target(exercise-01)
