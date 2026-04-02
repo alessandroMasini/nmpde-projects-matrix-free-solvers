@@ -35,3 +35,12 @@
 
 build/*
 .vscode/*
+projects_markdown/*
+deal.II_library_step-37_tutorial_program.md
+
+# CMake artifacts (especially for in-source builds or accidental builds in root)
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+*.cmake
