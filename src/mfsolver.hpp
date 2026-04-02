@@ -87,6 +87,10 @@ namespace MFSolver
         }
     };
 
+    /**
+     * \brief Represents a function that takes a `dim` dimensional vector and returns anothr `dim`-dimensional vector. Moreover, the represented function must be differentiable and it's gradientmust also be provided.
+     * \tparam dim The dimensionality of the input and output vector.
+     */
     template <int dim>
     class VectorFunctionWithGradient : public VectorFunction<dim>
     {
@@ -95,6 +99,7 @@ namespace MFSolver
         {
         }
 
+        // TODO: This is not correct, I don't know how I have proven this but this is definitely not correct.
         double divergence(const Point<dim> &p)
         {
             double trace = 1.;
