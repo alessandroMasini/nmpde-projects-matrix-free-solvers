@@ -64,6 +64,12 @@ namespace MFSolver
 
         virtual double value(const Point<dim> &p, const unsigned int component = 0) const override
         {
+            return value<double>(p, component);
+        }
+
+        template <typename Number>
+        Number value(const Point<dim, Number> &p, const unsigned int component = 0) const
+        {
             return lambda(p);
         }
 
@@ -82,15 +88,24 @@ namespace MFSolver
     class VectorFunction : public TensorFunction<1, dim, double>
     {
     public:
+        template <typename Number>
+        using value_type = TensorFunction<1, dim, Number>::value_type;
+
         /**
          * \brief Constructs a new instance of VectorFunction.
          * \param _lambda The closure that will be used to compute the value of the function.
          */
-        VectorFunction(const std::function<Tensor<1, dim, double>(const Point<dim> &)> &_lambda) : TensorFunction<1, dim, double>(), lambda(_lambda)
+        VectorFunction(const std::function<value_type<double>(const Point<dim> &)> &_lambda) : TensorFunction<1, dim, double>(), lambda(_lambda)
         {
         }
 
-        virtual Tensor<1, dim, double> value(const Point<dim> &p) const override
+        virtual value_type<double> value(const Point<dim> &p) const override
+        {
+            return value<double>(p);
+        }
+
+        template <typename Number>
+        value_type<Number> value(const Point<dim, Number> &p) const
         {
             return lambda(p);
         }
@@ -99,7 +114,7 @@ namespace MFSolver
         /**
          * \brief The closure that will be used to compute the value of the function.
          */
-        std::function<Tensor<1, dim, double>(const Point<dim> &)> lambda;
+        std::function<value_type<double>(const Point<dim> &)> lambda;
     };
 
     /**
@@ -110,29 +125,39 @@ namespace MFSolver
     class VectorFunctionWithGradient : public VectorFunction<dim>
     {
     public:
-        VectorFunctionWithGradient(const std::function<Tensor<1, dim>(const Point<dim> &, const unsigned int)> &_lambda, const std::function<Tensor<1, dim>(const Point<dim> &, const unsigned int)> &_gradient_lambda) : VectorFunction<dim>(_lambda), gradient_lambda(_gradient_lambda)
+        template <typename Number>
+        using value_type = typename VectorFunction<dim>::value_type<Number>;
+
+        template <typename Number>
+        using gradient_type = typename TensorFunction<1, dim, Number>::gradient_type;
+
+        VectorFunctionWithGradient(const std::function<value_type<double>(const Point<dim> &)> &_lambda, const std::function<gradient_type<double>(const Point<dim> &)> &_gradient_lambda) : VectorFunction<dim>(_lambda), gradient_lambda(_gradient_lambda)
         {
         }
 
-        // TODO: This is not correct, I don't know how I have proven this but this is definitely not correct.
-        double divergence(const Point<dim> &p)
+        double divergence(const Point<dim> &p) const
         {
-            double trace = 1.;
+            return divergence<double>(p);
+        }
 
-            for (unsigned int i = 0; i < dim; ++i)
-            {
-                trace *= gradient(p, i);
-            }
-
-            return trace;
+        template <typename Number>
+        Number divergence(const Point<dim, Number> &p) const
+        {
+            return trace(gradient_lambda(p));
         }
 
     private:
-        std::function<Tensor<1, dim>(const Point<dim> &, const unsigned int)> gradient_lambda;
+        std::function<gradient_type<double>(const Point<dim> &)> gradient_lambda;
 
-        virtual double gradient(const Point<dim> &p, const unsigned int component) override
+        virtual gradient_type<double> gradient(const Point<dim> &p) const override
         {
-            return gradient_lambda(p, component);
+            return gradient<double>(p);
+        }
+
+        template <typename Number>
+        gradient_type<Number> gradient(const Point<dim, Number> &p) const
+        {
+            return gradient_lambda(p);
         }
     };
 
@@ -180,9 +205,9 @@ namespace MFSolver
     template <int dim>
     struct ADRProblem
     {
-        RealFunction<dim> mu;     /**< Diffusion coefficient. */
-        VectorFunction<dim> beta; /**< Advection coefficient. */
-        RealFunction<dim> gamma;  /**< Reaction coefficient. */
+        RealFunction<dim> mu;                 /**< Diffusion coefficient. */
+        VectorFunctionWithGradient<dim> beta; /**< Advection coefficient. */
+        RealFunction<dim> gamma;              /**< Reaction coefficient. */
 
         RealFunction<dim> f; /**< Forcing term. */
 
@@ -305,7 +330,7 @@ namespace MFSolver
                 phi.reinit(cell);
                 for (const unsigned int q : phi.quadrature_point_indices())
                 {
-                    Point<dim, Number> quadrature_point = phi.quadrature_point(q);
+                    Point<dim, VectorizedArray<Number>> quadrature_point = phi.quadrature_point(q);
 
                     mu_coeff(cell, q) = mu_coeff_function.value(quadrature_point);
                     beta_coeff(cell, q) = beta_coeff_function.value(quadrature_point);
@@ -339,8 +364,9 @@ namespace MFSolver
 
         using Phi = FEEvaluation<dim, fe_degree, fe_degree + 1, 1, Number>;
 
-        void rhs_computation(Phi &phi, const unsigned int cell, const unsigned int q) // This code is extracted and reused by `local_apply` and `local_compute_diagonal`.
-        // According to Step-37, it seems that they are the same but I have not found proof for it.
+        void rhs_computation(Phi &phi, const unsigned int cell) const
+        // This code is extracted and reused by `local_apply` and `local_compute_diagonal`.
+        // TODO: According to Step-37, it seems that they are the same but I have not found proof for it.
         {
             phi.evaluate(EvaluationFlags::values | EvaluationFlags::gradients);
 
@@ -366,13 +392,22 @@ namespace MFSolver
             Phi phi(data);
             for (unsigned int cell = cell_range.first; cell < cell_range.second; ++cell)
             {
-                AssertDimension(coefficient.size(0), data.n_cell_batches());
-                AssertDimension(coefficient.size(1), phi.n_q_points);
+                AssertDimension(mu_coeff.size(0), data.n_cell_batches());
+                AssertDimension(mu_coeff.size(1), phi.n_q_points);
+
+                AssertDimension(beta_coeff.size(0), data.n_cell_batches());
+                AssertDimension(beta_coeff.size(1), phi.n_q_points);
+
+                AssertDimension(div_beta_coeff.size(0), data.n_cell_batches());
+                AssertDimension(div_beta_coeff.size(1), phi.n_q_points);
+
+                AssertDimension(gamma_coeff.size(0), data.n_cell_batches());
+                AssertDimension(gamma_coeff.size(1), phi.n_q_points);
 
                 phi.reinit(cell);
                 phi.read_dof_values(src);
 
-                rhs_computation(phi, cell, q);
+                rhs_computation(phi, cell);
 
                 phi.distribute_local_to_global(dst);
             }
@@ -381,7 +416,7 @@ namespace MFSolver
         void local_compute_diagonal(Phi &phi) const
         {
             const unsigned int cell = phi.get_current_cell_index();
-            rhs_computation(phi, cell, q);
+            rhs_computation(phi, cell);
         }
 
         virtual void apply_add(DVector<Number> &dst, const DVector<Number> &src) const override
