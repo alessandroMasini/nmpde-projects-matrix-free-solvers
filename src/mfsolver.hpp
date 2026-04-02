@@ -1,13 +1,19 @@
 #pragma once
 
-#include <unordered_map>
-#include <string>
 #include <functional>
+#include <string>
+#include <unordered_map>
 
-#include <deal.II/base/types.h>
+#include <deal.II/base/conditional_ostream.h>
 #include <deal.II/base/function.h>
 #include <deal.II/base/point.h>
+#include <deal.II/base/tensor.h>
+#include <deal.II/base/types.h>
+
 #include <deal.II/lac/la_parallel_vector.h>
+
+#include <deal.II/matrix_free/fe_evaluation.h>
+#include <deal.II/matrix_free/operators.h>
 
 /**
  * \brief Namespace containing all the methods and type definitions used in the project.
@@ -65,7 +71,7 @@ namespace MFSolver
          *
          * \note Since the `Function::vector_value` default implementation calls `Function::value` for each vector component, avoid computing the entire vector and then returning the requested component inside `value` to improve performance.
          */
-        VectorFunction(const std::function<Point<dim>(const Point<dim> &, size_t)> &_lambda) : Function<dim>(), lambda(_lambda)
+        VectorFunction(const std::function<Tensor<1, dim>(const Point<dim> &, const unsigned int)> &_lambda) : Function<dim>(), lambda(_lambda)
         {
         }
 
@@ -73,11 +79,40 @@ namespace MFSolver
         /**
          * \brief The closure that will be used to compute the value of the function.
          */
-        std::function<Point<dim>(const Point<dim> &, size_t)> lambda;
+        std::function<Tensor<1, dim>(const Point<dim> &, const unsigned int)> lambda;
 
         virtual double value(const Point<dim> &p, const unsigned int component) const override
         {
             return lambda(p, component);
+        }
+    };
+
+    template <int dim>
+    class VectorFunctionWithGradient : public VectorFunction<dim>
+    {
+    public:
+        VectorFunctionWithGradient(const std::function<Tensor<1, dim>(const Point<dim> &, const unsigned int)> &_lambda, const std::function<Tensor<1, dim>(const Point<dim> &, const unsigned int)> &_gradient_lambda) : VectorFunction<dim>(_lambda), gradient_lambda(_gradient_lambda)
+        {
+        }
+
+        double divergence(const Point<dim> &p)
+        {
+            double trace = 1.;
+
+            for (unsigned int i = 0; i < dim; ++i)
+            {
+                trace *= gradient(p, i);
+            }
+
+            return trace;
+        }
+
+    private:
+        std::function<Tensor<1, dim>(const Point<dim> &, const unsigned int)> gradient_lambda;
+
+        virtual double gradient(const Point<dim> &p, const unsigned int component) override
+        {
+            return gradient_lambda(p, component);
         }
     };
 
@@ -86,14 +121,14 @@ namespace MFSolver
      * \tparam dim The dimensionality of the space the ADR problem is living in.
      */
     template <int dim>
-    using DirichletBoundary = RealFunction;
+    using DirichletBoundary = RealFunction<dim>;
 
     /**
      * \brief Represents a function tht describes a Neumann boundary condition.
      * \tparam dim The dimensionality of the space the ADR problem is living in.
      */
     template <int dim>
-    using NeumannBoundary = RealFunction;
+    using NeumannBoundary = RealFunction<dim>;
 
     /**
      * \brief Represents a mapping between boundaries (identified by boundary IDs) and the corresponding boundary condition.
@@ -115,6 +150,8 @@ namespace MFSolver
      */
     template <int dim>
     using NeumannBoundaries = Boundaries<NeumannBoundary<dim>>;
+
+    using Range = std::pair<unsigned int, unsigned int>;
 
     /**
      * \brief Represents a generic ADR problem.
@@ -170,7 +207,7 @@ namespace MFSolver
          * \brief Constructs a new instance of ADRSolver
          * \param _problem The problem this solver will solve.
          */
-        Solver(const ADRProblem<dim> &_problem)
+        ADRSolver(const ADRProblem<dim> &_problem)
             : problem(_problem)
         {
         }
@@ -178,7 +215,7 @@ namespace MFSolver
         /**
          * \brief Destructor for ADRProblem.
          */
-        virtual ~Solver() = 0;
+        virtual ~ADRSolver() = 0;
 
         /**
          * \brief Actually solve the ADRProblem.
@@ -210,6 +247,132 @@ namespace MFSolver
          * \brief The problem this solver will solve.
          */
         ADRProblem<dim> problem;
+    };
+
+    template <int dim, int fe_degree, typename Number>
+    class ADROperator : MatrixFreeOperators::Base<dim, DVector<Number>>
+    {
+    public:
+        ADROperator() : Super()
+        {
+        }
+
+        void clear() override
+        {
+            mu_coeff.reinit(0, 0);
+            beta_coeff.reinit(0, 0);
+            div_beta_coeff.reinit(0, 0);
+            gamma_coeff.reinit(0, 0);
+
+            Super::clear();
+        }
+
+        void evaluate_coefficients(
+            const RealFunction<dim> &mu_coeff_function,
+            const VectorFunctionWithGradient<dim> &beta_coeff_function,
+            const RealFunction<dim> &gamma_coeff_function)
+        {
+            const unsigned int n_cells = this->data->n_cell_batches();
+            Phi phi(*this->data);
+
+            mu_coeff.reinit(n_cells, phi.n_q_points);
+            beta_coeff.reinit(n_cells, phi.n_q_points);
+            div_beta_coeff.reinit(n_cells, phi.n_q_points);
+            gamma_coeff.reinit(n_cells, phi.n_q_points);
+
+            for (unsigned int cell = 0; cell < n_cells; ++cell)
+            {
+                phi.reinit(cell);
+                for (const unsigned int q : phi.quadrature_point_indices())
+                {
+                    Point<dim, Number> quadrature_point = phi.quadrature_point(q);
+
+                    mu_coeff(cell, q) = mu_coeff_function.value(quadrature_point);
+                    beta_coeff(cell, q) = beta_coeff_function.value(quadrature_point);
+                    div_beta_coeff(cell, q) = beta_coeff_function.divergence(quadrature_point);
+                    gamma_coeff(cell, q) = gamma_coeff_function.value(quadrature_point);
+                }
+            }
+        }
+
+        virtual void compute_diagonal() override
+        {
+            this->inverse_diagonal_entries.reset(new DiagonalMatrix<DVector<Number>>());
+
+            DVector<Number> &inverse_diagonal = this->inverse_diagonal_entries->get_vector();
+            this->data->initialize_dof_vector(inverse_diagonal);
+
+            MatrixFreeTools::compute_diagonal(*this->data, inverse_diagonal, &ADROperator::local_compute_diagonal, this);
+
+            this->set_constrained_entries_to_one(inverse_diagonal);
+
+            for (unsigned int i = 0; i < inverse_diagonal.locally_owned_size(); ++i)
+            {
+                Assert(inverse_diagonal.local_element(i) > 0., ExcMessage("Error: non-positive entry found. Operator must be positive definite."));
+
+                inverse_diagonal.local_element(i) = 1. / inverse_diagonal.local_element(i);
+            }
+        }
+
+    private:
+        using Super = MatrixFreeOperators::Base<dim, DVector<Number>>;
+
+        using Phi = FEEvaluation<dim, fe_degree, fe_degree + 1, 1, Number>;
+
+        void rhs_computation(Phi &phi, const unsigned int cell, const unsigned int q) // This code is extracted and reused by `local_apply` and `local_compute_diagonal`.
+        // According to Step-37, it seems that they are the same but I have not found proof for it.
+        {
+            phi.evaluate(EvaluationFlags::values | EvaluationFlags::gradients);
+
+            for (const unsigned int q : phi.quadrature_point_indices())
+            {
+                Tensor<1, dim, VectorizedArray<Number>> gradient_of_u = phi.get_gradient(q);
+                VectorizedArray<Number> value_of_u = phi.get_value(q);
+
+                VectorizedArray<Number> mu = mu_coeff(cell, q);
+                Tensor<1, dim, VectorizedArray<Number>> beta = beta_coeff(cell, q);
+                VectorizedArray<Number> div_beta = div_beta_coeff(cell, q);
+                VectorizedArray<Number> gamma = gamma_coeff(cell, q);
+
+                phi.submit_gradient(mu * gradient_of_u, q);
+                phi.submit_value(scalar_product(gradient_of_u, beta) + (div_beta + gamma) * value_of_u, q);
+            }
+
+            phi.integrate(EvaluationFlags::values | EvaluationFlags::gradients);
+        }
+
+        void local_apply(const MatrixFree<dim, Number> &data, DVector<Number> &dst, const DVector<Number> &src, const Range &cell_range) const
+        {
+            Phi phi(data);
+            for (unsigned int cell = cell_range.first; cell < cell_range.second; ++cell)
+            {
+                AssertDimension(coefficient.size(0), data.n_cell_batches());
+                AssertDimension(coefficient.size(1), phi.n_q_points);
+
+                phi.reinit(cell);
+                phi.read_dof_values(src);
+
+                rhs_computation(phi, cell, q);
+
+                phi.distribute_local_to_global(dst);
+            }
+        }
+
+        void local_compute_diagonal(Phi &phi) const
+        {
+            const unsigned int cell = phi.get_current_cell_index();
+            rhs_computation(phi, cell, q);
+        }
+
+        virtual void apply_add(DVector<Number> &dst, const DVector<Number> &src) const override
+        {
+            this->data->cell_loop(&ADROperator::local_apply, this, dst, src);
+        }
+
+        Table<2, VectorizedArray<Number>> mu_coeff;
+        Table<2, Tensor<1, dim, VectorizedArray<Number>>> beta_coeff; // Is this OK?
+        Table<2, VectorizedArray<Number>> div_beta_coeff;             // We precalculate the divergences of beta in order to not break the SIMD context inside the for loops
+        Table<2, VectorizedArray<Number>> gamma_coeff;
     };
 
     /**
@@ -246,12 +409,12 @@ namespace MFSolver
 
         AffineConstraints<double> constraints;
 
-        using SystemMatrixType = LaplaceOperator<dim, fe_degree, double>;
+        using SystemMatrixType = ADROperator<dim, fe_degree, double>;
         SystemMatrixType system_matrix;
 
         MGConstrainedDoFs mg_constrained_dofs;
 
-        using LevelMatrixType = LaplaceOperator<dim, fe_degree, float>;
+        using LevelMatrixType = ADROperator<dim, fe_degree, float>;
         MGLevelObject<LevelMatrixType> mg_matrices;
 
         DVector<double> solution;
@@ -298,7 +461,7 @@ namespace MFSolver
         std::unique_ptr<FiniteElement<dim>> fe;
 
         // TODO: should we add
-        // - mapping 
+        // - mapping
         // - affine constraints
         // here?
 
