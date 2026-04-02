@@ -8,6 +8,7 @@
 #include <deal.II/lac/solver_cg.h>
 #include <deal.II/lac/trilinos_vector.h>
 #include <deal.II/numerics/data_out.h>
+#include <deal.II/lac/vector.h>
 
 // TODO: employ SIMD vectorization
 
@@ -118,6 +119,7 @@ namespace MFSolver{
     // Reset the global matrix and vector, just in case.
     system_matrix = 0.0;
     system_rhs = 0.0;
+    Tensor<1, dim, double> b_loc;
 
     for (const auto& cell : dof_handler.active_cell_iterators ()) {
       if (!cell->is_locally_owned ())
@@ -129,14 +131,11 @@ namespace MFSolver{
       cell_rhs = 0.0;
 
       for (unsigned int q = 0; q < n_q; ++q) {
-        const double mu_loc = this->problem.mu (fe_values.quadrature_point (q));
-        const double b_loc = this->problem.beta (fe_values.quadrature_point (q));
-
-        const double k_loc = this->problem.gamma (fe_values.quadrature_point (q));
-
-
+        const double mu_loc = this->problem.mu.value (fe_values.quadrature_point (q));
+        b_loc = this->problem.beta.value (fe_values.quadrature_point (q));
+        const double k_loc = this->problem.gamma.value (fe_values.quadrature_point (q));
         const double f_loc =
-          this->problem.f (fe_values.quadrature_point (q));
+          this->problem.f.value (fe_values.quadrature_point (q));
 
         for (unsigned int i = 0; i < dofs_per_cell; ++i) {
           for (unsigned int j = 0; j < dofs_per_cell; ++j) {
@@ -149,8 +148,8 @@ namespace MFSolver{
 
             // Advection
             cell_matrix (i, j) += b_loc *
+              fe_values.shape_grad (i, q) *
               fe_values.shape_value (j, q) *
-              fe_values.shape_grad (i, q)[0] *
               fe_values.JxW (q);
 
             // Reaction

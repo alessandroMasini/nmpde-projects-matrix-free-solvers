@@ -2009,6 +2009,7 @@ CMakeFiles/MatrixBasedTest.dir/MatrixBasedTest.cpp.o: MatrixBasedTest.cpp \
   /u/sw/toolchains/gcc-glibc/11.2.0/pkgs/dealii/9.5.1/include/deal.II/base/template_constraints.h \
   /u/sw/toolchains/gcc-glibc/11.2.0/pkgs/dealii/9.5.1/include/deal.II/base/tensor.h \
   /u/sw/toolchains/gcc-glibc/11.2.0/pkgs/dealii/9.5.1/include/deal.II/base/tensor_accessors.h \
+  /u/sw/toolchains/gcc-glibc/11.2.0/pkgs/dealii/9.5.1/include/deal.II/base/tensor_function.h \
   /u/sw/toolchains/gcc-glibc/11.2.0/pkgs/dealii/9.5.1/include/deal.II/base/tensor_product_polynomials.h \
   /u/sw/toolchains/gcc-glibc/11.2.0/pkgs/dealii/9.5.1/include/deal.II/base/thread_local_storage.h \
   /u/sw/toolchains/gcc-glibc/11.2.0/pkgs/dealii/9.5.1/include/deal.II/base/types.h \
@@ -3696,6 +3697,10 @@ CMakeFiles/MatrixBasedTest.dir/MatrixBasedTest.cpp.o: MatrixBasedTest.cpp \
 /u/sw/toolchains/gcc-glibc/11.2.0/pkgs/trilinos/15.0.0/include/Kokkos_Parallel.hpp:
 
 /u/sw/toolchains/gcc-glibc/11.2.0/pkgs/trilinos/15.0.0/include/Kokkos_Pair.hpp:
+
+/u/sw/toolchains/gcc-glibc/11.2.0/prefix/include/c++/11.2.0/ext/concurrence.h:
+
+/u/sw/toolchains/gcc-glibc/11.2.0/pkgs/trilinos/15.0.0/include/Kokkos_MinMaxClamp.hpp:
 
 /u/sw/toolchains/gcc-glibc/11.2.0/pkgs/boost/1.76.0/include/boost/mpl/aux_/preprocessed/gcc/reverse_iter_fold_impl.hpp:
 
@@ -7443,10 +7448,6 @@ MatrixBasedTest.cpp:
 
 /u/sw/toolchains/gcc-glibc/11.2.0/pkgs/p4est/2.3.2/include/p4est.h:
 
-/u/sw/toolchains/gcc-glibc/11.2.0/prefix/include/c++/11.2.0/ext/concurrence.h:
-
-/u/sw/toolchains/gcc-glibc/11.2.0/pkgs/trilinos/15.0.0/include/Kokkos_MinMaxClamp.hpp:
-
 /u/sw/toolchains/gcc-glibc/11.2.0/pkgs/boost/1.76.0/include/boost/preprocessor/array/data.hpp:
 
 /u/sw/toolchains/gcc-glibc/11.2.0/pkgs/boost/1.76.0/include/boost/preprocessor/comparison/limits/not_equal_256.hpp:
@@ -8352,6 +8353,8 @@ MatrixBasedTest.cpp:
 /u/sw/toolchains/gcc-glibc/11.2.0/pkgs/dealii/9.5.1/include/deal.II/base/table.h:
 
 /u/sw/toolchains/gcc-glibc/11.2.0/pkgs/dealii/9.5.1/include/deal.II/base/tensor.h:
+
+/u/sw/toolchains/gcc-glibc/11.2.0/pkgs/dealii/9.5.1/include/deal.II/base/tensor_function.h:
 
 /u/sw/toolchains/gcc-glibc/11.2.0/pkgs/dealii/9.5.1/include/deal.II/base/types.h:
 
