@@ -1,5 +1,7 @@
 #pragma once
 
+// TODO: reorder imports in a neat way
+
 #include <functional>
 #include <string>
 #include <unordered_map>
@@ -14,6 +16,20 @@
 
 #include <deal.II/matrix_free/fe_evaluation.h>
 #include <deal.II/matrix_free/operators.h>
+
+// TODO: deal.II libraries: did we actually need these?
+#include <deal.II/fe/fe_q.h>
+#include <deal.II/fe/mapping_q1.h>
+#include <deal.II/lac/affine_constraints.h>
+#include <deal.II/matrix_free/operators.h>
+#include <deal.II/multigrid/mg_constrained_dofs.h>
+#include <deal.II/base/mg_level_object.h>
+#include <deal.II/base/conditional_ostream.h>
+
+#include <deal.II/lac/trilinos_precondition.h>
+#include <deal.II/lac/trilinos_sparse_matrix.h>
+#include <deal.II/distributed/tria.h>
+#include <deal.II/distributed/fully_distributed_tria.h>
 
 /**
  * \brief Namespace containing all the methods and type definitions used in the project.
@@ -204,7 +220,7 @@ namespace MFSolver
      * \tparam dim The dimensionality of the space the ADR problem is living in.
      * \tparam fe_degree The degree of the finite elements used to solve the problem.
      */
-    template <int dim, int fe_degree>
+    template <unsigned int dim, unsigned int fe_degree>
     class ADRSolver
     {
     public:
@@ -236,7 +252,7 @@ namespace MFSolver
         /**
          * \brief Assembles the rhs of the algebraic system corresponding to the problem.
          */
-        virtual void assemble_rhs() = 0;
+        virtual void assemble() = 0;
 
         /**
          * \brief Solves the algebraic system corresponding to the problem.
@@ -392,28 +408,35 @@ namespace MFSolver
         MatrixFreeADRSolver(const ADRProblem<dim> &_problem) : ADRSolver<dim, fe_degree>(_problem)
         {
         }
+        ~MatrixFreeADRSolver() override;
 
-        void run() override {}
+        void run() override;
 
     private:
-        void setup_system() override {}
-        void assemble_rhs() override {}
-        void solve() override {}
-        void output_results() override {}
+        void setup_system() override;
+        void assemble() override;
+        void solve() override;
+        void output_results() override;
 
 #ifdef DEAL_II_WITH_P4EST
-        parallel::distributed::Triangulation<dim> triangulation;
+        //         // The second "dim" is needed in case the spatial dimension
+        //         // is different than the FE dimension
+        parallel::distributed::Triangulation<dim, dim> triangulation();
 #else
         Triangulation<dim> triangulation;
 #endif
-
         const FE_Q<dim> fe;
-        DoFHandler<dim> dof_handler;
+        DoFHandler<dim, dim> dof_handler;
 
-        const MappingQ1<dim> mapping;
+        const MappingQ1<dim, dim> mapping;
 
         AffineConstraints<double> constraints;
 
+        // TODO: again, the number of quadrature points in 1D
+        // is known at runtime (part of the problem object), however
+        // the laplace operator type needs it a compile time
+
+        // TODO: last 4 arguments were set considering deal.II documentation; shall it be our implementation choice?
         using SystemMatrixType = ADROperator<dim, fe_degree, double>;
         SystemMatrixType system_matrix;
 
@@ -439,17 +462,22 @@ namespace MFSolver
     class MatrixBasedADRSolver : public ADRSolver<dim, fe_degree>
     {
     public:
-        MatrixBasedADRSolver(const ADRProblem<dim> &_problem) : ADRSolver<dim, fe_degree>(_problem)
+        MatrixBasedADRSolver(const ADRProblem<dim> &_problem) : ADRSolver<dim, fe_degree>(_problem),
+                                                                mpi_size(Utilities::MPI::n_mpi_processes(MPI_COMM_WORLD)),
+                                                                mpi_rank(Utilities::MPI::this_mpi_process(MPI_COMM_WORLD)),
+                                                                mesh(MPI_COMM_WORLD),
+                                                                pcout(std::cout, mpi_rank == 0)
         {
         }
+        ~MatrixBasedADRSolver();
 
-        void run() override {}
+        void run() override;
 
     private:
-        void setup_system() override {}
-        void assemble_rhs() override {}
-        void solve() override {}
-        void output_results() override {}
+        void setup_system() override;
+        void assemble() override;
+        void solve() override;
+        void output_results() override;
 
         // Number of MPI processes.
         const unsigned int mpi_size;
@@ -459,7 +487,7 @@ namespace MFSolver
 
         // Triangulation.
         // TODO: clarify difference with MatrixFreeADRSolver mesh types
-        parallel::fullydistributed::Triangulation<dim> mesh;
+        parallel::fullydistributed::Triangulation<dim, dim> mesh;
 
         // Finite element space.
         // TODO: clarify difference with MatrixFreeADRSolver fe non-pointer
