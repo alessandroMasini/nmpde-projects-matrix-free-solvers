@@ -355,3 +355,6 @@ namespace MFSolver
         ConditionalOStream pcout;
     };
 };
+
+// Including template function implementations
+#include "../ADR_matrix_based_example/MatrixBasedADRSolver.tpp"
