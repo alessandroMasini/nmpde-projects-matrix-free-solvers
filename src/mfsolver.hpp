@@ -9,6 +9,7 @@
 #include <deal.II/base/conditional_ostream.h>
 #include <deal.II/base/function.h>
 #include <deal.II/base/point.h>
+#include <deal.II/base/tensor_function.h>
 #include <deal.II/base/tensor.h>
 #include <deal.II/base/types.h>
 
@@ -61,16 +62,16 @@ namespace MFSolver
         {
         }
 
+        virtual double value(const Point<dim> &p, const unsigned int component = 0) const override
+        {
+            return lambda(p);
+        }
+
     private:
         /**
          * \brief The closure that will be used to compute the value of the function.
          */
         std::function<double(const Point<dim> &)> lambda;
-
-        virtual double value(const Point<dim> &p, const unsigned int component = 0) const override
-        {
-            return lambda(p);
-        }
     };
 
     /**
@@ -78,29 +79,27 @@ namespace MFSolver
      * \tparam dim The dimensionality of the input and output vector.
      */
     template <int dim>
-    class VectorFunction : public Function<dim>
+    class VectorFunction : public TensorFunction<1, dim, double>
     {
     public:
         /**
          * \brief Constructs a new instance of VectorFunction.
          * \param _lambda The closure that will be used to compute the value of the function.
-         *
-         * \note Since the `Function::vector_value` default implementation calls `Function::value` for each vector component, avoid computing the entire vector and then returning the requested component inside `value` to improve performance.
          */
-        VectorFunction(const std::function<Tensor<1, dim>(const Point<dim> &, const unsigned int)> &_lambda) : Function<dim>(), lambda(_lambda)
+        VectorFunction(const std::function<Tensor<1, dim, double>(const Point<dim> &)> &_lambda) : TensorFunction<1, dim, double>(), lambda(_lambda)
         {
+        }
+
+        virtual Tensor<1, dim, double> value(const Point<dim> &p) const override
+        {
+            return lambda(p);
         }
 
     private:
         /**
          * \brief The closure that will be used to compute the value of the function.
          */
-        std::function<Tensor<1, dim>(const Point<dim> &, const unsigned int)> lambda;
-
-        virtual double value(const Point<dim> &p, const unsigned int component) const override
-        {
-            return lambda(p, component);
-        }
+        std::function<Tensor<1, dim, double>(const Point<dim> &)> lambda;
     };
 
     /**
@@ -236,7 +235,7 @@ namespace MFSolver
         /**
          * \brief Destructor for ADRProblem.
          */
-        virtual ~ADRSolver() = 0;
+        virtual ~ADRSolver() {};
 
         /**
          * \brief Actually solve the ADRProblem.
@@ -408,7 +407,7 @@ namespace MFSolver
         MatrixFreeADRSolver(const ADRProblem<dim> &_problem) : ADRSolver<dim, fe_degree>(_problem)
         {
         }
-        ~MatrixFreeADRSolver() override;
+        ~MatrixFreeADRSolver() override {};
 
         void run() override;
 
@@ -469,7 +468,7 @@ namespace MFSolver
                                                                 pcout(std::cout, mpi_rank == 0)
         {
         }
-        ~MatrixBasedADRSolver();
+        ~MatrixBasedADRSolver() override {};
 
         void run() override;
 
@@ -520,3 +519,6 @@ namespace MFSolver
         ConditionalOStream pcout;
     };
 };
+
+// Including template function implementations
+#include "../ADR_matrix_based_example/MatrixBasedADRSolver.tpp"
