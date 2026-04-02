@@ -44,3 +44,7 @@ CMakeCache.txt
 cmake_install.cmake
 Makefile
 *.cmake
+
+# Visualization output
+*.vtu
+*.pvtu
