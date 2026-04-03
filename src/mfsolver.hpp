@@ -133,7 +133,7 @@ namespace MFSolver
     {
     public:
         template <typename Number>
-        using value_type = TensorFunction<1, dim, Number>::value_type;
+        using value_type = typename TensorFunction<1, dim, Number>::value_type;
 
         /**
          * \brief Constructs a new instance of VectorFunction.
