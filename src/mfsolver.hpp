@@ -86,7 +86,6 @@ namespace MFSolver
     public:
         /**
          * \brief Constructs a new instance of RealFunction.
-         * \param _lambda The closure that will be used to compute the value of the function.
          */
         RealFunction() : Function<dim>() {}
 
@@ -137,7 +136,6 @@ namespace MFSolver
 
         /**
          * \brief Constructs a new instance of VectorFunction.
-         * \param _lambda The closure that will be used to compute the value of the function.
          */
         VectorFunction() : TensorFunction<1, dim, double>()
         {
@@ -203,17 +201,28 @@ namespace MFSolver
      *     }
      * };
      * ```
+     *
+     * \warning There are no checks that assert that the implementation of the gradient method effectively computes the gradient of the value method. Otherwise we would have just used that instead of having the user to implement it by itself.
      */
     template <int dim>
     class VectorFunctionWithGradient : public VectorFunction<dim>
     {
     public:
+        /**
+         * \brief Type alias representing the type of the value returned by this function.
+         */
         template <typename Number>
         using value_type = typename VectorFunction<dim>::value_type<Number>;
 
+        /**
+         * \brief Type alias representing the type of the gradient of this function.
+         */
         template <typename Number>
         using gradient_type = typename TensorFunction<1, dim, Number>::gradient_type;
 
+        /**
+         * \brief Constructs a new instance of VectorFunctionWithGradient.
+         */
         VectorFunctionWithGradient() : VectorFunction<dim>()
         {
         }
@@ -270,6 +279,9 @@ namespace MFSolver
     template <int dim>
     using NeumannBoundaries = Boundaries<NeumannBoundary<dim>>;
 
+    /**
+     * \brief Represents a range of cells.
+     */
     using Range = std::pair<unsigned int, unsigned int>;
 
     /**
@@ -368,14 +380,28 @@ namespace MFSolver
         ADR::ProblemData<dim> problem;
     };
 
+    /**
+     * \brief Class representing the Advection-Diffusion-Reaction operator.
+     * \tparam dim The dimensionality of the space the ADR problem lives in.
+     * \tparam fe_degree The degree used in the finite element approximation
+     * \tparam Number The data type used to represent coordinates in the space the ADR problem lives in.
+     *
+     * The ADR operator is built to represent an operator \f( L \f) such that the problem to solve can be expressed as \f[ Lu := -\nabla \cdot (\mu \nabla u) + \nabla \cdot (\beta u) + \gamma u = f \f]
+     */
     template <int dim, int fe_degree, typename Number>
     class ADROperator : MatrixFreeOperators::Base<dim, DVector<Number>>
     {
     public:
+        /**
+         * \brief Constructs a new instance of ADROperator.
+         */
         ADROperator() : Super()
         {
         }
 
+        /**
+         * \brief Resets the ADROperator.
+         */
         void clear() override
         {
             mu_coeff.reinit(0, 0);
@@ -386,6 +412,18 @@ namespace MFSolver
             Super::clear();
         }
 
+        /**
+         * \brief Precomputes all the coefficients.
+         * \param mu_coeff_function Instance of RealFunction representing the diffusion coefficient of the problem to be solved.
+         * \param beta_coeff_function Instance of VectorFunctionWithGradient representing the advection coefficient of the problem to be solved.
+         * \param gamma_coeff_function Instance of RealFunction representing the reaction coefficient of the problem to be solved.
+         *
+         * A call to this method is needed in order to have them ready in SIMD vectors (without having to break the SIMD context) when used while solving the associated algebraic system.
+         * There is no failsafe implemented that is activated when this method is not called. In case this method is not called before the coefficients are used, the program will most likely crash with a segmentation fault.
+         *
+         * \note This method assumes that the ADROperator was correctly initialized (see Deal.II tutorial step-37 for reference).
+         * If this is not true, this method will just crash with a segmentation fault trying to access non initialized pointers.
+         */
         void evaluate_coefficients(
             const RealFunction<dim> &mu_coeff_function,
             const VectorFunctionWithGradient<dim> &beta_coeff_function,
@@ -414,6 +452,12 @@ namespace MFSolver
             }
         }
 
+        /**
+         * \brief Computes the diagonal of the ADROperator.
+         *
+         * \note This method assumes that the ADROperator was correctly initialized (see Deal.II tutorial step-37 for reference).
+         * If this is not true, this method will just crash with a segmentation fault trying to access non initialized pointers.
+         */
         virtual void compute_diagonal() override
         {
             this->inverse_diagonal_entries.reset(new DiagonalMatrix<DVector<Number>>());
@@ -434,13 +478,26 @@ namespace MFSolver
         }
 
     private:
+        /**
+         * \brief Type alias used as a shorthand to get to the base class.
+         */
         using Super = MatrixFreeOperators::Base<dim, DVector<Number>>;
 
+        /**
+         * \brief Type alias used as a shorthand to use FEEvaluation with the correct template parameters
+         */
         using Phi = FEEvaluation<dim, fe_degree, fe_degree + 1, 1, Number>;
 
-        void rhs_computation(Phi &phi, const unsigned int cell) const
-        // This code is extracted and reused by `local_apply` and `local_compute_diagonal`.
-        // TODO: According to Step-37, it seems that they are the same but I have not found proof for it.
+        /**
+         * \brief Computes the lhs for a given cell.
+         * \param phi The FEEvaluation object representing the finite element approximation.
+         * \param cell The cell for which to compute the lhs.
+         *
+         * \note This code is extracted and reused by `local_apply` and `local_compute_diagonal`.
+         * According to Step-37, it seems that they are the same but I have not found proof for it (TODO: check).
+         * Class methods gets automatically inlined by the compiler, therefore there should not be any performance loss due to the function call.
+         */
+        void lhs_computation(Phi &phi, const unsigned int cell) const
         {
             phi.evaluate(EvaluationFlags::values | EvaluationFlags::gradients);
 
@@ -461,6 +518,13 @@ namespace MFSolver
             phi.integrate(EvaluationFlags::values | EvaluationFlags::gradients);
         }
 
+        /**
+         * \brief Applies the ADROperator to a range of cells.
+         * \param data The MatrixFree object containing all the information needed by the FEEvaluation to evaluate.
+         * \param dst The vector of DoFs in which the result of the application is saved.
+         * \param src The vector of DoFs to which the operator is applied.
+         * \param cell_range Describes the range of cells to which apply the operator.
+         */
         void local_apply(const MatrixFree<dim, Number> &data, DVector<Number> &dst, const DVector<Number> &src, const Range &cell_range) const
         {
             Phi phi(data);
@@ -481,26 +545,52 @@ namespace MFSolver
                 phi.reinit(cell);
                 phi.read_dof_values(src);
 
-                rhs_computation(phi, cell);
+                lhs_computation(phi, cell);
 
                 phi.distribute_local_to_global(dst);
             }
         }
 
+        /**
+         * \brief Used as cell operation to compute the diagonal of the operator.
+         * \param phi The FEEvaluation to be used in the computation.
+         */
         void local_compute_diagonal(Phi &phi) const
         {
             const unsigned int cell = phi.get_current_cell_index();
-            rhs_computation(phi, cell);
+            lhs_computation(phi, cell);
         }
 
+        /**
+         * \brief Applies the operator to a given vector of DoFs.
+         * \param dst The vector of DoFs in which the result of the application is saved.
+         * \param src The vector of DoFs to which the operator is applied.
+         */
         virtual void apply_add(DVector<Number> &dst, const DVector<Number> &src) const override
         {
             this->data->cell_loop(&ADROperator::local_apply, this, dst, src);
         }
 
+        /**
+         * \brief Cache used to store precomputed values for the diffusion coefficient.
+         */
         Table<2, VectorizedArray<Number>> mu_coeff;
+
+        /**
+         * \brief Cache used to store precomputed values for the advection coefficient.
+         */
         Table<2, Tensor<1, dim, VectorizedArray<Number>>> beta_coeff; // Is this OK?
-        Table<2, VectorizedArray<Number>> div_beta_coeff;             // We precalculate the divergences of beta in order to not break the SIMD context inside the for loops
+
+        /**
+         * \brief Cache used to store precomputed values for the divergence of the advection coefficient.
+         *
+         * Here, the divergence of beta is treated exactly like a coefficient in order to have it precomputed when needed in order to not break the SIMD contexts in which they are used (that would cause significand slowdowns).
+         */
+        Table<2, VectorizedArray<Number>> div_beta_coeff;
+
+        /**
+         * \brief Cache used to store precomputed values for the reaction coefficient.
+         */
         Table<2, VectorizedArray<Number>> gamma_coeff;
     };
 
