@@ -37,6 +37,7 @@ build/*
 .vscode/*
 projects_markdown/*
 deal.II_library_step-37_tutorial_program.md
+labs_pde/*
 
 # CMake artifacts (especially for in-source builds or accidental builds in root)
 CMakeFiles/
