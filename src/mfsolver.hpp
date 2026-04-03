@@ -15,6 +15,13 @@
 #include <deal.II/matrix_free/fe_evaluation.h>
 #include <deal.II/matrix_free/operators.h>
 
+#include <deal.II/lac/trilinos_sparse_matrix.h>
+#include <deal.II/lac/trilinos_vector.h>
+#include <deal.II/distributed/fully_distributed_tria.h>
+#include <deal.II/distributed/tria.h>
+
+#include "ProblemData.hpp"
+
 /**
  * \brief Namespace containing all the methods and type definitions used in the project.
  */
@@ -207,7 +214,7 @@ namespace MFSolver
          * \brief Constructs a new instance of ADRSolver
          * \param _problem The problem this solver will solve.
          */
-        ADRSolver(const ADRProblem<dim> &_problem)
+        ADRSolver(const ADR::ProblemData<dim> &_problem)
             : problem(_problem)
         {
         }
@@ -246,7 +253,7 @@ namespace MFSolver
         /**
          * \brief The problem this solver will solve.
          */
-        ADRProblem<dim> problem;
+        ADR::ProblemData<dim> problem;
     };
 
     template <int dim, int fe_degree, typename Number>
@@ -319,7 +326,7 @@ namespace MFSolver
 
         using Phi = FEEvaluation<dim, fe_degree, fe_degree + 1, 1, Number>;
 
-        void rhs_computation(Phi &phi, const unsigned int cell, const unsigned int q) // This code is extracted and reused by `local_apply` and `local_compute_diagonal`.
+        void rhs_computation(Phi &phi, const unsigned int cell) const // This code is extracted and reused by `local_apply` and `local_compute_diagonal`.
         // According to Step-37, it seems that they are the same but I have not found proof for it.
         {
             phi.evaluate(EvaluationFlags::values | EvaluationFlags::gradients);
@@ -346,13 +353,13 @@ namespace MFSolver
             Phi phi(data);
             for (unsigned int cell = cell_range.first; cell < cell_range.second; ++cell)
             {
-                AssertDimension(coefficient.size(0), data.n_cell_batches());
-                AssertDimension(coefficient.size(1), phi.n_q_points);
+                AssertDimension(mu_coeff.size(0), data.n_cell_batches());
+                AssertDimension(mu_coeff.size(1), phi.n_q_points);
 
                 phi.reinit(cell);
                 phi.read_dof_values(src);
 
-                rhs_computation(phi, cell, q);
+                rhs_computation(phi, cell);
 
                 phi.distribute_local_to_global(dst);
             }
@@ -361,7 +368,7 @@ namespace MFSolver
         void local_compute_diagonal(Phi &phi) const
         {
             const unsigned int cell = phi.get_current_cell_index();
-            rhs_computation(phi, cell, q);
+            rhs_computation(phi, cell);
         }
 
         virtual void apply_add(DVector<Number> &dst, const DVector<Number> &src) const override
@@ -384,7 +391,7 @@ namespace MFSolver
     class MatrixFreeADRSolver : public ADRSolver<dim, fe_degree>
     {
     public:
-        MatrixFreeADRSolver(const ADRProblem<dim> &_problem) : ADRSolver<dim, fe_degree>(_problem)
+        MatrixFreeADRSolver(const ADR::ProblemData<dim> &_problem) : ADRSolver<dim, fe_degree>(_problem)
         {
         }
 
@@ -434,7 +441,7 @@ namespace MFSolver
     class MatrixBasedADRSolver : public ADRSolver<dim, fe_degree>
     {
     public:
-        MatrixBasedADRSolver(const ADRProblem<dim> &_problem) : ADRSolver<dim, fe_degree>(_problem)
+        MatrixBasedADRSolver(const ADR::ProblemData<dim> &_problem) : ADRSolver<dim, fe_degree>(_problem)
         {
         }
 
