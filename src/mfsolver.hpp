@@ -34,6 +34,11 @@
 #include <deal.II/distributed/tria.h>
 #include <deal.II/distributed/fully_distributed_tria.h>
 
+#include <deal.II/lac/trilinos_sparse_matrix.h>
+#include <deal.II/lac/trilinos_vector.h>
+
+#include "ProblemData.hpp"
+
 /**
  * \brief Namespace containing all the methods and type definitions used in the project.
  */
@@ -321,7 +326,7 @@ namespace MFSolver
          * \brief Constructs a new instance of ADRSolver
          * \param _problem The problem this solver will solve.
          */
-        ADRSolver(const ADRProblem<dim> &_problem)
+        ADRSolver(const ADR::ProblemData<dim> &_problem)
             : problem(_problem)
         {
         }
@@ -360,7 +365,7 @@ namespace MFSolver
         /**
          * \brief The problem this solver will solve.
          */
-        ADRProblem<dim> problem;
+        ADR::ProblemData<dim> problem;
     };
 
     template <int dim, int fe_degree, typename Number>
@@ -508,7 +513,7 @@ namespace MFSolver
     class MatrixFreeADRSolver : public ADRSolver<dim, fe_degree>
     {
     public:
-        MatrixFreeADRSolver(const ADRProblem<dim> &_problem) : ADRSolver<dim, fe_degree>(_problem)
+        MatrixFreeADRSolver(const ADR::ProblemData<dim> &_problem) : ADRSolver<dim, fe_degree>(_problem)
         {
         }
         ~MatrixFreeADRSolver() override {};
