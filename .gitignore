@@ -49,3 +49,4 @@ Makefile
 # Visualization output
 *.vtu
 *.pvtu
+results/

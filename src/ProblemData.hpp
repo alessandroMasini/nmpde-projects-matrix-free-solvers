@@ -5,10 +5,67 @@
 #include <deal.II/base/tensor_function.h>
 #include <deal.II/base/function.h>
 
-#include <functional>
+#include "function_types.hpp"
+
 #include <memory>
 
 namespace ADR {
+
+template <int dim>
+class ConstantRealFunction : public MFSolver::RealFunction<dim> {
+private:
+    double val;
+public:
+    ConstantRealFunction(double v) : val(v) {}
+
+    virtual double value(const dealii::Point<dim> &p, const unsigned int component = 0) const override {
+        return value<double>(p, component);
+    }
+
+    template <typename Number>
+    Number value(const dealii::Point<dim, Number> &/*p*/, const unsigned int /*component*/ = 0) const {
+        return Number(val);
+    }
+};
+
+template <int dim>
+class ConstantVectorFunctionWithGradient : public MFSolver::VectorFunctionWithGradient<dim> {
+private:
+    double val;
+public:
+    using Super = typename MFSolver::VectorFunctionWithGradient<dim>;
+
+    ConstantVectorFunctionWithGradient(double v) : val(v) {}
+
+    virtual typename Super::template value_type<double> value(const dealii::Point<dim> &p) const override {
+        return value<double>(p);
+    }
+
+    template <typename Number>
+    typename Super::template value_type<Number> value(const dealii::Point<dim, Number> &/*p*/) const {
+        dealii::Tensor<1, dim, Number> b;
+        for (unsigned int d = 0; d < dim; ++d) b[d] = Number(val);
+        return b;
+    }
+
+    virtual double divergence(const dealii::Point<dim> &p) const override {
+        return divergence<double>(p);
+    }
+
+    template <typename Number>
+    Number divergence(const dealii::Point<dim, Number> &/*p*/) const {
+        return Number(0.0);
+    }
+
+    virtual typename Super::template gradient_type<double> gradient(const dealii::Point<dim> &p) const override {
+        return gradient<double>(p);
+    }
+
+    template <typename Number>
+    typename Super::template gradient_type<Number> gradient(const dealii::Point<dim, Number> &/*p*/) const {
+        return typename Super::template gradient_type<Number>();
+    }
+};
 
 /**
  * @brief A common structure to hold the algebraic and analytical data 
@@ -40,19 +97,19 @@ struct ProblemData {
     // --- PDE Coefficients ---
     
     // Diffusion coefficient function: mu(x)
-    std::function<double(const dealii::Point<dim>&)> mu;
+    std::shared_ptr<MFSolver::RealFunction<dim>> mu;
 
     // Advection coefficient function: beta(x) (velocity field)
-    std::function<dealii::Tensor<1, dim>(const dealii::Point<dim>&)> beta;
+    std::shared_ptr<MFSolver::VectorFunctionWithGradient<dim>> beta;
 
     // Reaction coefficient function: gamma(x) (or k in some notations)
-    std::function<double(const dealii::Point<dim>&)> gamma;
+    std::shared_ptr<MFSolver::RealFunction<dim>> gamma;
 
     // Forcing term: f(x, t)
-    std::function<double(const dealii::Point<dim>&, const double&)> forcing_term;
+    std::shared_ptr<MFSolver::RealFunction<dim>> forcing_term;
 
     // Dirichlet boundary condition: g(x, t) for the general lifting
-    std::function<double(const dealii::Point<dim>&, const double&)> dirichlet_boundary_value;
+    std::shared_ptr<MFSolver::RealFunction<dim>> dirichlet_boundary_value;
 
     /**
      * @brief Helper to initialize with some default test-case values
@@ -63,24 +120,11 @@ struct ProblemData {
         data.fe_degree = 1;
         data.refinement_level = 5;
 
-        // Default mu = 1.0
-        data.mu = [](const dealii::Point<dim>& /*p*/) { return 1.0; };
-
-        // Default beta = [1.0, 1.0, ...]
-        data.beta = [](const dealii::Point<dim>& /*p*/) { 
-            dealii::Tensor<1, dim> b;
-            for (unsigned int d = 0; d < dim; ++d) b[d] = 1.0;
-            return b;
-        };
-
-        // Default gamma = 0.0
-        data.gamma = [](const dealii::Point<dim>& /*p*/) { return 0.0; };
-
-        // Default forcing term f = 1.0
-        data.forcing_term = [](const dealii::Point<dim>& /*p*/, const double& /*t*/) { return 1.0; };
-
-        // Default homogeneous Dirichlet boundaries
-        data.dirichlet_boundary_value = [](const dealii::Point<dim>& /*p*/, const double& /*t*/) { return 0.0; };
+        data.mu = std::make_shared<ConstantRealFunction<dim>>(1.0);
+        data.beta = std::make_shared<ConstantVectorFunctionWithGradient<dim>>(1.0);
+        data.gamma = std::make_shared<ConstantRealFunction<dim>>(0.0);
+        data.forcing_term = std::make_shared<ConstantRealFunction<dim>>(1.0);
+        data.dirichlet_boundary_value = std::make_shared<ConstantRealFunction<dim>>(0.0);
 
         return data;
     }

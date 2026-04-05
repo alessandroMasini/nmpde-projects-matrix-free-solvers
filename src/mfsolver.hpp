@@ -37,6 +37,7 @@
 #include <deal.II/lac/trilinos_sparse_matrix.h>
 #include <deal.II/lac/trilinos_vector.h>
 
+#include "function_types.hpp"
 #include "ProblemData.hpp"
 
 /**
@@ -720,4 +721,4 @@ namespace MFSolver
 };
 
 // Including template function implementations
-#include "../ADR_matrix_based_example/MatrixBasedADRSolver.tpp"
+#include "adr_matrix_based/MatrixBasedADRSolver.tpp"
