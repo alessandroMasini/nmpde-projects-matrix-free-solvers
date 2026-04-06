@@ -413,7 +413,19 @@ namespace MFSolver
     class MatrixFreeADRSolver : public ADRSolver<dim, fe_degree>
     {
     public:
-        MatrixFreeADRSolver(const ADR::ProblemData<dim> &_problem) : ADRSolver<dim, fe_degree>(_problem)
+        MatrixFreeADRSolver(const ADR::ProblemData<dim> &_problem) 
+            : ADRSolver<dim, fe_degree>(_problem)
+#ifdef DEAL_II_WITH_P4EST
+            , triangulation(MPI_COMM_WORLD, Triangulation<dim>::limit_level_difference_at_vertices, parallel::distributed::Triangulation<dim>::construct_multigrid_hierarchy)
+#else
+            , triangulation(Triangulation<dim>::limit_level_difference_at_vertices)
+#endif
+            , fe(fe_degree)
+            , dof_handler(triangulation)
+            , mapping()
+            , setup_time(0.0)
+            , pcout(std::cout, Utilities::MPI::this_mpi_process(MPI_COMM_WORLD) == 0)
+            , time_details(std::cout, false && Utilities::MPI::this_mpi_process(MPI_COMM_WORLD) == 0)
         {
         }
         ~MatrixFreeADRSolver() override {};
@@ -429,7 +441,7 @@ namespace MFSolver
 #ifdef DEAL_II_WITH_P4EST
         //         // The second "dim" is needed in case the spatial dimension
         //         // is different than the FE dimension
-        parallel::distributed::Triangulation<dim, dim> triangulation();
+        parallel::distributed::Triangulation<dim, dim> triangulation;
 #else
         Triangulation<dim> triangulation;
 #endif
@@ -531,3 +543,4 @@ namespace MFSolver
 
 // Including template function implementations
 #include "MatrixBasedADRSolver.tpp"
+#include "MatrixFreeADRSolver.tpp"
