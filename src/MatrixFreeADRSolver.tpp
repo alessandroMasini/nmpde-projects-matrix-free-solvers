@@ -1,0 +1,108 @@
+#pragma once
+
+// Implementation of MatrixFreeADRSolver methods
+#include <deal.II/grid/grid_generator.h>
+#include <deal.II/grid/tria.h>
+#include <deal.II/numerics/vector_tools.h>
+#include <deal.II/dofs/dof_tools.h>
+#include <deal.II/lac/affine_constraints.h>
+#include <deal.II/matrix_free/matrix_free.h>
+#include <deal.II/matrix_free/fe_evaluation.h>
+#include <deal.II/matrix_free/tools.h>
+#include <deal.II/base/timer.h>
+
+namespace MFSolver
+{
+    template <int dim, int fe_degree>
+    void MatrixFreeADRSolver<dim, fe_degree>::setup_system()
+    {
+        dealii::Timer timer;
+        setup_time = 0;
+
+        {
+            system_matrix.clear();
+            mg_matrices.clear_elements();
+
+            dof_handler.distribute_dofs(fe);
+            dof_handler.distribute_mg_dofs();
+
+            pcout << "Number of DoFs: " << dof_handler.n_dofs() << std::endl;
+
+            constraints.clear();
+            constraints.reinit(dof_handler.locally_owned_dofs(), DoFTools::extract_locally_relevant_dofs(dof_handler));
+            DoFTools::make_hanging_node_constraints(dof_handler, constraints);
+
+            // Interpolate the Dirichlet boundary conditions from our ProblemData map
+            for (const auto &[boundary_id, function] : this->problem.dirichlet_boundaries)
+            {
+                // Interpolates the specific function onto the nodes belonging to boundary_id
+                VectorTools::interpolate_boundary_values(mapping, dof_handler, boundary_id, function, constraints);
+            }
+            
+            constraints.close();
+        }
+
+        setup_time += timer.wall_time();
+        time_details << "Distribute DoFs and B.Cs. (cpu/wall): " << timer.cpu_time() << "s/" << timer.wall_time() << "s" << std::endl;
+        timer.restart();
+
+        {
+            { 
+                // Initialize the system matrix with the correct settings
+                typename MatrixFree<dim, double>::AdditionalData additional_data;
+                additional_data.tasks_parallel_scheme = MatrixFree<dim, double>::AdditionalData::TasksParallelScheme::partition_color;
+                additional_data.mapping_update_flags = update_gradients | update_JxW_values | update_quadrature_points | update_values;
+
+                std::shared_ptr<MatrixFree<dim, double>>
+                    system_mf_storage(new MatrixFree<dim, double>());
+                
+                system_mf_storage->reinit(mapping, dof_handler, constraints, QGaussLobatto<1>(fe.degree + 1), additional_data);
+                system_matrix.initialize(system_mf_storage);
+            }
+
+            system_matrix.initialize_dof_vector(solution);
+            system_matrix.initialize_dof_vector(system_rhs);
+        }
+
+        setup_time += timer.wall_time();
+        time_details << "Setup mf system (cpu/wall): " << timer.cpu_time() << "s/" << timer.wall_time() << "s" << std::endl;
+        timer.restart();
+
+        { 
+            // Initialize all multigrid matrices with correct data
+            const unsigned int nlevels = triangulation.n_global_levels();
+            mg_matrices.resize(0, nlevels - 1);
+
+            std::set<types::boundary_id> dirichlet_boundary_ids;
+            for (const auto &[boundary_id, function] : this->problem.dirichlet_boundaries)
+            {
+                dirichlet_boundary_ids.insert(boundary_id);
+            }
+            
+            mg_constrained_dofs.initialize(dof_handler);
+            mg_constrained_dofs.make_zero_boundary_constraints(dof_handler, dirichlet_boundary_ids);
+
+            for (unsigned int level = 0; level < nlevels; ++level)
+            {
+                AffineConstraints<double> level_constraints(dof_handler.locally_owned_mg_dofs(level), DoFTools::extract_locally_relevant_level_dofs(dof_handler, level));
+
+                for (const types::global_dof_index dof_index : mg_constrained_dofs.get_boundary_indices(level))
+                {
+                    level_constraints.add_line(dof_index);
+                }
+
+                level_constraints.close();
+
+                typename MatrixFree<dim, float>::AdditionalData additional_data;
+                additional_data.tasks_parallel_scheme = MatrixFree<dim, float>::AdditionalData::TasksParallelScheme::partition_color;
+                additional_data.mapping_update_flags = update_gradients | update_JxW_values | update_quadrature_points | update_values;
+                additional_data.mg_level = level;
+                
+                std::shared_ptr<MatrixFree<dim, float>> mg_mf_storage_level = std::make_shared<MatrixFree<dim, float>>();
+                mg_mf_storage_level->reinit(mapping, dof_handler, level_constraints, QGaussLobatto<1>(fe.degree + 1), additional_data);
+
+                mg_matrices[level].initialize(mg_mf_storage_level, mg_constrained_dofs, level);
+            }
+        }
+    }
+}
