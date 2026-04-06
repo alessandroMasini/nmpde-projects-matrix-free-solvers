@@ -12,25 +12,27 @@ main (int argc, char* argv [ ]) {
 
     Utilities::MPI::MPI_InitFinalize mpi_init (argc, argv);
 
-    constexpr double half_pi = M_PI * 0.5;
-
-    ADRProblem<1> problem = {
+    ADRProblem<2> problem = {
         // Functions
-        RealFunction<1>([](const Point<1>& /*p*/) { return 1.0; }),
-        VectorFunction<1>([](const Point<1>& p) {
-            Tensor<1, 1, double> v;
-            v[0] = p[0] - 1.0;
+        RealFunction<2>([](const Point<2>& /*p*/) { return 1.0e-2; }),
+        VectorFunction<2>([](const Point<2>& /*p*/) {
+            Tensor<1, 2, double> v;
+            v[0] = 1.0;
+            v[1] = 1.0;
             return v; 
         }),
-        RealFunction<1>([](const Point<1>& /*p*/) { return 1.0; }),
+        RealFunction<2>([](const Point<2>& /*p*/) { return 1.0; }),
         // TODO: check if just removing time dependencies will make everything fine
-        RealFunction<1>([](const Point<1>& p) {
-        return half_pi * std::sin (half_pi * p[0]);
+        RealFunction<2>([](const Point<2>& p) {
+        return 2*1.0e-2*(M_PI*M_PI) * std::sin (M_PI * p[0]) * std::sin (M_PI * p[1])
+        + M_PI * std::cos (M_PI * p[0]) * std::sin (M_PI * p[1])
+        + M_PI * std::cos (M_PI * p[1]) * std::sin (M_PI * p[0])
+        + std::sin (M_PI * p[0]) * std::sin (M_PI * p[1]);
         }),
 
         // Not used boundaries
-        DirichletBoundaries<1>{},  
-        NeumannBoundaries<1>{},
+        DirichletBoundaries<2>{},  
+        NeumannBoundaries<2>{},
 
         // Mesh
         std::string{},
@@ -53,7 +55,7 @@ main (int argc, char* argv [ ]) {
         1.0e-16
     };
 
-    MatrixBasedADRSolver<1, 2> solver(problem);
+    MatrixBasedADRSolver<2, 2> solver(problem);
     solver.run();
 
     ///////////////////////////////////////////////////////

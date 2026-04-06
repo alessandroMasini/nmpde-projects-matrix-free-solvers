@@ -92,6 +92,7 @@ namespace MFSolver{
 
       pcout << "  Initializing vectors" << std::endl;
       system_rhs.reinit (locally_owned_dofs, MPI_COMM_WORLD);
+      pcout << "DEBUG" << std::endl;
       solution_owned.reinit (locally_owned_dofs, MPI_COMM_WORLD);
       solution.reinit (locally_owned_dofs, locally_relevant_dofs, MPI_COMM_WORLD);
     }

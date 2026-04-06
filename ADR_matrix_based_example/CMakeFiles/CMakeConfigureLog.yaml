@@ -61,8 +61,8 @@ events:
     checks:
       - "Detecting C compiler ABI info"
     directories:
-      source: "/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-rLm4Pn"
-      binary: "/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-rLm4Pn"
+      source: "/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-SqfDUm"
+      binary: "/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-SqfDUm"
     cmakeVariables:
       CMAKE_C_FLAGS: ""
       CMAKE_C_FLAGS_DEBUG: "-g"
@@ -71,13 +71,13 @@ events:
       variable: "CMAKE_C_ABI_COMPILED"
       cached: true
       stdout: |
-        Change Dir: '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-rLm4Pn'
+        Change Dir: '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-SqfDUm'
         
-        Run Build Command(s): /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/cmake -E env VERBOSE=1 /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/gmake -f Makefile cmTC_259e9/fast
-        /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/gmake  -f CMakeFiles/cmTC_259e9.dir/build.make CMakeFiles/cmTC_259e9.dir/build
-        gmake[1]: Entering directory '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-rLm4Pn'
-        Building C object CMakeFiles/cmTC_259e9.dir/CMakeCCompilerABI.c.o
-        /u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/gcc   -v -o CMakeFiles/cmTC_259e9.dir/CMakeCCompilerABI.c.o -c /u/sw/toolchains/gcc-glibc/11.2.0/base/share/cmake-3.28/Modules/CMakeCCompilerABI.c
+        Run Build Command(s): /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/cmake -E env VERBOSE=1 /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/gmake -f Makefile cmTC_bc367/fast
+        /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/gmake  -f CMakeFiles/cmTC_bc367.dir/build.make CMakeFiles/cmTC_bc367.dir/build
+        gmake[1]: Entering directory '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-SqfDUm'
+        Building C object CMakeFiles/cmTC_bc367.dir/CMakeCCompilerABI.c.o
+        /u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/gcc   -v -o CMakeFiles/cmTC_bc367.dir/CMakeCCompilerABI.c.o -c /u/sw/toolchains/gcc-glibc/11.2.0/base/share/cmake-3.28/Modules/CMakeCCompilerABI.c
         Using built-in specs.
         COLLECT_GCC=/u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/gcc
         Target: x86_64-mk-linux
@@ -85,8 +85,8 @@ events:
         Thread model: posix
         Supported LTO compression algorithms: zlib
         gcc version 11.2.0 (mk-2022.0) 
-        COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_259e9.dir/CMakeCCompilerABI.c.o' '-c' '-mtune=generic' '-march=x86-64' '-dumpdir' 'CMakeFiles/cmTC_259e9.dir/'
-         /u/sw/toolchains/gcc-glibc/11.2.0/prefix/libexec/gcc/x86_64-mk-linux/11.2.0/cc1 -quiet -v /u/sw/toolchains/gcc-glibc/11.2.0/base/share/cmake-3.28/Modules/CMakeCCompilerABI.c -quiet -dumpdir CMakeFiles/cmTC_259e9.dir/ -dumpbase CMakeCCompilerABI.c.c -dumpbase-ext .c -mtune=generic -march=x86-64 -version -o /tmp/cc3QWcrt.s
+        COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_bc367.dir/CMakeCCompilerABI.c.o' '-c' '-mtune=generic' '-march=x86-64' '-dumpdir' 'CMakeFiles/cmTC_bc367.dir/'
+         /u/sw/toolchains/gcc-glibc/11.2.0/prefix/libexec/gcc/x86_64-mk-linux/11.2.0/cc1 -quiet -v /u/sw/toolchains/gcc-glibc/11.2.0/base/share/cmake-3.28/Modules/CMakeCCompilerABI.c -quiet -dumpdir CMakeFiles/cmTC_bc367.dir/ -dumpbase CMakeCCompilerABI.c.c -dumpbase-ext .c -mtune=generic -march=x86-64 -version -o /tmp/ccqlQ4Jx.s
         GNU C17 (mk-2022.0) version 11.2.0 (x86_64-mk-linux)
         	compiled by GNU C version 11.2.0, GMP version 6.2.1, MPFR version 4.1.0, MPC version 1.2.1, isl version isl-0.24-GMP
         
@@ -105,15 +105,15 @@ events:
         
         GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072
         Compiler executable checksum: bbb51fd7c61b6cf0d289d5ccc7aaf585
-        COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_259e9.dir/CMakeCCompilerABI.c.o' '-c' '-mtune=generic' '-march=x86-64' '-dumpdir' 'CMakeFiles/cmTC_259e9.dir/'
-         /u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../../../x86_64-mk-linux/bin/as -v --64 -o CMakeFiles/cmTC_259e9.dir/CMakeCCompilerABI.c.o /tmp/cc3QWcrt.s
+        COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_bc367.dir/CMakeCCompilerABI.c.o' '-c' '-mtune=generic' '-march=x86-64' '-dumpdir' 'CMakeFiles/cmTC_bc367.dir/'
+         /u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../../../x86_64-mk-linux/bin/as -v --64 -o CMakeFiles/cmTC_bc367.dir/CMakeCCompilerABI.c.o /tmp/ccqlQ4Jx.s
         GNU assembler version 2.37 (x86_64-mk-linux) using BFD version (mk-2022.0) 2.37
         COMPILER_PATH=/u/sw/toolchains/gcc-glibc/11.2.0/prefix/libexec/gcc/x86_64-mk-linux/11.2.0/:/u/sw/toolchains/gcc-glibc/11.2.0/prefix/libexec/gcc/x86_64-mk-linux/11.2.0/:/u/sw/toolchains/gcc-glibc/11.2.0/prefix/libexec/gcc/x86_64-mk-linux/:/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/:/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/:/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../../../x86_64-mk-linux/bin/
         LIBRARY_PATH=/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/:/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../../../x86_64-mk-linux/lib/../lib/:/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../../../lib/:/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../../../x86_64-mk-linux/lib/:/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../../:/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib:/u/sw/toolchains/gcc-glibc/11.2.0/base/lib
-        COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_259e9.dir/CMakeCCompilerABI.c.o' '-c' '-mtune=generic' '-march=x86-64' '-dumpdir' 'CMakeFiles/cmTC_259e9.dir/CMakeCCompilerABI.c.'
-        Linking C executable cmTC_259e9
-        /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/cmake -E cmake_link_script CMakeFiles/cmTC_259e9.dir/link.txt --verbose=1
-        /u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/gcc  -v CMakeFiles/cmTC_259e9.dir/CMakeCCompilerABI.c.o -o cmTC_259e9 
+        COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_bc367.dir/CMakeCCompilerABI.c.o' '-c' '-mtune=generic' '-march=x86-64' '-dumpdir' 'CMakeFiles/cmTC_bc367.dir/CMakeCCompilerABI.c.'
+        Linking C executable cmTC_bc367
+        /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/cmake -E cmake_link_script CMakeFiles/cmTC_bc367.dir/link.txt --verbose=1
+        /u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/gcc  -v CMakeFiles/cmTC_bc367.dir/CMakeCCompilerABI.c.o -o cmTC_bc367 
         Using built-in specs.
         COLLECT_GCC=/u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/gcc
         COLLECT_LTO_WRAPPER=/u/sw/toolchains/gcc-glibc/11.2.0/prefix/libexec/gcc/x86_64-mk-linux/11.2.0/lto-wrapper
@@ -124,10 +124,10 @@ events:
         gcc version 11.2.0 (mk-2022.0) 
         COMPILER_PATH=/u/sw/toolchains/gcc-glibc/11.2.0/prefix/libexec/gcc/x86_64-mk-linux/11.2.0/:/u/sw/toolchains/gcc-glibc/11.2.0/prefix/libexec/gcc/x86_64-mk-linux/11.2.0/:/u/sw/toolchains/gcc-glibc/11.2.0/prefix/libexec/gcc/x86_64-mk-linux/:/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/:/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/:/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../../../x86_64-mk-linux/bin/
         LIBRARY_PATH=/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/:/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../../../x86_64-mk-linux/lib/../lib/:/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../../../lib/:/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../../../x86_64-mk-linux/lib/:/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../../:/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib:/u/sw/toolchains/gcc-glibc/11.2.0/base/lib
-        COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_259e9' '-mtune=generic' '-march=x86-64' '-dumpdir' 'cmTC_259e9.'
-         /u/sw/toolchains/gcc-glibc/11.2.0/prefix/libexec/gcc/x86_64-mk-linux/11.2.0/collect2 -plugin /u/sw/toolchains/gcc-glibc/11.2.0/prefix/libexec/gcc/x86_64-mk-linux/11.2.0/liblto_plugin.so -plugin-opt=/u/sw/toolchains/gcc-glibc/11.2.0/prefix/libexec/gcc/x86_64-mk-linux/11.2.0/lto-wrapper -plugin-opt=-fresolution=/tmp/cc5TxZkU.res -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_s --eh-frame-hdr -m elf_x86_64 -dynamic-linker /u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/ld-linux-x86-64.so.2 -o cmTC_259e9 /u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../../../lib/crt1.o /u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../../../lib/crti.o /u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/crtbegin.o -L/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0 -L/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../../../x86_64-mk-linux/lib/../lib -L/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../../../lib -L/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../../../x86_64-mk-linux/lib -L/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../.. -L/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib -L/u/sw/toolchains/gcc-glibc/11.2.0/base/lib CMakeFiles/cmTC_259e9.dir/CMakeCCompilerABI.c.o -lgcc --push-state --as-needed -lgcc_s --pop-state -lc -lgcc --push-state --as-needed -lgcc_s --pop-state /u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/crtend.o /u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../../../lib/crtn.o
-        COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_259e9' '-mtune=generic' '-march=x86-64' '-dumpdir' 'cmTC_259e9.'
-        gmake[1]: Leaving directory '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-rLm4Pn'
+        COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_bc367' '-mtune=generic' '-march=x86-64' '-dumpdir' 'cmTC_bc367.'
+         /u/sw/toolchains/gcc-glibc/11.2.0/prefix/libexec/gcc/x86_64-mk-linux/11.2.0/collect2 -plugin /u/sw/toolchains/gcc-glibc/11.2.0/prefix/libexec/gcc/x86_64-mk-linux/11.2.0/liblto_plugin.so -plugin-opt=/u/sw/toolchains/gcc-glibc/11.2.0/prefix/libexec/gcc/x86_64-mk-linux/11.2.0/lto-wrapper -plugin-opt=-fresolution=/tmp/ccdMtH9Q.res -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_s --eh-frame-hdr -m elf_x86_64 -dynamic-linker /u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/ld-linux-x86-64.so.2 -o cmTC_bc367 /u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../../../lib/crt1.o /u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../../../lib/crti.o /u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/crtbegin.o -L/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0 -L/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../../../x86_64-mk-linux/lib/../lib -L/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../../../lib -L/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../../../x86_64-mk-linux/lib -L/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../.. -L/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib -L/u/sw/toolchains/gcc-glibc/11.2.0/base/lib CMakeFiles/cmTC_bc367.dir/CMakeCCompilerABI.c.o -lgcc --push-state --as-needed -lgcc_s --pop-state -lc -lgcc --push-state --as-needed -lgcc_s --pop-state /u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/crtend.o /u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../../../lib/crtn.o
+        COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_bc367' '-mtune=generic' '-march=x86-64' '-dumpdir' 'cmTC_bc367.'
+        gmake[1]: Leaving directory '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-SqfDUm'
         
       exitCode: 0
   -
@@ -161,13 +161,13 @@ events:
     message: |
       Parsed C implicit link information:
         link line regex: [^( *|.*[/\\])(ld|CMAKE_LINK_STARTFILE-NOTFOUND|([^/\\]+-)?ld|collect2)[^/\\]*( |$)]
-        ignore line: [Change Dir: '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-rLm4Pn']
+        ignore line: [Change Dir: '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-SqfDUm']
         ignore line: []
-        ignore line: [Run Build Command(s): /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/cmake -E env VERBOSE=1 /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/gmake -f Makefile cmTC_259e9/fast]
-        ignore line: [/u/sw/toolchains/gcc-glibc/11.2.0/base/bin/gmake  -f CMakeFiles/cmTC_259e9.dir/build.make CMakeFiles/cmTC_259e9.dir/build]
-        ignore line: [gmake[1]: Entering directory '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-rLm4Pn']
-        ignore line: [Building C object CMakeFiles/cmTC_259e9.dir/CMakeCCompilerABI.c.o]
-        ignore line: [/u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/gcc   -v -o CMakeFiles/cmTC_259e9.dir/CMakeCCompilerABI.c.o -c /u/sw/toolchains/gcc-glibc/11.2.0/base/share/cmake-3.28/Modules/CMakeCCompilerABI.c]
+        ignore line: [Run Build Command(s): /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/cmake -E env VERBOSE=1 /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/gmake -f Makefile cmTC_bc367/fast]
+        ignore line: [/u/sw/toolchains/gcc-glibc/11.2.0/base/bin/gmake  -f CMakeFiles/cmTC_bc367.dir/build.make CMakeFiles/cmTC_bc367.dir/build]
+        ignore line: [gmake[1]: Entering directory '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-SqfDUm']
+        ignore line: [Building C object CMakeFiles/cmTC_bc367.dir/CMakeCCompilerABI.c.o]
+        ignore line: [/u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/gcc   -v -o CMakeFiles/cmTC_bc367.dir/CMakeCCompilerABI.c.o -c /u/sw/toolchains/gcc-glibc/11.2.0/base/share/cmake-3.28/Modules/CMakeCCompilerABI.c]
         ignore line: [Using built-in specs.]
         ignore line: [COLLECT_GCC=/u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/gcc]
         ignore line: [Target: x86_64-mk-linux]
@@ -175,8 +175,8 @@ events:
         ignore line: [Thread model: posix]
         ignore line: [Supported LTO compression algorithms: zlib]
         ignore line: [gcc version 11.2.0 (mk-2022.0) ]
-        ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_259e9.dir/CMakeCCompilerABI.c.o' '-c' '-mtune=generic' '-march=x86-64' '-dumpdir' 'CMakeFiles/cmTC_259e9.dir/']
-        ignore line: [ /u/sw/toolchains/gcc-glibc/11.2.0/prefix/libexec/gcc/x86_64-mk-linux/11.2.0/cc1 -quiet -v /u/sw/toolchains/gcc-glibc/11.2.0/base/share/cmake-3.28/Modules/CMakeCCompilerABI.c -quiet -dumpdir CMakeFiles/cmTC_259e9.dir/ -dumpbase CMakeCCompilerABI.c.c -dumpbase-ext .c -mtune=generic -march=x86-64 -version -o /tmp/cc3QWcrt.s]
+        ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_bc367.dir/CMakeCCompilerABI.c.o' '-c' '-mtune=generic' '-march=x86-64' '-dumpdir' 'CMakeFiles/cmTC_bc367.dir/']
+        ignore line: [ /u/sw/toolchains/gcc-glibc/11.2.0/prefix/libexec/gcc/x86_64-mk-linux/11.2.0/cc1 -quiet -v /u/sw/toolchains/gcc-glibc/11.2.0/base/share/cmake-3.28/Modules/CMakeCCompilerABI.c -quiet -dumpdir CMakeFiles/cmTC_bc367.dir/ -dumpbase CMakeCCompilerABI.c.c -dumpbase-ext .c -mtune=generic -march=x86-64 -version -o /tmp/ccqlQ4Jx.s]
         ignore line: [GNU C17 (mk-2022.0) version 11.2.0 (x86_64-mk-linux)]
         ignore line: [	compiled by GNU C version 11.2.0  GMP version 6.2.1  MPFR version 4.1.0  MPC version 1.2.1  isl version isl-0.24-GMP]
         ignore line: []
@@ -195,15 +195,15 @@ events:
         ignore line: []
         ignore line: [GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072]
         ignore line: [Compiler executable checksum: bbb51fd7c61b6cf0d289d5ccc7aaf585]
-        ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_259e9.dir/CMakeCCompilerABI.c.o' '-c' '-mtune=generic' '-march=x86-64' '-dumpdir' 'CMakeFiles/cmTC_259e9.dir/']
-        ignore line: [ /u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../../../x86_64-mk-linux/bin/as -v --64 -o CMakeFiles/cmTC_259e9.dir/CMakeCCompilerABI.c.o /tmp/cc3QWcrt.s]
+        ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_bc367.dir/CMakeCCompilerABI.c.o' '-c' '-mtune=generic' '-march=x86-64' '-dumpdir' 'CMakeFiles/cmTC_bc367.dir/']
+        ignore line: [ /u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../../../x86_64-mk-linux/bin/as -v --64 -o CMakeFiles/cmTC_bc367.dir/CMakeCCompilerABI.c.o /tmp/ccqlQ4Jx.s]
         ignore line: [GNU assembler version 2.37 (x86_64-mk-linux) using BFD version (mk-2022.0) 2.37]
         ignore line: [COMPILER_PATH=/u/sw/toolchains/gcc-glibc/11.2.0/prefix/libexec/gcc/x86_64-mk-linux/11.2.0/:/u/sw/toolchains/gcc-glibc/11.2.0/prefix/libexec/gcc/x86_64-mk-linux/11.2.0/:/u/sw/toolchains/gcc-glibc/11.2.0/prefix/libexec/gcc/x86_64-mk-linux/:/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/:/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/:/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../../../x86_64-mk-linux/bin/]
         ignore line: [LIBRARY_PATH=/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/:/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../../../x86_64-mk-linux/lib/../lib/:/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../../../lib/:/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../../../x86_64-mk-linux/lib/:/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../../:/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib:/u/sw/toolchains/gcc-glibc/11.2.0/base/lib]
-        ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_259e9.dir/CMakeCCompilerABI.c.o' '-c' '-mtune=generic' '-march=x86-64' '-dumpdir' 'CMakeFiles/cmTC_259e9.dir/CMakeCCompilerABI.c.']
-        ignore line: [Linking C executable cmTC_259e9]
-        ignore line: [/u/sw/toolchains/gcc-glibc/11.2.0/base/bin/cmake -E cmake_link_script CMakeFiles/cmTC_259e9.dir/link.txt --verbose=1]
-        ignore line: [/u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/gcc  -v CMakeFiles/cmTC_259e9.dir/CMakeCCompilerABI.c.o -o cmTC_259e9 ]
+        ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_bc367.dir/CMakeCCompilerABI.c.o' '-c' '-mtune=generic' '-march=x86-64' '-dumpdir' 'CMakeFiles/cmTC_bc367.dir/CMakeCCompilerABI.c.']
+        ignore line: [Linking C executable cmTC_bc367]
+        ignore line: [/u/sw/toolchains/gcc-glibc/11.2.0/base/bin/cmake -E cmake_link_script CMakeFiles/cmTC_bc367.dir/link.txt --verbose=1]
+        ignore line: [/u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/gcc  -v CMakeFiles/cmTC_bc367.dir/CMakeCCompilerABI.c.o -o cmTC_bc367 ]
         ignore line: [Using built-in specs.]
         ignore line: [COLLECT_GCC=/u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/gcc]
         ignore line: [COLLECT_LTO_WRAPPER=/u/sw/toolchains/gcc-glibc/11.2.0/prefix/libexec/gcc/x86_64-mk-linux/11.2.0/lto-wrapper]
@@ -214,13 +214,13 @@ events:
         ignore line: [gcc version 11.2.0 (mk-2022.0) ]
         ignore line: [COMPILER_PATH=/u/sw/toolchains/gcc-glibc/11.2.0/prefix/libexec/gcc/x86_64-mk-linux/11.2.0/:/u/sw/toolchains/gcc-glibc/11.2.0/prefix/libexec/gcc/x86_64-mk-linux/11.2.0/:/u/sw/toolchains/gcc-glibc/11.2.0/prefix/libexec/gcc/x86_64-mk-linux/:/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/:/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/:/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../../../x86_64-mk-linux/bin/]
         ignore line: [LIBRARY_PATH=/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/:/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../../../x86_64-mk-linux/lib/../lib/:/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../../../lib/:/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../../../x86_64-mk-linux/lib/:/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../../:/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib:/u/sw/toolchains/gcc-glibc/11.2.0/base/lib]
-        ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_259e9' '-mtune=generic' '-march=x86-64' '-dumpdir' 'cmTC_259e9.']
-        link line: [ /u/sw/toolchains/gcc-glibc/11.2.0/prefix/libexec/gcc/x86_64-mk-linux/11.2.0/collect2 -plugin /u/sw/toolchains/gcc-glibc/11.2.0/prefix/libexec/gcc/x86_64-mk-linux/11.2.0/liblto_plugin.so -plugin-opt=/u/sw/toolchains/gcc-glibc/11.2.0/prefix/libexec/gcc/x86_64-mk-linux/11.2.0/lto-wrapper -plugin-opt=-fresolution=/tmp/cc5TxZkU.res -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_s --eh-frame-hdr -m elf_x86_64 -dynamic-linker /u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/ld-linux-x86-64.so.2 -o cmTC_259e9 /u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../../../lib/crt1.o /u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../../../lib/crti.o /u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/crtbegin.o -L/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0 -L/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../../../x86_64-mk-linux/lib/../lib -L/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../../../lib -L/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../../../x86_64-mk-linux/lib -L/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../.. -L/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib -L/u/sw/toolchains/gcc-glibc/11.2.0/base/lib CMakeFiles/cmTC_259e9.dir/CMakeCCompilerABI.c.o -lgcc --push-state --as-needed -lgcc_s --pop-state -lc -lgcc --push-state --as-needed -lgcc_s --pop-state /u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/crtend.o /u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../../../lib/crtn.o]
+        ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_bc367' '-mtune=generic' '-march=x86-64' '-dumpdir' 'cmTC_bc367.']
+        link line: [ /u/sw/toolchains/gcc-glibc/11.2.0/prefix/libexec/gcc/x86_64-mk-linux/11.2.0/collect2 -plugin /u/sw/toolchains/gcc-glibc/11.2.0/prefix/libexec/gcc/x86_64-mk-linux/11.2.0/liblto_plugin.so -plugin-opt=/u/sw/toolchains/gcc-glibc/11.2.0/prefix/libexec/gcc/x86_64-mk-linux/11.2.0/lto-wrapper -plugin-opt=-fresolution=/tmp/ccdMtH9Q.res -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_s --eh-frame-hdr -m elf_x86_64 -dynamic-linker /u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/ld-linux-x86-64.so.2 -o cmTC_bc367 /u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../../../lib/crt1.o /u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../../../lib/crti.o /u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/crtbegin.o -L/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0 -L/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../../../x86_64-mk-linux/lib/../lib -L/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../../../lib -L/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../../../x86_64-mk-linux/lib -L/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../.. -L/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib -L/u/sw/toolchains/gcc-glibc/11.2.0/base/lib CMakeFiles/cmTC_bc367.dir/CMakeCCompilerABI.c.o -lgcc --push-state --as-needed -lgcc_s --pop-state -lc -lgcc --push-state --as-needed -lgcc_s --pop-state /u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/crtend.o /u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../../../lib/crtn.o]
           arg [/u/sw/toolchains/gcc-glibc/11.2.0/prefix/libexec/gcc/x86_64-mk-linux/11.2.0/collect2] ==> ignore
           arg [-plugin] ==> ignore
           arg [/u/sw/toolchains/gcc-glibc/11.2.0/prefix/libexec/gcc/x86_64-mk-linux/11.2.0/liblto_plugin.so] ==> ignore
           arg [-plugin-opt=/u/sw/toolchains/gcc-glibc/11.2.0/prefix/libexec/gcc/x86_64-mk-linux/11.2.0/lto-wrapper] ==> ignore
-          arg [-plugin-opt=-fresolution=/tmp/cc5TxZkU.res] ==> ignore
+          arg [-plugin-opt=-fresolution=/tmp/ccdMtH9Q.res] ==> ignore
           arg [-plugin-opt=-pass-through=-lgcc] ==> ignore
           arg [-plugin-opt=-pass-through=-lgcc_s] ==> ignore
           arg [-plugin-opt=-pass-through=-lc] ==> ignore
@@ -232,7 +232,7 @@ events:
           arg [-dynamic-linker] ==> ignore
           arg [/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/ld-linux-x86-64.so.2] ==> ignore
           arg [-o] ==> ignore
-          arg [cmTC_259e9] ==> ignore
+          arg [cmTC_bc367] ==> ignore
           arg [/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../../../lib/crt1.o] ==> obj [/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../../../lib/crt1.o]
           arg [/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../../../lib/crti.o] ==> obj [/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../../../lib/crti.o]
           arg [/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/crtbegin.o] ==> obj [/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/crtbegin.o]
@@ -243,7 +243,7 @@ events:
           arg [-L/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../..] ==> dir [/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../..]
           arg [-L/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib] ==> dir [/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib]
           arg [-L/u/sw/toolchains/gcc-glibc/11.2.0/base/lib] ==> dir [/u/sw/toolchains/gcc-glibc/11.2.0/base/lib]
-          arg [CMakeFiles/cmTC_259e9.dir/CMakeCCompilerABI.c.o] ==> ignore
+          arg [CMakeFiles/cmTC_bc367.dir/CMakeCCompilerABI.c.o] ==> ignore
           arg [-lgcc] ==> lib [gcc]
           arg [--push-state] ==> ignore
           arg [--as-needed] ==> ignore
@@ -282,8 +282,8 @@ events:
     checks:
       - "Detecting CXX compiler ABI info"
     directories:
-      source: "/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-qrHPtD"
-      binary: "/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-qrHPtD"
+      source: "/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-5H2a2y"
+      binary: "/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-5H2a2y"
     cmakeVariables:
       CMAKE_CXX_FLAGS: ""
       CMAKE_CXX_FLAGS_DEBUG: "-g"
@@ -292,13 +292,13 @@ events:
       variable: "CMAKE_CXX_ABI_COMPILED"
       cached: true
       stdout: |
-        Change Dir: '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-qrHPtD'
+        Change Dir: '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-5H2a2y'
         
-        Run Build Command(s): /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/cmake -E env VERBOSE=1 /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/gmake -f Makefile cmTC_5f101/fast
-        /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/gmake  -f CMakeFiles/cmTC_5f101.dir/build.make CMakeFiles/cmTC_5f101.dir/build
-        gmake[1]: Entering directory '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-qrHPtD'
-        Building CXX object CMakeFiles/cmTC_5f101.dir/CMakeCXXCompilerABI.cpp.o
-        /u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/g++   -v -o CMakeFiles/cmTC_5f101.dir/CMakeCXXCompilerABI.cpp.o -c /u/sw/toolchains/gcc-glibc/11.2.0/base/share/cmake-3.28/Modules/CMakeCXXCompilerABI.cpp
+        Run Build Command(s): /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/cmake -E env VERBOSE=1 /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/gmake -f Makefile cmTC_a872d/fast
+        /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/gmake  -f CMakeFiles/cmTC_a872d.dir/build.make CMakeFiles/cmTC_a872d.dir/build
+        gmake[1]: Entering directory '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-5H2a2y'
+        Building CXX object CMakeFiles/cmTC_a872d.dir/CMakeCXXCompilerABI.cpp.o
+        /u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/g++   -v -o CMakeFiles/cmTC_a872d.dir/CMakeCXXCompilerABI.cpp.o -c /u/sw/toolchains/gcc-glibc/11.2.0/base/share/cmake-3.28/Modules/CMakeCXXCompilerABI.cpp
         Using built-in specs.
         COLLECT_GCC=/u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/g++
         Target: x86_64-mk-linux
@@ -306,8 +306,8 @@ events:
         Thread model: posix
         Supported LTO compression algorithms: zlib
         gcc version 11.2.0 (mk-2022.0) 
-        COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_5f101.dir/CMakeCXXCompilerABI.cpp.o' '-c' '-shared-libgcc' '-mtune=generic' '-march=x86-64' '-dumpdir' 'CMakeFiles/cmTC_5f101.dir/'
-         /u/sw/toolchains/gcc-glibc/11.2.0/prefix/libexec/gcc/x86_64-mk-linux/11.2.0/cc1plus -quiet -v -D_GNU_SOURCE /u/sw/toolchains/gcc-glibc/11.2.0/base/share/cmake-3.28/Modules/CMakeCXXCompilerABI.cpp -quiet -dumpdir CMakeFiles/cmTC_5f101.dir/ -dumpbase CMakeCXXCompilerABI.cpp.cpp -dumpbase-ext .cpp -mtune=generic -march=x86-64 -version -o /tmp/cc1qAyeJ.s
+        COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_a872d.dir/CMakeCXXCompilerABI.cpp.o' '-c' '-shared-libgcc' '-mtune=generic' '-march=x86-64' '-dumpdir' 'CMakeFiles/cmTC_a872d.dir/'
+         /u/sw/toolchains/gcc-glibc/11.2.0/prefix/libexec/gcc/x86_64-mk-linux/11.2.0/cc1plus -quiet -v -D_GNU_SOURCE /u/sw/toolchains/gcc-glibc/11.2.0/base/share/cmake-3.28/Modules/CMakeCXXCompilerABI.cpp -quiet -dumpdir CMakeFiles/cmTC_a872d.dir/ -dumpbase CMakeCXXCompilerABI.cpp.cpp -dumpbase-ext .cpp -mtune=generic -march=x86-64 -version -o /tmp/ccudIilu.s
         GNU C++17 (mk-2022.0) version 11.2.0 (x86_64-mk-linux)
         	compiled by GNU C version 11.2.0, GMP version 6.2.1, MPFR version 4.1.0, MPC version 1.2.1, isl version isl-0.24-GMP
         
@@ -329,15 +329,15 @@ events:
         
         GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072
         Compiler executable checksum: b49bf3a3f1e4ffc0069790508a65e0b5
-        COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_5f101.dir/CMakeCXXCompilerABI.cpp.o' '-c' '-shared-libgcc' '-mtune=generic' '-march=x86-64' '-dumpdir' 'CMakeFiles/cmTC_5f101.dir/'
-         /u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../../../x86_64-mk-linux/bin/as -v --64 -o CMakeFiles/cmTC_5f101.dir/CMakeCXXCompilerABI.cpp.o /tmp/cc1qAyeJ.s
+        COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_a872d.dir/CMakeCXXCompilerABI.cpp.o' '-c' '-shared-libgcc' '-mtune=generic' '-march=x86-64' '-dumpdir' 'CMakeFiles/cmTC_a872d.dir/'
+         /u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../../../x86_64-mk-linux/bin/as -v --64 -o CMakeFiles/cmTC_a872d.dir/CMakeCXXCompilerABI.cpp.o /tmp/ccudIilu.s
         GNU assembler version 2.37 (x86_64-mk-linux) using BFD version (mk-2022.0) 2.37
         COMPILER_PATH=/u/sw/toolchains/gcc-glibc/11.2.0/prefix/libexec/gcc/x86_64-mk-linux/11.2.0/:/u/sw/toolchains/gcc-glibc/11.2.0/prefix/libexec/gcc/x86_64-mk-linux/11.2.0/:/u/sw/toolchains/gcc-glibc/11.2.0/prefix/libexec/gcc/x86_64-mk-linux/:/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/:/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/:/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../../../x86_64-mk-linux/bin/
         LIBRARY_PATH=/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/:/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../../../x86_64-mk-linux/lib/../lib/:/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../../../lib/:/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../../../x86_64-mk-linux/lib/:/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../../:/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib:/u/sw/toolchains/gcc-glibc/11.2.0/base/lib
-        COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_5f101.dir/CMakeCXXCompilerABI.cpp.o' '-c' '-shared-libgcc' '-mtune=generic' '-march=x86-64' '-dumpdir' 'CMakeFiles/cmTC_5f101.dir/CMakeCXXCompilerABI.cpp.'
-        Linking CXX executable cmTC_5f101
-        /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/cmake -E cmake_link_script CMakeFiles/cmTC_5f101.dir/link.txt --verbose=1
-        /u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/g++  -v CMakeFiles/cmTC_5f101.dir/CMakeCXXCompilerABI.cpp.o -o cmTC_5f101 
+        COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_a872d.dir/CMakeCXXCompilerABI.cpp.o' '-c' '-shared-libgcc' '-mtune=generic' '-march=x86-64' '-dumpdir' 'CMakeFiles/cmTC_a872d.dir/CMakeCXXCompilerABI.cpp.'
+        Linking CXX executable cmTC_a872d
+        /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/cmake -E cmake_link_script CMakeFiles/cmTC_a872d.dir/link.txt --verbose=1
+        /u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/g++  -v CMakeFiles/cmTC_a872d.dir/CMakeCXXCompilerABI.cpp.o -o cmTC_a872d 
         Using built-in specs.
         COLLECT_GCC=/u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/g++
         COLLECT_LTO_WRAPPER=/u/sw/toolchains/gcc-glibc/11.2.0/prefix/libexec/gcc/x86_64-mk-linux/11.2.0/lto-wrapper
@@ -348,10 +348,10 @@ events:
         gcc version 11.2.0 (mk-2022.0) 
         COMPILER_PATH=/u/sw/toolchains/gcc-glibc/11.2.0/prefix/libexec/gcc/x86_64-mk-linux/11.2.0/:/u/sw/toolchains/gcc-glibc/11.2.0/prefix/libexec/gcc/x86_64-mk-linux/11.2.0/:/u/sw/toolchains/gcc-glibc/11.2.0/prefix/libexec/gcc/x86_64-mk-linux/:/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/:/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/:/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../../../x86_64-mk-linux/bin/
         LIBRARY_PATH=/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/:/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../../../x86_64-mk-linux/lib/../lib/:/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../../../lib/:/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../../../x86_64-mk-linux/lib/:/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../../:/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib:/u/sw/toolchains/gcc-glibc/11.2.0/base/lib
-        COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_5f101' '-shared-libgcc' '-mtune=generic' '-march=x86-64' '-dumpdir' 'cmTC_5f101.'
-         /u/sw/toolchains/gcc-glibc/11.2.0/prefix/libexec/gcc/x86_64-mk-linux/11.2.0/collect2 -plugin /u/sw/toolchains/gcc-glibc/11.2.0/prefix/libexec/gcc/x86_64-mk-linux/11.2.0/liblto_plugin.so -plugin-opt=/u/sw/toolchains/gcc-glibc/11.2.0/prefix/libexec/gcc/x86_64-mk-linux/11.2.0/lto-wrapper -plugin-opt=-fresolution=/tmp/cc4dgc6a.res -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc --eh-frame-hdr -m elf_x86_64 -dynamic-linker /u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/ld-linux-x86-64.so.2 -o cmTC_5f101 /u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../../../lib/crt1.o /u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../../../lib/crti.o /u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/crtbegin.o -L/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0 -L/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../../../x86_64-mk-linux/lib/../lib -L/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../../../lib -L/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../../../x86_64-mk-linux/lib -L/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../.. -L/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib -L/u/sw/toolchains/gcc-glibc/11.2.0/base/lib CMakeFiles/cmTC_5f101.dir/CMakeCXXCompilerABI.cpp.o -lstdc++ -lm -lgcc_s -lgcc -lc -lgcc_s -lgcc /u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/crtend.o /u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../../../lib/crtn.o
-        COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_5f101' '-shared-libgcc' '-mtune=generic' '-march=x86-64' '-dumpdir' 'cmTC_5f101.'
-        gmake[1]: Leaving directory '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-qrHPtD'
+        COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_a872d' '-shared-libgcc' '-mtune=generic' '-march=x86-64' '-dumpdir' 'cmTC_a872d.'
+         /u/sw/toolchains/gcc-glibc/11.2.0/prefix/libexec/gcc/x86_64-mk-linux/11.2.0/collect2 -plugin /u/sw/toolchains/gcc-glibc/11.2.0/prefix/libexec/gcc/x86_64-mk-linux/11.2.0/liblto_plugin.so -plugin-opt=/u/sw/toolchains/gcc-glibc/11.2.0/prefix/libexec/gcc/x86_64-mk-linux/11.2.0/lto-wrapper -plugin-opt=-fresolution=/tmp/ccFAO1z4.res -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc --eh-frame-hdr -m elf_x86_64 -dynamic-linker /u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/ld-linux-x86-64.so.2 -o cmTC_a872d /u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../../../lib/crt1.o /u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../../../lib/crti.o /u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/crtbegin.o -L/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0 -L/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../../../x86_64-mk-linux/lib/../lib -L/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../../../lib -L/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../../../x86_64-mk-linux/lib -L/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../.. -L/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib -L/u/sw/toolchains/gcc-glibc/11.2.0/base/lib CMakeFiles/cmTC_a872d.dir/CMakeCXXCompilerABI.cpp.o -lstdc++ -lm -lgcc_s -lgcc -lc -lgcc_s -lgcc /u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/crtend.o /u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../../../lib/crtn.o
+        COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_a872d' '-shared-libgcc' '-mtune=generic' '-march=x86-64' '-dumpdir' 'cmTC_a872d.'
+        gmake[1]: Leaving directory '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-5H2a2y'
         
       exitCode: 0
   -
@@ -391,13 +391,13 @@ events:
     message: |
       Parsed CXX implicit link information:
         link line regex: [^( *|.*[/\\])(ld|CMAKE_LINK_STARTFILE-NOTFOUND|([^/\\]+-)?ld|collect2)[^/\\]*( |$)]
-        ignore line: [Change Dir: '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-qrHPtD']
+        ignore line: [Change Dir: '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-5H2a2y']
         ignore line: []
-        ignore line: [Run Build Command(s): /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/cmake -E env VERBOSE=1 /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/gmake -f Makefile cmTC_5f101/fast]
-        ignore line: [/u/sw/toolchains/gcc-glibc/11.2.0/base/bin/gmake  -f CMakeFiles/cmTC_5f101.dir/build.make CMakeFiles/cmTC_5f101.dir/build]
-        ignore line: [gmake[1]: Entering directory '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-qrHPtD']
-        ignore line: [Building CXX object CMakeFiles/cmTC_5f101.dir/CMakeCXXCompilerABI.cpp.o]
-        ignore line: [/u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/g++   -v -o CMakeFiles/cmTC_5f101.dir/CMakeCXXCompilerABI.cpp.o -c /u/sw/toolchains/gcc-glibc/11.2.0/base/share/cmake-3.28/Modules/CMakeCXXCompilerABI.cpp]
+        ignore line: [Run Build Command(s): /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/cmake -E env VERBOSE=1 /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/gmake -f Makefile cmTC_a872d/fast]
+        ignore line: [/u/sw/toolchains/gcc-glibc/11.2.0/base/bin/gmake  -f CMakeFiles/cmTC_a872d.dir/build.make CMakeFiles/cmTC_a872d.dir/build]
+        ignore line: [gmake[1]: Entering directory '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-5H2a2y']
+        ignore line: [Building CXX object CMakeFiles/cmTC_a872d.dir/CMakeCXXCompilerABI.cpp.o]
+        ignore line: [/u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/g++   -v -o CMakeFiles/cmTC_a872d.dir/CMakeCXXCompilerABI.cpp.o -c /u/sw/toolchains/gcc-glibc/11.2.0/base/share/cmake-3.28/Modules/CMakeCXXCompilerABI.cpp]
         ignore line: [Using built-in specs.]
         ignore line: [COLLECT_GCC=/u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/g++]
         ignore line: [Target: x86_64-mk-linux]
@@ -405,8 +405,8 @@ events:
         ignore line: [Thread model: posix]
         ignore line: [Supported LTO compression algorithms: zlib]
         ignore line: [gcc version 11.2.0 (mk-2022.0) ]
-        ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_5f101.dir/CMakeCXXCompilerABI.cpp.o' '-c' '-shared-libgcc' '-mtune=generic' '-march=x86-64' '-dumpdir' 'CMakeFiles/cmTC_5f101.dir/']
-        ignore line: [ /u/sw/toolchains/gcc-glibc/11.2.0/prefix/libexec/gcc/x86_64-mk-linux/11.2.0/cc1plus -quiet -v -D_GNU_SOURCE /u/sw/toolchains/gcc-glibc/11.2.0/base/share/cmake-3.28/Modules/CMakeCXXCompilerABI.cpp -quiet -dumpdir CMakeFiles/cmTC_5f101.dir/ -dumpbase CMakeCXXCompilerABI.cpp.cpp -dumpbase-ext .cpp -mtune=generic -march=x86-64 -version -o /tmp/cc1qAyeJ.s]
+        ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_a872d.dir/CMakeCXXCompilerABI.cpp.o' '-c' '-shared-libgcc' '-mtune=generic' '-march=x86-64' '-dumpdir' 'CMakeFiles/cmTC_a872d.dir/']
+        ignore line: [ /u/sw/toolchains/gcc-glibc/11.2.0/prefix/libexec/gcc/x86_64-mk-linux/11.2.0/cc1plus -quiet -v -D_GNU_SOURCE /u/sw/toolchains/gcc-glibc/11.2.0/base/share/cmake-3.28/Modules/CMakeCXXCompilerABI.cpp -quiet -dumpdir CMakeFiles/cmTC_a872d.dir/ -dumpbase CMakeCXXCompilerABI.cpp.cpp -dumpbase-ext .cpp -mtune=generic -march=x86-64 -version -o /tmp/ccudIilu.s]
         ignore line: [GNU C++17 (mk-2022.0) version 11.2.0 (x86_64-mk-linux)]
         ignore line: [	compiled by GNU C version 11.2.0  GMP version 6.2.1  MPFR version 4.1.0  MPC version 1.2.1  isl version isl-0.24-GMP]
         ignore line: []
@@ -428,15 +428,15 @@ events:
         ignore line: []
         ignore line: [GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072]
         ignore line: [Compiler executable checksum: b49bf3a3f1e4ffc0069790508a65e0b5]
-        ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_5f101.dir/CMakeCXXCompilerABI.cpp.o' '-c' '-shared-libgcc' '-mtune=generic' '-march=x86-64' '-dumpdir' 'CMakeFiles/cmTC_5f101.dir/']
-        ignore line: [ /u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../../../x86_64-mk-linux/bin/as -v --64 -o CMakeFiles/cmTC_5f101.dir/CMakeCXXCompilerABI.cpp.o /tmp/cc1qAyeJ.s]
+        ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_a872d.dir/CMakeCXXCompilerABI.cpp.o' '-c' '-shared-libgcc' '-mtune=generic' '-march=x86-64' '-dumpdir' 'CMakeFiles/cmTC_a872d.dir/']
+        ignore line: [ /u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../../../x86_64-mk-linux/bin/as -v --64 -o CMakeFiles/cmTC_a872d.dir/CMakeCXXCompilerABI.cpp.o /tmp/ccudIilu.s]
         ignore line: [GNU assembler version 2.37 (x86_64-mk-linux) using BFD version (mk-2022.0) 2.37]
         ignore line: [COMPILER_PATH=/u/sw/toolchains/gcc-glibc/11.2.0/prefix/libexec/gcc/x86_64-mk-linux/11.2.0/:/u/sw/toolchains/gcc-glibc/11.2.0/prefix/libexec/gcc/x86_64-mk-linux/11.2.0/:/u/sw/toolchains/gcc-glibc/11.2.0/prefix/libexec/gcc/x86_64-mk-linux/:/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/:/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/:/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../../../x86_64-mk-linux/bin/]
         ignore line: [LIBRARY_PATH=/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/:/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../../../x86_64-mk-linux/lib/../lib/:/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../../../lib/:/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../../../x86_64-mk-linux/lib/:/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../../:/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib:/u/sw/toolchains/gcc-glibc/11.2.0/base/lib]
-        ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_5f101.dir/CMakeCXXCompilerABI.cpp.o' '-c' '-shared-libgcc' '-mtune=generic' '-march=x86-64' '-dumpdir' 'CMakeFiles/cmTC_5f101.dir/CMakeCXXCompilerABI.cpp.']
-        ignore line: [Linking CXX executable cmTC_5f101]
-        ignore line: [/u/sw/toolchains/gcc-glibc/11.2.0/base/bin/cmake -E cmake_link_script CMakeFiles/cmTC_5f101.dir/link.txt --verbose=1]
-        ignore line: [/u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/g++  -v CMakeFiles/cmTC_5f101.dir/CMakeCXXCompilerABI.cpp.o -o cmTC_5f101 ]
+        ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_a872d.dir/CMakeCXXCompilerABI.cpp.o' '-c' '-shared-libgcc' '-mtune=generic' '-march=x86-64' '-dumpdir' 'CMakeFiles/cmTC_a872d.dir/CMakeCXXCompilerABI.cpp.']
+        ignore line: [Linking CXX executable cmTC_a872d]
+        ignore line: [/u/sw/toolchains/gcc-glibc/11.2.0/base/bin/cmake -E cmake_link_script CMakeFiles/cmTC_a872d.dir/link.txt --verbose=1]
+        ignore line: [/u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/g++  -v CMakeFiles/cmTC_a872d.dir/CMakeCXXCompilerABI.cpp.o -o cmTC_a872d ]
         ignore line: [Using built-in specs.]
         ignore line: [COLLECT_GCC=/u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/g++]
         ignore line: [COLLECT_LTO_WRAPPER=/u/sw/toolchains/gcc-glibc/11.2.0/prefix/libexec/gcc/x86_64-mk-linux/11.2.0/lto-wrapper]
@@ -447,13 +447,13 @@ events:
         ignore line: [gcc version 11.2.0 (mk-2022.0) ]
         ignore line: [COMPILER_PATH=/u/sw/toolchains/gcc-glibc/11.2.0/prefix/libexec/gcc/x86_64-mk-linux/11.2.0/:/u/sw/toolchains/gcc-glibc/11.2.0/prefix/libexec/gcc/x86_64-mk-linux/11.2.0/:/u/sw/toolchains/gcc-glibc/11.2.0/prefix/libexec/gcc/x86_64-mk-linux/:/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/:/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/:/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../../../x86_64-mk-linux/bin/]
         ignore line: [LIBRARY_PATH=/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/:/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../../../x86_64-mk-linux/lib/../lib/:/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../../../lib/:/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../../../x86_64-mk-linux/lib/:/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../../:/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib:/u/sw/toolchains/gcc-glibc/11.2.0/base/lib]
-        ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_5f101' '-shared-libgcc' '-mtune=generic' '-march=x86-64' '-dumpdir' 'cmTC_5f101.']
-        link line: [ /u/sw/toolchains/gcc-glibc/11.2.0/prefix/libexec/gcc/x86_64-mk-linux/11.2.0/collect2 -plugin /u/sw/toolchains/gcc-glibc/11.2.0/prefix/libexec/gcc/x86_64-mk-linux/11.2.0/liblto_plugin.so -plugin-opt=/u/sw/toolchains/gcc-glibc/11.2.0/prefix/libexec/gcc/x86_64-mk-linux/11.2.0/lto-wrapper -plugin-opt=-fresolution=/tmp/cc4dgc6a.res -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc --eh-frame-hdr -m elf_x86_64 -dynamic-linker /u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/ld-linux-x86-64.so.2 -o cmTC_5f101 /u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../../../lib/crt1.o /u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../../../lib/crti.o /u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/crtbegin.o -L/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0 -L/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../../../x86_64-mk-linux/lib/../lib -L/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../../../lib -L/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../../../x86_64-mk-linux/lib -L/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../.. -L/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib -L/u/sw/toolchains/gcc-glibc/11.2.0/base/lib CMakeFiles/cmTC_5f101.dir/CMakeCXXCompilerABI.cpp.o -lstdc++ -lm -lgcc_s -lgcc -lc -lgcc_s -lgcc /u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/crtend.o /u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../../../lib/crtn.o]
+        ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_a872d' '-shared-libgcc' '-mtune=generic' '-march=x86-64' '-dumpdir' 'cmTC_a872d.']
+        link line: [ /u/sw/toolchains/gcc-glibc/11.2.0/prefix/libexec/gcc/x86_64-mk-linux/11.2.0/collect2 -plugin /u/sw/toolchains/gcc-glibc/11.2.0/prefix/libexec/gcc/x86_64-mk-linux/11.2.0/liblto_plugin.so -plugin-opt=/u/sw/toolchains/gcc-glibc/11.2.0/prefix/libexec/gcc/x86_64-mk-linux/11.2.0/lto-wrapper -plugin-opt=-fresolution=/tmp/ccFAO1z4.res -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc --eh-frame-hdr -m elf_x86_64 -dynamic-linker /u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/ld-linux-x86-64.so.2 -o cmTC_a872d /u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../../../lib/crt1.o /u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../../../lib/crti.o /u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/crtbegin.o -L/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0 -L/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../../../x86_64-mk-linux/lib/../lib -L/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../../../lib -L/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../../../x86_64-mk-linux/lib -L/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../.. -L/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib -L/u/sw/toolchains/gcc-glibc/11.2.0/base/lib CMakeFiles/cmTC_a872d.dir/CMakeCXXCompilerABI.cpp.o -lstdc++ -lm -lgcc_s -lgcc -lc -lgcc_s -lgcc /u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/crtend.o /u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../../../lib/crtn.o]
           arg [/u/sw/toolchains/gcc-glibc/11.2.0/prefix/libexec/gcc/x86_64-mk-linux/11.2.0/collect2] ==> ignore
           arg [-plugin] ==> ignore
           arg [/u/sw/toolchains/gcc-glibc/11.2.0/prefix/libexec/gcc/x86_64-mk-linux/11.2.0/liblto_plugin.so] ==> ignore
           arg [-plugin-opt=/u/sw/toolchains/gcc-glibc/11.2.0/prefix/libexec/gcc/x86_64-mk-linux/11.2.0/lto-wrapper] ==> ignore
-          arg [-plugin-opt=-fresolution=/tmp/cc4dgc6a.res] ==> ignore
+          arg [-plugin-opt=-fresolution=/tmp/ccFAO1z4.res] ==> ignore
           arg [-plugin-opt=-pass-through=-lgcc_s] ==> ignore
           arg [-plugin-opt=-pass-through=-lgcc] ==> ignore
           arg [-plugin-opt=-pass-through=-lc] ==> ignore
@@ -465,7 +465,7 @@ events:
           arg [-dynamic-linker] ==> ignore
           arg [/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/ld-linux-x86-64.so.2] ==> ignore
           arg [-o] ==> ignore
-          arg [cmTC_5f101] ==> ignore
+          arg [cmTC_a872d] ==> ignore
           arg [/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../../../lib/crt1.o] ==> obj [/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../../../lib/crt1.o]
           arg [/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../../../lib/crti.o] ==> obj [/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../../../lib/crti.o]
           arg [/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/crtbegin.o] ==> obj [/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/crtbegin.o]
@@ -476,7 +476,7 @@ events:
           arg [-L/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../..] ==> dir [/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib/gcc/x86_64-mk-linux/11.2.0/../../..]
           arg [-L/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib] ==> dir [/u/sw/toolchains/gcc-glibc/11.2.0/prefix/lib]
           arg [-L/u/sw/toolchains/gcc-glibc/11.2.0/base/lib] ==> dir [/u/sw/toolchains/gcc-glibc/11.2.0/base/lib]
-          arg [CMakeFiles/cmTC_5f101.dir/CMakeCXXCompilerABI.cpp.o] ==> ignore
+          arg [CMakeFiles/cmTC_a872d.dir/CMakeCXXCompilerABI.cpp.o] ==> ignore
           arg [-lstdc++] ==> lib [stdc++]
           arg [-lm] ==> lib [m]
           arg [-lgcc_s] ==> lib [gcc_s]
@@ -512,8 +512,8 @@ events:
       - "CMakeLists.txt:4 (include)"
     description: "The MPI test test_mpi for C in mode normal"
     directories:
-      source: "/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-1XSJj0"
-      binary: "/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-1XSJj0"
+      source: "/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-PCnTke"
+      binary: "/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-PCnTke"
     cmakeVariables:
       CMAKE_C_FLAGS: ""
       CMAKE_C_FLAGS_DEBUG: "-g"
@@ -522,17 +522,17 @@ events:
       variable: "MPI_RESULT_C_test_mpi_normal"
       cached: true
       stdout: |
-        Change Dir: '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-1XSJj0'
+        Change Dir: '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-PCnTke'
         
-        Run Build Command(s): /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/cmake -E env VERBOSE=1 /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/gmake -f Makefile cmTC_57a66/fast
-        /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/gmake  -f CMakeFiles/cmTC_57a66.dir/build.make CMakeFiles/cmTC_57a66.dir/build
-        gmake[1]: Entering directory '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-1XSJj0'
-        Building C object CMakeFiles/cmTC_57a66.dir/test_mpi.c.o
-        /u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/gcc   -pthread -o CMakeFiles/cmTC_57a66.dir/test_mpi.c.o -c /home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-1XSJj0/test_mpi.c
-        Linking C executable cmTC_57a66
-        /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/cmake -E cmake_link_script CMakeFiles/cmTC_57a66.dir/link.txt --verbose=1
-        /u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/gcc -Wl,-rpath -Wl,/u/sw/toolchains/gcc-glibc/11.2.0/base/lib -Wl,-rpath -Wl,/u/sw/toolchains/gcc-glibc/11.2.0/base/lib -Wl,--enable-new-dtags -pthread CMakeFiles/cmTC_57a66.dir/test_mpi.c.o -o cmTC_57a66  /u/sw/toolchains/gcc-glibc/11.2.0/base/lib/libmpi.so 
-        gmake[1]: Leaving directory '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-1XSJj0'
+        Run Build Command(s): /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/cmake -E env VERBOSE=1 /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/gmake -f Makefile cmTC_c0ac3/fast
+        /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/gmake  -f CMakeFiles/cmTC_c0ac3.dir/build.make CMakeFiles/cmTC_c0ac3.dir/build
+        gmake[1]: Entering directory '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-PCnTke'
+        Building C object CMakeFiles/cmTC_c0ac3.dir/test_mpi.c.o
+        /u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/gcc   -pthread -o CMakeFiles/cmTC_c0ac3.dir/test_mpi.c.o -c /home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-PCnTke/test_mpi.c
+        Linking C executable cmTC_c0ac3
+        /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/cmake -E cmake_link_script CMakeFiles/cmTC_c0ac3.dir/link.txt --verbose=1
+        /u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/gcc -Wl,-rpath -Wl,/u/sw/toolchains/gcc-glibc/11.2.0/base/lib -Wl,-rpath -Wl,/u/sw/toolchains/gcc-glibc/11.2.0/base/lib -Wl,--enable-new-dtags -pthread CMakeFiles/cmTC_c0ac3.dir/test_mpi.c.o -o cmTC_c0ac3  /u/sw/toolchains/gcc-glibc/11.2.0/base/lib/libmpi.so 
+        gmake[1]: Leaving directory '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-PCnTke'
         
       exitCode: 0
   -
@@ -545,8 +545,8 @@ events:
       - "CMakeLists.txt:4 (include)"
     description: "The MPI test test_mpi for CXX in mode normal"
     directories:
-      source: "/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-pfZNhZ"
-      binary: "/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-pfZNhZ"
+      source: "/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-TYmrub"
+      binary: "/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-TYmrub"
     cmakeVariables:
       CMAKE_CXX_FLAGS: ""
       CMAKE_CXX_FLAGS_DEBUG: "-g"
@@ -555,17 +555,17 @@ events:
       variable: "MPI_RESULT_CXX_test_mpi_normal"
       cached: true
       stdout: |
-        Change Dir: '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-pfZNhZ'
+        Change Dir: '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-TYmrub'
         
-        Run Build Command(s): /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/cmake -E env VERBOSE=1 /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/gmake -f Makefile cmTC_2832e/fast
-        /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/gmake  -f CMakeFiles/cmTC_2832e.dir/build.make CMakeFiles/cmTC_2832e.dir/build
-        gmake[1]: Entering directory '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-pfZNhZ'
-        Building CXX object CMakeFiles/cmTC_2832e.dir/test_mpi.cpp.o
-        /u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/g++   -std=gnu++17 -pthread -o CMakeFiles/cmTC_2832e.dir/test_mpi.cpp.o -c /home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-pfZNhZ/test_mpi.cpp
-        Linking CXX executable cmTC_2832e
-        /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/cmake -E cmake_link_script CMakeFiles/cmTC_2832e.dir/link.txt --verbose=1
-        /u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/g++ -Wl,-rpath -Wl,/u/sw/toolchains/gcc-glibc/11.2.0/base/lib -Wl,-rpath -Wl,/u/sw/toolchains/gcc-glibc/11.2.0/base/lib -Wl,--enable-new-dtags -pthread CMakeFiles/cmTC_2832e.dir/test_mpi.cpp.o -o cmTC_2832e  /u/sw/toolchains/gcc-glibc/11.2.0/base/lib/libmpi.so 
-        gmake[1]: Leaving directory '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-pfZNhZ'
+        Run Build Command(s): /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/cmake -E env VERBOSE=1 /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/gmake -f Makefile cmTC_1a2d0/fast
+        /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/gmake  -f CMakeFiles/cmTC_1a2d0.dir/build.make CMakeFiles/cmTC_1a2d0.dir/build
+        gmake[1]: Entering directory '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-TYmrub'
+        Building CXX object CMakeFiles/cmTC_1a2d0.dir/test_mpi.cpp.o
+        /u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/g++   -std=gnu++17 -pthread -o CMakeFiles/cmTC_1a2d0.dir/test_mpi.cpp.o -c /home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-TYmrub/test_mpi.cpp
+        Linking CXX executable cmTC_1a2d0
+        /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/cmake -E cmake_link_script CMakeFiles/cmTC_1a2d0.dir/link.txt --verbose=1
+        /u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/g++ -Wl,-rpath -Wl,/u/sw/toolchains/gcc-glibc/11.2.0/base/lib -Wl,-rpath -Wl,/u/sw/toolchains/gcc-glibc/11.2.0/base/lib -Wl,--enable-new-dtags -pthread CMakeFiles/cmTC_1a2d0.dir/test_mpi.cpp.o -o cmTC_1a2d0  /u/sw/toolchains/gcc-glibc/11.2.0/base/lib/libmpi.so 
+        gmake[1]: Leaving directory '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-TYmrub'
         
       exitCode: 0
   -
@@ -577,8 +577,8 @@ events:
       - "CMakeLists.txt:4 (include)"
     description: "The MPI test test_mpi for CXX in mode MPICXX"
     directories:
-      source: "/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-7MHwjI"
-      binary: "/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-7MHwjI"
+      source: "/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-NvKv2J"
+      binary: "/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-NvKv2J"
     cmakeVariables:
       CMAKE_CXX_FLAGS: ""
       CMAKE_CXX_FLAGS_DEBUG: "-g"
@@ -587,17 +587,17 @@ events:
       variable: "MPI_RESULT_CXX_test_mpi_MPICXX"
       cached: true
       stdout: |
-        Change Dir: '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-7MHwjI'
+        Change Dir: '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-NvKv2J'
         
-        Run Build Command(s): /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/cmake -E env VERBOSE=1 /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/gmake -f Makefile cmTC_dc4e2/fast
-        /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/gmake  -f CMakeFiles/cmTC_dc4e2.dir/build.make CMakeFiles/cmTC_dc4e2.dir/build
-        gmake[1]: Entering directory '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-7MHwjI'
-        Building CXX object CMakeFiles/cmTC_dc4e2.dir/test_mpi.cpp.o
-        /u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/g++   -std=gnu++17 -pthread -o CMakeFiles/cmTC_dc4e2.dir/test_mpi.cpp.o -c /home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-7MHwjI/test_mpi.cpp
-        Linking CXX executable cmTC_dc4e2
-        /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/cmake -E cmake_link_script CMakeFiles/cmTC_dc4e2.dir/link.txt --verbose=1
-        /u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/g++ -Wl,-rpath -Wl,/u/sw/toolchains/gcc-glibc/11.2.0/base/lib -Wl,-rpath -Wl,/u/sw/toolchains/gcc-glibc/11.2.0/base/lib -Wl,--enable-new-dtags -pthread CMakeFiles/cmTC_dc4e2.dir/test_mpi.cpp.o -o cmTC_dc4e2  /u/sw/toolchains/gcc-glibc/11.2.0/base/lib/libmpi.so 
-        gmake[1]: Leaving directory '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-7MHwjI'
+        Run Build Command(s): /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/cmake -E env VERBOSE=1 /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/gmake -f Makefile cmTC_7b31f/fast
+        /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/gmake  -f CMakeFiles/cmTC_7b31f.dir/build.make CMakeFiles/cmTC_7b31f.dir/build
+        gmake[1]: Entering directory '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-NvKv2J'
+        Building CXX object CMakeFiles/cmTC_7b31f.dir/test_mpi.cpp.o
+        /u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/g++   -std=gnu++17 -pthread -o CMakeFiles/cmTC_7b31f.dir/test_mpi.cpp.o -c /home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-NvKv2J/test_mpi.cpp
+        Linking CXX executable cmTC_7b31f
+        /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/cmake -E cmake_link_script CMakeFiles/cmTC_7b31f.dir/link.txt --verbose=1
+        /u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/g++ -Wl,-rpath -Wl,/u/sw/toolchains/gcc-glibc/11.2.0/base/lib -Wl,-rpath -Wl,/u/sw/toolchains/gcc-glibc/11.2.0/base/lib -Wl,--enable-new-dtags -pthread CMakeFiles/cmTC_7b31f.dir/test_mpi.cpp.o -o cmTC_7b31f  /u/sw/toolchains/gcc-glibc/11.2.0/base/lib/libmpi.so 
+        gmake[1]: Leaving directory '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-NvKv2J'
         
       exitCode: 0
 ...
@@ -614,8 +614,8 @@ events:
       - "CMakeLists.txt:4 (include)"
     description: "The MPI test test_mpi for C in mode normal"
     directories:
-      source: "/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-6jmeOF"
-      binary: "/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-6jmeOF"
+      source: "/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-9EJK0h"
+      binary: "/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-9EJK0h"
     cmakeVariables:
       CMAKE_C_FLAGS: ""
       CMAKE_C_FLAGS_DEBUG: "-g"
@@ -624,17 +624,17 @@ events:
       variable: "MPI_RESULT_C_test_mpi_normal"
       cached: true
       stdout: |
-        Change Dir: '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-6jmeOF'
+        Change Dir: '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-9EJK0h'
         
-        Run Build Command(s): /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/cmake -E env VERBOSE=1 /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/gmake -f Makefile cmTC_8f791/fast
-        /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/gmake  -f CMakeFiles/cmTC_8f791.dir/build.make CMakeFiles/cmTC_8f791.dir/build
-        gmake[1]: Entering directory '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-6jmeOF'
-        Building C object CMakeFiles/cmTC_8f791.dir/test_mpi.c.o
-        /u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/gcc   -pthread -o CMakeFiles/cmTC_8f791.dir/test_mpi.c.o -c /home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-6jmeOF/test_mpi.c
-        Linking C executable cmTC_8f791
-        /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/cmake -E cmake_link_script CMakeFiles/cmTC_8f791.dir/link.txt --verbose=1
-        /u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/gcc -Wl,-rpath -Wl,/u/sw/toolchains/gcc-glibc/11.2.0/base/lib -Wl,-rpath -Wl,/u/sw/toolchains/gcc-glibc/11.2.0/base/lib -Wl,--enable-new-dtags -pthread CMakeFiles/cmTC_8f791.dir/test_mpi.c.o -o cmTC_8f791  /u/sw/toolchains/gcc-glibc/11.2.0/base/lib/libmpi.so 
-        gmake[1]: Leaving directory '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-6jmeOF'
+        Run Build Command(s): /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/cmake -E env VERBOSE=1 /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/gmake -f Makefile cmTC_a8aed/fast
+        /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/gmake  -f CMakeFiles/cmTC_a8aed.dir/build.make CMakeFiles/cmTC_a8aed.dir/build
+        gmake[1]: Entering directory '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-9EJK0h'
+        Building C object CMakeFiles/cmTC_a8aed.dir/test_mpi.c.o
+        /u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/gcc   -pthread -o CMakeFiles/cmTC_a8aed.dir/test_mpi.c.o -c /home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-9EJK0h/test_mpi.c
+        Linking C executable cmTC_a8aed
+        /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/cmake -E cmake_link_script CMakeFiles/cmTC_a8aed.dir/link.txt --verbose=1
+        /u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/gcc -Wl,-rpath -Wl,/u/sw/toolchains/gcc-glibc/11.2.0/base/lib -Wl,-rpath -Wl,/u/sw/toolchains/gcc-glibc/11.2.0/base/lib -Wl,--enable-new-dtags -pthread CMakeFiles/cmTC_a8aed.dir/test_mpi.c.o -o cmTC_a8aed  /u/sw/toolchains/gcc-glibc/11.2.0/base/lib/libmpi.so 
+        gmake[1]: Leaving directory '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-9EJK0h'
         
       exitCode: 0
   -
@@ -647,8 +647,8 @@ events:
       - "CMakeLists.txt:4 (include)"
     description: "The MPI test test_mpi for CXX in mode normal"
     directories:
-      source: "/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-I9Gr1j"
-      binary: "/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-I9Gr1j"
+      source: "/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-PFOxkr"
+      binary: "/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-PFOxkr"
     cmakeVariables:
       CMAKE_CXX_FLAGS: ""
       CMAKE_CXX_FLAGS_DEBUG: "-g"
@@ -657,17 +657,17 @@ events:
       variable: "MPI_RESULT_CXX_test_mpi_normal"
       cached: true
       stdout: |
-        Change Dir: '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-I9Gr1j'
+        Change Dir: '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-PFOxkr'
         
-        Run Build Command(s): /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/cmake -E env VERBOSE=1 /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/gmake -f Makefile cmTC_165fa/fast
-        /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/gmake  -f CMakeFiles/cmTC_165fa.dir/build.make CMakeFiles/cmTC_165fa.dir/build
-        gmake[1]: Entering directory '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-I9Gr1j'
-        Building CXX object CMakeFiles/cmTC_165fa.dir/test_mpi.cpp.o
-        /u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/g++   -std=gnu++17 -pthread -o CMakeFiles/cmTC_165fa.dir/test_mpi.cpp.o -c /home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-I9Gr1j/test_mpi.cpp
-        Linking CXX executable cmTC_165fa
-        /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/cmake -E cmake_link_script CMakeFiles/cmTC_165fa.dir/link.txt --verbose=1
-        /u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/g++ -Wl,-rpath -Wl,/u/sw/toolchains/gcc-glibc/11.2.0/base/lib -Wl,-rpath -Wl,/u/sw/toolchains/gcc-glibc/11.2.0/base/lib -Wl,--enable-new-dtags -pthread CMakeFiles/cmTC_165fa.dir/test_mpi.cpp.o -o cmTC_165fa  /u/sw/toolchains/gcc-glibc/11.2.0/base/lib/libmpi.so 
-        gmake[1]: Leaving directory '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-I9Gr1j'
+        Run Build Command(s): /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/cmake -E env VERBOSE=1 /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/gmake -f Makefile cmTC_86c12/fast
+        /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/gmake  -f CMakeFiles/cmTC_86c12.dir/build.make CMakeFiles/cmTC_86c12.dir/build
+        gmake[1]: Entering directory '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-PFOxkr'
+        Building CXX object CMakeFiles/cmTC_86c12.dir/test_mpi.cpp.o
+        /u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/g++   -std=gnu++17 -pthread -o CMakeFiles/cmTC_86c12.dir/test_mpi.cpp.o -c /home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-PFOxkr/test_mpi.cpp
+        Linking CXX executable cmTC_86c12
+        /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/cmake -E cmake_link_script CMakeFiles/cmTC_86c12.dir/link.txt --verbose=1
+        /u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/g++ -Wl,-rpath -Wl,/u/sw/toolchains/gcc-glibc/11.2.0/base/lib -Wl,-rpath -Wl,/u/sw/toolchains/gcc-glibc/11.2.0/base/lib -Wl,--enable-new-dtags -pthread CMakeFiles/cmTC_86c12.dir/test_mpi.cpp.o -o cmTC_86c12  /u/sw/toolchains/gcc-glibc/11.2.0/base/lib/libmpi.so 
+        gmake[1]: Leaving directory '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-PFOxkr'
         
       exitCode: 0
   -
@@ -679,8 +679,8 @@ events:
       - "CMakeLists.txt:4 (include)"
     description: "The MPI test test_mpi for CXX in mode MPICXX"
     directories:
-      source: "/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-R8X9AN"
-      binary: "/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-R8X9AN"
+      source: "/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-JrkBnN"
+      binary: "/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-JrkBnN"
     cmakeVariables:
       CMAKE_CXX_FLAGS: ""
       CMAKE_CXX_FLAGS_DEBUG: "-g"
@@ -689,17 +689,17 @@ events:
       variable: "MPI_RESULT_CXX_test_mpi_MPICXX"
       cached: true
       stdout: |
-        Change Dir: '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-R8X9AN'
+        Change Dir: '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-JrkBnN'
         
-        Run Build Command(s): /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/cmake -E env VERBOSE=1 /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/gmake -f Makefile cmTC_887e0/fast
-        /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/gmake  -f CMakeFiles/cmTC_887e0.dir/build.make CMakeFiles/cmTC_887e0.dir/build
-        gmake[1]: Entering directory '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-R8X9AN'
-        Building CXX object CMakeFiles/cmTC_887e0.dir/test_mpi.cpp.o
-        /u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/g++   -std=gnu++17 -pthread -o CMakeFiles/cmTC_887e0.dir/test_mpi.cpp.o -c /home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-R8X9AN/test_mpi.cpp
-        Linking CXX executable cmTC_887e0
-        /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/cmake -E cmake_link_script CMakeFiles/cmTC_887e0.dir/link.txt --verbose=1
-        /u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/g++ -Wl,-rpath -Wl,/u/sw/toolchains/gcc-glibc/11.2.0/base/lib -Wl,-rpath -Wl,/u/sw/toolchains/gcc-glibc/11.2.0/base/lib -Wl,--enable-new-dtags -pthread CMakeFiles/cmTC_887e0.dir/test_mpi.cpp.o -o cmTC_887e0  /u/sw/toolchains/gcc-glibc/11.2.0/base/lib/libmpi.so 
-        gmake[1]: Leaving directory '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-R8X9AN'
+        Run Build Command(s): /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/cmake -E env VERBOSE=1 /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/gmake -f Makefile cmTC_0585e/fast
+        /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/gmake  -f CMakeFiles/cmTC_0585e.dir/build.make CMakeFiles/cmTC_0585e.dir/build
+        gmake[1]: Entering directory '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-JrkBnN'
+        Building CXX object CMakeFiles/cmTC_0585e.dir/test_mpi.cpp.o
+        /u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/g++   -std=gnu++17 -pthread -o CMakeFiles/cmTC_0585e.dir/test_mpi.cpp.o -c /home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-JrkBnN/test_mpi.cpp
+        Linking CXX executable cmTC_0585e
+        /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/cmake -E cmake_link_script CMakeFiles/cmTC_0585e.dir/link.txt --verbose=1
+        /u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/g++ -Wl,-rpath -Wl,/u/sw/toolchains/gcc-glibc/11.2.0/base/lib -Wl,-rpath -Wl,/u/sw/toolchains/gcc-glibc/11.2.0/base/lib -Wl,--enable-new-dtags -pthread CMakeFiles/cmTC_0585e.dir/test_mpi.cpp.o -o cmTC_0585e  /u/sw/toolchains/gcc-glibc/11.2.0/base/lib/libmpi.so 
+        gmake[1]: Leaving directory '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-JrkBnN'
         
       exitCode: 0
 ...
@@ -716,8 +716,8 @@ events:
       - "CMakeLists.txt:4 (include)"
     description: "The MPI test test_mpi for C in mode normal"
     directories:
-      source: "/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-sHBl5r"
-      binary: "/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-sHBl5r"
+      source: "/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-WWFOJz"
+      binary: "/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-WWFOJz"
     cmakeVariables:
       CMAKE_C_FLAGS: ""
       CMAKE_C_FLAGS_DEBUG: "-g"
@@ -726,17 +726,17 @@ events:
       variable: "MPI_RESULT_C_test_mpi_normal"
       cached: true
       stdout: |
-        Change Dir: '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-sHBl5r'
+        Change Dir: '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-WWFOJz'
         
-        Run Build Command(s): /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/cmake -E env VERBOSE=1 /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/gmake -f Makefile cmTC_412a3/fast
-        /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/gmake  -f CMakeFiles/cmTC_412a3.dir/build.make CMakeFiles/cmTC_412a3.dir/build
-        gmake[1]: Entering directory '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-sHBl5r'
-        Building C object CMakeFiles/cmTC_412a3.dir/test_mpi.c.o
-        /u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/gcc   -pthread -o CMakeFiles/cmTC_412a3.dir/test_mpi.c.o -c /home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-sHBl5r/test_mpi.c
-        Linking C executable cmTC_412a3
-        /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/cmake -E cmake_link_script CMakeFiles/cmTC_412a3.dir/link.txt --verbose=1
-        /u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/gcc -Wl,-rpath -Wl,/u/sw/toolchains/gcc-glibc/11.2.0/base/lib -Wl,-rpath -Wl,/u/sw/toolchains/gcc-glibc/11.2.0/base/lib -Wl,--enable-new-dtags -pthread CMakeFiles/cmTC_412a3.dir/test_mpi.c.o -o cmTC_412a3  /u/sw/toolchains/gcc-glibc/11.2.0/base/lib/libmpi.so 
-        gmake[1]: Leaving directory '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-sHBl5r'
+        Run Build Command(s): /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/cmake -E env VERBOSE=1 /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/gmake -f Makefile cmTC_f9891/fast
+        /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/gmake  -f CMakeFiles/cmTC_f9891.dir/build.make CMakeFiles/cmTC_f9891.dir/build
+        gmake[1]: Entering directory '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-WWFOJz'
+        Building C object CMakeFiles/cmTC_f9891.dir/test_mpi.c.o
+        /u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/gcc   -pthread -o CMakeFiles/cmTC_f9891.dir/test_mpi.c.o -c /home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-WWFOJz/test_mpi.c
+        Linking C executable cmTC_f9891
+        /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/cmake -E cmake_link_script CMakeFiles/cmTC_f9891.dir/link.txt --verbose=1
+        /u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/gcc -Wl,-rpath -Wl,/u/sw/toolchains/gcc-glibc/11.2.0/base/lib -Wl,-rpath -Wl,/u/sw/toolchains/gcc-glibc/11.2.0/base/lib -Wl,--enable-new-dtags -pthread CMakeFiles/cmTC_f9891.dir/test_mpi.c.o -o cmTC_f9891  /u/sw/toolchains/gcc-glibc/11.2.0/base/lib/libmpi.so 
+        gmake[1]: Leaving directory '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-WWFOJz'
         
       exitCode: 0
   -
@@ -749,8 +749,8 @@ events:
       - "CMakeLists.txt:4 (include)"
     description: "The MPI test test_mpi for CXX in mode normal"
     directories:
-      source: "/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-MHEhdC"
-      binary: "/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-MHEhdC"
+      source: "/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-CivnLf"
+      binary: "/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-CivnLf"
     cmakeVariables:
       CMAKE_CXX_FLAGS: ""
       CMAKE_CXX_FLAGS_DEBUG: "-g"
@@ -759,17 +759,17 @@ events:
       variable: "MPI_RESULT_CXX_test_mpi_normal"
       cached: true
       stdout: |
-        Change Dir: '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-MHEhdC'
+        Change Dir: '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-CivnLf'
         
-        Run Build Command(s): /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/cmake -E env VERBOSE=1 /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/gmake -f Makefile cmTC_fff1b/fast
-        /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/gmake  -f CMakeFiles/cmTC_fff1b.dir/build.make CMakeFiles/cmTC_fff1b.dir/build
-        gmake[1]: Entering directory '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-MHEhdC'
-        Building CXX object CMakeFiles/cmTC_fff1b.dir/test_mpi.cpp.o
-        /u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/g++   -std=gnu++17 -pthread -o CMakeFiles/cmTC_fff1b.dir/test_mpi.cpp.o -c /home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-MHEhdC/test_mpi.cpp
-        Linking CXX executable cmTC_fff1b
-        /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/cmake -E cmake_link_script CMakeFiles/cmTC_fff1b.dir/link.txt --verbose=1
-        /u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/g++ -Wl,-rpath -Wl,/u/sw/toolchains/gcc-glibc/11.2.0/base/lib -Wl,-rpath -Wl,/u/sw/toolchains/gcc-glibc/11.2.0/base/lib -Wl,--enable-new-dtags -pthread CMakeFiles/cmTC_fff1b.dir/test_mpi.cpp.o -o cmTC_fff1b  /u/sw/toolchains/gcc-glibc/11.2.0/base/lib/libmpi.so 
-        gmake[1]: Leaving directory '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-MHEhdC'
+        Run Build Command(s): /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/cmake -E env VERBOSE=1 /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/gmake -f Makefile cmTC_212e1/fast
+        /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/gmake  -f CMakeFiles/cmTC_212e1.dir/build.make CMakeFiles/cmTC_212e1.dir/build
+        gmake[1]: Entering directory '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-CivnLf'
+        Building CXX object CMakeFiles/cmTC_212e1.dir/test_mpi.cpp.o
+        /u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/g++   -std=gnu++17 -pthread -o CMakeFiles/cmTC_212e1.dir/test_mpi.cpp.o -c /home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-CivnLf/test_mpi.cpp
+        Linking CXX executable cmTC_212e1
+        /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/cmake -E cmake_link_script CMakeFiles/cmTC_212e1.dir/link.txt --verbose=1
+        /u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/g++ -Wl,-rpath -Wl,/u/sw/toolchains/gcc-glibc/11.2.0/base/lib -Wl,-rpath -Wl,/u/sw/toolchains/gcc-glibc/11.2.0/base/lib -Wl,--enable-new-dtags -pthread CMakeFiles/cmTC_212e1.dir/test_mpi.cpp.o -o cmTC_212e1  /u/sw/toolchains/gcc-glibc/11.2.0/base/lib/libmpi.so 
+        gmake[1]: Leaving directory '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-CivnLf'
         
       exitCode: 0
   -
@@ -781,8 +781,8 @@ events:
       - "CMakeLists.txt:4 (include)"
     description: "The MPI test test_mpi for CXX in mode MPICXX"
     directories:
-      source: "/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-I8xz9i"
-      binary: "/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-I8xz9i"
+      source: "/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-brHVtp"
+      binary: "/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-brHVtp"
     cmakeVariables:
       CMAKE_CXX_FLAGS: ""
       CMAKE_CXX_FLAGS_DEBUG: "-g"
@@ -791,17 +791,17 @@ events:
       variable: "MPI_RESULT_CXX_test_mpi_MPICXX"
       cached: true
       stdout: |
-        Change Dir: '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-I8xz9i'
+        Change Dir: '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-brHVtp'
         
-        Run Build Command(s): /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/cmake -E env VERBOSE=1 /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/gmake -f Makefile cmTC_7f9da/fast
-        /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/gmake  -f CMakeFiles/cmTC_7f9da.dir/build.make CMakeFiles/cmTC_7f9da.dir/build
-        gmake[1]: Entering directory '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-I8xz9i'
-        Building CXX object CMakeFiles/cmTC_7f9da.dir/test_mpi.cpp.o
-        /u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/g++   -std=gnu++17 -pthread -o CMakeFiles/cmTC_7f9da.dir/test_mpi.cpp.o -c /home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-I8xz9i/test_mpi.cpp
-        Linking CXX executable cmTC_7f9da
-        /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/cmake -E cmake_link_script CMakeFiles/cmTC_7f9da.dir/link.txt --verbose=1
-        /u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/g++ -Wl,-rpath -Wl,/u/sw/toolchains/gcc-glibc/11.2.0/base/lib -Wl,-rpath -Wl,/u/sw/toolchains/gcc-glibc/11.2.0/base/lib -Wl,--enable-new-dtags -pthread CMakeFiles/cmTC_7f9da.dir/test_mpi.cpp.o -o cmTC_7f9da  /u/sw/toolchains/gcc-glibc/11.2.0/base/lib/libmpi.so 
-        gmake[1]: Leaving directory '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-I8xz9i'
+        Run Build Command(s): /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/cmake -E env VERBOSE=1 /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/gmake -f Makefile cmTC_a1e9c/fast
+        /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/gmake  -f CMakeFiles/cmTC_a1e9c.dir/build.make CMakeFiles/cmTC_a1e9c.dir/build
+        gmake[1]: Entering directory '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-brHVtp'
+        Building CXX object CMakeFiles/cmTC_a1e9c.dir/test_mpi.cpp.o
+        /u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/g++   -std=gnu++17 -pthread -o CMakeFiles/cmTC_a1e9c.dir/test_mpi.cpp.o -c /home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-brHVtp/test_mpi.cpp
+        Linking CXX executable cmTC_a1e9c
+        /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/cmake -E cmake_link_script CMakeFiles/cmTC_a1e9c.dir/link.txt --verbose=1
+        /u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/g++ -Wl,-rpath -Wl,/u/sw/toolchains/gcc-glibc/11.2.0/base/lib -Wl,-rpath -Wl,/u/sw/toolchains/gcc-glibc/11.2.0/base/lib -Wl,--enable-new-dtags -pthread CMakeFiles/cmTC_a1e9c.dir/test_mpi.cpp.o -o cmTC_a1e9c  /u/sw/toolchains/gcc-glibc/11.2.0/base/lib/libmpi.so 
+        gmake[1]: Leaving directory '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-brHVtp'
         
       exitCode: 0
 ...
@@ -818,8 +818,8 @@ events:
       - "CMakeLists.txt:4 (include)"
     description: "The MPI test test_mpi for C in mode normal"
     directories:
-      source: "/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-bGstQA"
-      binary: "/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-bGstQA"
+      source: "/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-LbQAmj"
+      binary: "/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-LbQAmj"
     cmakeVariables:
       CMAKE_C_FLAGS: ""
       CMAKE_C_FLAGS_DEBUG: "-g"
@@ -828,17 +828,17 @@ events:
       variable: "MPI_RESULT_C_test_mpi_normal"
       cached: true
       stdout: |
-        Change Dir: '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-bGstQA'
+        Change Dir: '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-LbQAmj'
         
-        Run Build Command(s): /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/cmake -E env VERBOSE=1 /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/gmake -f Makefile cmTC_9f741/fast
-        /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/gmake  -f CMakeFiles/cmTC_9f741.dir/build.make CMakeFiles/cmTC_9f741.dir/build
-        gmake[1]: Entering directory '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-bGstQA'
-        Building C object CMakeFiles/cmTC_9f741.dir/test_mpi.c.o
-        /u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/gcc   -pthread -o CMakeFiles/cmTC_9f741.dir/test_mpi.c.o -c /home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-bGstQA/test_mpi.c
-        Linking C executable cmTC_9f741
-        /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/cmake -E cmake_link_script CMakeFiles/cmTC_9f741.dir/link.txt --verbose=1
-        /u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/gcc -Wl,-rpath -Wl,/u/sw/toolchains/gcc-glibc/11.2.0/base/lib -Wl,-rpath -Wl,/u/sw/toolchains/gcc-glibc/11.2.0/base/lib -Wl,--enable-new-dtags -pthread CMakeFiles/cmTC_9f741.dir/test_mpi.c.o -o cmTC_9f741  /u/sw/toolchains/gcc-glibc/11.2.0/base/lib/libmpi.so 
-        gmake[1]: Leaving directory '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-bGstQA'
+        Run Build Command(s): /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/cmake -E env VERBOSE=1 /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/gmake -f Makefile cmTC_62ff1/fast
+        /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/gmake  -f CMakeFiles/cmTC_62ff1.dir/build.make CMakeFiles/cmTC_62ff1.dir/build
+        gmake[1]: Entering directory '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-LbQAmj'
+        Building C object CMakeFiles/cmTC_62ff1.dir/test_mpi.c.o
+        /u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/gcc   -pthread -o CMakeFiles/cmTC_62ff1.dir/test_mpi.c.o -c /home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-LbQAmj/test_mpi.c
+        Linking C executable cmTC_62ff1
+        /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/cmake -E cmake_link_script CMakeFiles/cmTC_62ff1.dir/link.txt --verbose=1
+        /u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/gcc -Wl,-rpath -Wl,/u/sw/toolchains/gcc-glibc/11.2.0/base/lib -Wl,-rpath -Wl,/u/sw/toolchains/gcc-glibc/11.2.0/base/lib -Wl,--enable-new-dtags -pthread CMakeFiles/cmTC_62ff1.dir/test_mpi.c.o -o cmTC_62ff1  /u/sw/toolchains/gcc-glibc/11.2.0/base/lib/libmpi.so 
+        gmake[1]: Leaving directory '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-LbQAmj'
         
       exitCode: 0
   -
@@ -851,8 +851,8 @@ events:
       - "CMakeLists.txt:4 (include)"
     description: "The MPI test test_mpi for CXX in mode normal"
     directories:
-      source: "/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-DKf0WN"
-      binary: "/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-DKf0WN"
+      source: "/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-ikipsz"
+      binary: "/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-ikipsz"
     cmakeVariables:
       CMAKE_CXX_FLAGS: ""
       CMAKE_CXX_FLAGS_DEBUG: "-g"
@@ -861,17 +861,17 @@ events:
       variable: "MPI_RESULT_CXX_test_mpi_normal"
       cached: true
       stdout: |
-        Change Dir: '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-DKf0WN'
+        Change Dir: '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-ikipsz'
         
-        Run Build Command(s): /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/cmake -E env VERBOSE=1 /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/gmake -f Makefile cmTC_56f2b/fast
-        /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/gmake  -f CMakeFiles/cmTC_56f2b.dir/build.make CMakeFiles/cmTC_56f2b.dir/build
-        gmake[1]: Entering directory '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-DKf0WN'
-        Building CXX object CMakeFiles/cmTC_56f2b.dir/test_mpi.cpp.o
-        /u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/g++   -std=gnu++17 -pthread -o CMakeFiles/cmTC_56f2b.dir/test_mpi.cpp.o -c /home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-DKf0WN/test_mpi.cpp
-        Linking CXX executable cmTC_56f2b
-        /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/cmake -E cmake_link_script CMakeFiles/cmTC_56f2b.dir/link.txt --verbose=1
-        /u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/g++ -Wl,-rpath -Wl,/u/sw/toolchains/gcc-glibc/11.2.0/base/lib -Wl,-rpath -Wl,/u/sw/toolchains/gcc-glibc/11.2.0/base/lib -Wl,--enable-new-dtags -pthread CMakeFiles/cmTC_56f2b.dir/test_mpi.cpp.o -o cmTC_56f2b  /u/sw/toolchains/gcc-glibc/11.2.0/base/lib/libmpi.so 
-        gmake[1]: Leaving directory '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-DKf0WN'
+        Run Build Command(s): /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/cmake -E env VERBOSE=1 /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/gmake -f Makefile cmTC_d7dd2/fast
+        /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/gmake  -f CMakeFiles/cmTC_d7dd2.dir/build.make CMakeFiles/cmTC_d7dd2.dir/build
+        gmake[1]: Entering directory '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-ikipsz'
+        Building CXX object CMakeFiles/cmTC_d7dd2.dir/test_mpi.cpp.o
+        /u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/g++   -std=gnu++17 -pthread -o CMakeFiles/cmTC_d7dd2.dir/test_mpi.cpp.o -c /home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-ikipsz/test_mpi.cpp
+        Linking CXX executable cmTC_d7dd2
+        /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/cmake -E cmake_link_script CMakeFiles/cmTC_d7dd2.dir/link.txt --verbose=1
+        /u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/g++ -Wl,-rpath -Wl,/u/sw/toolchains/gcc-glibc/11.2.0/base/lib -Wl,-rpath -Wl,/u/sw/toolchains/gcc-glibc/11.2.0/base/lib -Wl,--enable-new-dtags -pthread CMakeFiles/cmTC_d7dd2.dir/test_mpi.cpp.o -o cmTC_d7dd2  /u/sw/toolchains/gcc-glibc/11.2.0/base/lib/libmpi.so 
+        gmake[1]: Leaving directory '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-ikipsz'
         
       exitCode: 0
   -
@@ -883,8 +883,8 @@ events:
       - "CMakeLists.txt:4 (include)"
     description: "The MPI test test_mpi for CXX in mode MPICXX"
     directories:
-      source: "/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-VlOcKl"
-      binary: "/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-VlOcKl"
+      source: "/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-my6hLG"
+      binary: "/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-my6hLG"
     cmakeVariables:
       CMAKE_CXX_FLAGS: ""
       CMAKE_CXX_FLAGS_DEBUG: "-g"
@@ -893,474 +893,19 @@ events:
       variable: "MPI_RESULT_CXX_test_mpi_MPICXX"
       cached: true
       stdout: |
-        Change Dir: '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-VlOcKl'
+        Change Dir: '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-my6hLG'
         
-        Run Build Command(s): /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/cmake -E env VERBOSE=1 /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/gmake -f Makefile cmTC_908fc/fast
-        /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/gmake  -f CMakeFiles/cmTC_908fc.dir/build.make CMakeFiles/cmTC_908fc.dir/build
-        gmake[1]: Entering directory '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-VlOcKl'
-        Building CXX object CMakeFiles/cmTC_908fc.dir/test_mpi.cpp.o
-        /u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/g++   -std=gnu++17 -pthread -o CMakeFiles/cmTC_908fc.dir/test_mpi.cpp.o -c /home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-VlOcKl/test_mpi.cpp
-        Linking CXX executable cmTC_908fc
-        /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/cmake -E cmake_link_script CMakeFiles/cmTC_908fc.dir/link.txt --verbose=1
-        /u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/g++ -Wl,-rpath -Wl,/u/sw/toolchains/gcc-glibc/11.2.0/base/lib -Wl,-rpath -Wl,/u/sw/toolchains/gcc-glibc/11.2.0/base/lib -Wl,--enable-new-dtags -pthread CMakeFiles/cmTC_908fc.dir/test_mpi.cpp.o -o cmTC_908fc  /u/sw/toolchains/gcc-glibc/11.2.0/base/lib/libmpi.so 
-        gmake[1]: Leaving directory '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-VlOcKl'
+        Run Build Command(s): /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/cmake -E env VERBOSE=1 /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/gmake -f Makefile cmTC_5ac5f/fast
+        /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/gmake  -f CMakeFiles/cmTC_5ac5f.dir/build.make CMakeFiles/cmTC_5ac5f.dir/build
+        gmake[1]: Entering directory '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-my6hLG'
+        Building CXX object CMakeFiles/cmTC_5ac5f.dir/test_mpi.cpp.o
+        /u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/g++   -std=gnu++17 -pthread -o CMakeFiles/cmTC_5ac5f.dir/test_mpi.cpp.o -c /home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-my6hLG/test_mpi.cpp
+        Linking CXX executable cmTC_5ac5f
+        /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/cmake -E cmake_link_script CMakeFiles/cmTC_5ac5f.dir/link.txt --verbose=1
+        /u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/g++ -Wl,-rpath -Wl,/u/sw/toolchains/gcc-glibc/11.2.0/base/lib -Wl,-rpath -Wl,/u/sw/toolchains/gcc-glibc/11.2.0/base/lib -Wl,--enable-new-dtags -pthread CMakeFiles/cmTC_5ac5f.dir/test_mpi.cpp.o -o cmTC_5ac5f  /u/sw/toolchains/gcc-glibc/11.2.0/base/lib/libmpi.so 
+        gmake[1]: Leaving directory '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-my6hLG'
         
       exitCode: 0
-...
-
----
-events:
-  -
-    kind: "message-v1"
-    backtrace:
-      - "/usr/share/cmake-3.28/Modules/CMakeDetermineSystem.cmake:233 (message)"
-      - "CMakeLists.txt:2 (project)"
-    message: |
-      The system is: Linux - 6.17.0-19-generic - x86_64
-  -
-    kind: "message-v1"
-    backtrace:
-      - "/usr/share/cmake-3.28/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
-      - "/usr/share/cmake-3.28/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
-      - "/usr/share/cmake-3.28/Modules/CMakeDetermineCCompiler.cmake:123 (CMAKE_DETERMINE_COMPILER_ID)"
-      - "CMakeLists.txt:2 (project)"
-    message: |
-      Compiling the C compiler identification source file "CMakeCCompilerId.c" failed.
-      Compiler: /u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/gcc 
-      Build flags: 
-      Id flags:  
-      
-      The output was:
-      No such file or directory
-      
-      
-  -
-    kind: "message-v1"
-    backtrace:
-      - "/usr/share/cmake-3.28/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
-      - "/usr/share/cmake-3.28/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
-      - "/usr/share/cmake-3.28/Modules/CMakeDetermineCCompiler.cmake:123 (CMAKE_DETERMINE_COMPILER_ID)"
-      - "CMakeLists.txt:2 (project)"
-    message: |
-      Compiling the C compiler identification source file "CMakeCCompilerId.c" failed.
-      Compiler: /u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/gcc 
-      Build flags: 
-      Id flags: -c 
-      
-      The output was:
-      No such file or directory
-      
-      
-  -
-    kind: "message-v1"
-    backtrace:
-      - "/usr/share/cmake-3.28/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
-      - "/usr/share/cmake-3.28/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
-      - "/usr/share/cmake-3.28/Modules/CMakeDetermineCCompiler.cmake:123 (CMAKE_DETERMINE_COMPILER_ID)"
-      - "CMakeLists.txt:2 (project)"
-    message: |
-      Compiling the C compiler identification source file "CMakeCCompilerId.c" failed.
-      Compiler: /u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/gcc 
-      Build flags: 
-      Id flags: -Aa 
-      
-      The output was:
-      No such file or directory
-      
-      
-  -
-    kind: "message-v1"
-    backtrace:
-      - "/usr/share/cmake-3.28/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
-      - "/usr/share/cmake-3.28/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
-      - "/usr/share/cmake-3.28/Modules/CMakeDetermineCCompiler.cmake:123 (CMAKE_DETERMINE_COMPILER_ID)"
-      - "CMakeLists.txt:2 (project)"
-    message: |
-      Compiling the C compiler identification source file "CMakeCCompilerId.c" failed.
-      Compiler: /u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/gcc 
-      Build flags: 
-      Id flags: -D__CLASSIC_C__ 
-      
-      The output was:
-      No such file or directory
-      
-      
-  -
-    kind: "message-v1"
-    backtrace:
-      - "/usr/share/cmake-3.28/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
-      - "/usr/share/cmake-3.28/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
-      - "/usr/share/cmake-3.28/Modules/CMakeDetermineCCompiler.cmake:123 (CMAKE_DETERMINE_COMPILER_ID)"
-      - "CMakeLists.txt:2 (project)"
-    message: |
-      Compiling the C compiler identification source file "CMakeCCompilerId.c" failed.
-      Compiler: /u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/gcc 
-      Build flags: 
-      Id flags: --target=arm-arm-none-eabi;-mcpu=cortex-m3 
-      
-      The output was:
-      No such file or directory
-      
-      
-  -
-    kind: "message-v1"
-    backtrace:
-      - "/usr/share/cmake-3.28/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
-      - "/usr/share/cmake-3.28/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
-      - "/usr/share/cmake-3.28/Modules/CMakeDetermineCCompiler.cmake:123 (CMAKE_DETERMINE_COMPILER_ID)"
-      - "CMakeLists.txt:2 (project)"
-    message: |
-      Compiling the C compiler identification source file "CMakeCCompilerId.c" failed.
-      Compiler: /u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/gcc 
-      Build flags: 
-      Id flags: -c;-I__does_not_exist__ 
-      
-      The output was:
-      No such file or directory
-      
-      
-  -
-    kind: "message-v1"
-    backtrace:
-      - "/usr/share/cmake-3.28/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
-      - "/usr/share/cmake-3.28/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
-      - "/usr/share/cmake-3.28/Modules/CMakeDetermineCCompiler.cmake:123 (CMAKE_DETERMINE_COMPILER_ID)"
-      - "CMakeLists.txt:2 (project)"
-    message: |
-      Compiling the C compiler identification source file "CMakeCCompilerId.c" failed.
-      Compiler: /u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/gcc 
-      Build flags: 
-      Id flags:  
-      
-      The output was:
-      No such file or directory
-      
-      
-  -
-    kind: "message-v1"
-    backtrace:
-      - "/usr/share/cmake-3.28/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
-      - "/usr/share/cmake-3.28/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
-      - "/usr/share/cmake-3.28/Modules/CMakeDetermineCCompiler.cmake:123 (CMAKE_DETERMINE_COMPILER_ID)"
-      - "CMakeLists.txt:2 (project)"
-    message: |
-      Compiling the C compiler identification source file "CMakeCCompilerId.c" failed.
-      Compiler: /u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/gcc 
-      Build flags: 
-      Id flags: -c 
-      
-      The output was:
-      No such file or directory
-      
-      
-  -
-    kind: "message-v1"
-    backtrace:
-      - "/usr/share/cmake-3.28/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
-      - "/usr/share/cmake-3.28/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
-      - "/usr/share/cmake-3.28/Modules/CMakeDetermineCCompiler.cmake:123 (CMAKE_DETERMINE_COMPILER_ID)"
-      - "CMakeLists.txt:2 (project)"
-    message: |
-      Compiling the C compiler identification source file "CMakeCCompilerId.c" failed.
-      Compiler: /u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/gcc 
-      Build flags: 
-      Id flags: -Aa 
-      
-      The output was:
-      No such file or directory
-      
-      
-  -
-    kind: "message-v1"
-    backtrace:
-      - "/usr/share/cmake-3.28/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
-      - "/usr/share/cmake-3.28/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
-      - "/usr/share/cmake-3.28/Modules/CMakeDetermineCCompiler.cmake:123 (CMAKE_DETERMINE_COMPILER_ID)"
-      - "CMakeLists.txt:2 (project)"
-    message: |
-      Compiling the C compiler identification source file "CMakeCCompilerId.c" failed.
-      Compiler: /u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/gcc 
-      Build flags: 
-      Id flags: -D__CLASSIC_C__ 
-      
-      The output was:
-      No such file or directory
-      
-      
-  -
-    kind: "message-v1"
-    backtrace:
-      - "/usr/share/cmake-3.28/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
-      - "/usr/share/cmake-3.28/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
-      - "/usr/share/cmake-3.28/Modules/CMakeDetermineCCompiler.cmake:123 (CMAKE_DETERMINE_COMPILER_ID)"
-      - "CMakeLists.txt:2 (project)"
-    message: |
-      Compiling the C compiler identification source file "CMakeCCompilerId.c" failed.
-      Compiler: /u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/gcc 
-      Build flags: 
-      Id flags: --target=arm-arm-none-eabi;-mcpu=cortex-m3 
-      
-      The output was:
-      No such file or directory
-      
-      
-  -
-    kind: "message-v1"
-    backtrace:
-      - "/usr/share/cmake-3.28/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
-      - "/usr/share/cmake-3.28/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
-      - "/usr/share/cmake-3.28/Modules/CMakeDetermineCCompiler.cmake:123 (CMAKE_DETERMINE_COMPILER_ID)"
-      - "CMakeLists.txt:2 (project)"
-    message: |
-      Compiling the C compiler identification source file "CMakeCCompilerId.c" failed.
-      Compiler: /u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/gcc 
-      Build flags: 
-      Id flags: -c;-I__does_not_exist__ 
-      
-      The output was:
-      No such file or directory
-      
-      
-  -
-    kind: "message-v1"
-    backtrace:
-      - "/usr/share/cmake-3.28/Modules/CMakeDetermineCompilerId.cmake:1144 (message)"
-      - "/usr/share/cmake-3.28/Modules/CMakeDetermineCompilerId.cmake:86 (CMAKE_DETERMINE_COMPILER_ID_VENDOR)"
-      - "/usr/share/cmake-3.28/Modules/CMakeDetermineCCompiler.cmake:123 (CMAKE_DETERMINE_COMPILER_ID)"
-      - "CMakeLists.txt:2 (project)"
-    message: |
-      Checking whether the C compiler is IAR using "" did not match "IAR .+ Compiler":
-  -
-    kind: "message-v1"
-    backtrace:
-      - "/usr/share/cmake-3.28/Modules/CMakeDetermineCompilerId.cmake:1144 (message)"
-      - "/usr/share/cmake-3.28/Modules/CMakeDetermineCompilerId.cmake:86 (CMAKE_DETERMINE_COMPILER_ID_VENDOR)"
-      - "/usr/share/cmake-3.28/Modules/CMakeDetermineCCompiler.cmake:123 (CMAKE_DETERMINE_COMPILER_ID)"
-      - "CMakeLists.txt:2 (project)"
-    message: |
-      Checking whether the C compiler is IAR using "" did not match "IAR .+ Compiler":
-  -
-    kind: "message-v1"
-    backtrace:
-      - "/usr/share/cmake-3.28/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
-      - "/usr/share/cmake-3.28/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
-      - "/usr/share/cmake-3.28/Modules/CMakeDetermineCXXCompiler.cmake:126 (CMAKE_DETERMINE_COMPILER_ID)"
-      - "CMakeLists.txt:2 (project)"
-    message: |
-      Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" failed.
-      Compiler: /u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/g++ 
-      Build flags: 
-      Id flags:  
-      
-      The output was:
-      No such file or directory
-      
-      
-  -
-    kind: "message-v1"
-    backtrace:
-      - "/usr/share/cmake-3.28/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
-      - "/usr/share/cmake-3.28/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
-      - "/usr/share/cmake-3.28/Modules/CMakeDetermineCXXCompiler.cmake:126 (CMAKE_DETERMINE_COMPILER_ID)"
-      - "CMakeLists.txt:2 (project)"
-    message: |
-      Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" failed.
-      Compiler: /u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/g++ 
-      Build flags: 
-      Id flags: -c 
-      
-      The output was:
-      No such file or directory
-      
-      
-  -
-    kind: "message-v1"
-    backtrace:
-      - "/usr/share/cmake-3.28/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
-      - "/usr/share/cmake-3.28/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
-      - "/usr/share/cmake-3.28/Modules/CMakeDetermineCXXCompiler.cmake:126 (CMAKE_DETERMINE_COMPILER_ID)"
-      - "CMakeLists.txt:2 (project)"
-    message: |
-      Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" failed.
-      Compiler: /u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/g++ 
-      Build flags: 
-      Id flags: --c++ 
-      
-      The output was:
-      No such file or directory
-      
-      
-  -
-    kind: "message-v1"
-    backtrace:
-      - "/usr/share/cmake-3.28/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
-      - "/usr/share/cmake-3.28/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
-      - "/usr/share/cmake-3.28/Modules/CMakeDetermineCXXCompiler.cmake:126 (CMAKE_DETERMINE_COMPILER_ID)"
-      - "CMakeLists.txt:2 (project)"
-    message: |
-      Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" failed.
-      Compiler: /u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/g++ 
-      Build flags: 
-      Id flags: --ec++ 
-      
-      The output was:
-      No such file or directory
-      
-      
-  -
-    kind: "message-v1"
-    backtrace:
-      - "/usr/share/cmake-3.28/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
-      - "/usr/share/cmake-3.28/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
-      - "/usr/share/cmake-3.28/Modules/CMakeDetermineCXXCompiler.cmake:126 (CMAKE_DETERMINE_COMPILER_ID)"
-      - "CMakeLists.txt:2 (project)"
-    message: |
-      Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" failed.
-      Compiler: /u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/g++ 
-      Build flags: 
-      Id flags: --target=arm-arm-none-eabi;-mcpu=cortex-m3 
-      
-      The output was:
-      No such file or directory
-      
-      
-  -
-    kind: "message-v1"
-    backtrace:
-      - "/usr/share/cmake-3.28/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
-      - "/usr/share/cmake-3.28/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
-      - "/usr/share/cmake-3.28/Modules/CMakeDetermineCXXCompiler.cmake:126 (CMAKE_DETERMINE_COMPILER_ID)"
-      - "CMakeLists.txt:2 (project)"
-    message: |
-      Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" failed.
-      Compiler: /u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/g++ 
-      Build flags: 
-      Id flags: -c;-I__does_not_exist__ 
-      
-      The output was:
-      No such file or directory
-      
-      
-  -
-    kind: "message-v1"
-    backtrace:
-      - "/usr/share/cmake-3.28/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
-      - "/usr/share/cmake-3.28/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
-      - "/usr/share/cmake-3.28/Modules/CMakeDetermineCXXCompiler.cmake:126 (CMAKE_DETERMINE_COMPILER_ID)"
-      - "CMakeLists.txt:2 (project)"
-    message: |
-      Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" failed.
-      Compiler: /u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/g++ 
-      Build flags: 
-      Id flags:  
-      
-      The output was:
-      No such file or directory
-      
-      
-  -
-    kind: "message-v1"
-    backtrace:
-      - "/usr/share/cmake-3.28/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
-      - "/usr/share/cmake-3.28/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
-      - "/usr/share/cmake-3.28/Modules/CMakeDetermineCXXCompiler.cmake:126 (CMAKE_DETERMINE_COMPILER_ID)"
-      - "CMakeLists.txt:2 (project)"
-    message: |
-      Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" failed.
-      Compiler: /u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/g++ 
-      Build flags: 
-      Id flags: -c 
-      
-      The output was:
-      No such file or directory
-      
-      
-  -
-    kind: "message-v1"
-    backtrace:
-      - "/usr/share/cmake-3.28/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
-      - "/usr/share/cmake-3.28/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
-      - "/usr/share/cmake-3.28/Modules/CMakeDetermineCXXCompiler.cmake:126 (CMAKE_DETERMINE_COMPILER_ID)"
-      - "CMakeLists.txt:2 (project)"
-    message: |
-      Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" failed.
-      Compiler: /u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/g++ 
-      Build flags: 
-      Id flags: --c++ 
-      
-      The output was:
-      No such file or directory
-      
-      
-  -
-    kind: "message-v1"
-    backtrace:
-      - "/usr/share/cmake-3.28/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
-      - "/usr/share/cmake-3.28/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
-      - "/usr/share/cmake-3.28/Modules/CMakeDetermineCXXCompiler.cmake:126 (CMAKE_DETERMINE_COMPILER_ID)"
-      - "CMakeLists.txt:2 (project)"
-    message: |
-      Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" failed.
-      Compiler: /u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/g++ 
-      Build flags: 
-      Id flags: --ec++ 
-      
-      The output was:
-      No such file or directory
-      
-      
-  -
-    kind: "message-v1"
-    backtrace:
-      - "/usr/share/cmake-3.28/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
-      - "/usr/share/cmake-3.28/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
-      - "/usr/share/cmake-3.28/Modules/CMakeDetermineCXXCompiler.cmake:126 (CMAKE_DETERMINE_COMPILER_ID)"
-      - "CMakeLists.txt:2 (project)"
-    message: |
-      Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" failed.
-      Compiler: /u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/g++ 
-      Build flags: 
-      Id flags: --target=arm-arm-none-eabi;-mcpu=cortex-m3 
-      
-      The output was:
-      No such file or directory
-      
-      
-  -
-    kind: "message-v1"
-    backtrace:
-      - "/usr/share/cmake-3.28/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
-      - "/usr/share/cmake-3.28/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
-      - "/usr/share/cmake-3.28/Modules/CMakeDetermineCXXCompiler.cmake:126 (CMAKE_DETERMINE_COMPILER_ID)"
-      - "CMakeLists.txt:2 (project)"
-    message: |
-      Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" failed.
-      Compiler: /u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/g++ 
-      Build flags: 
-      Id flags: -c;-I__does_not_exist__ 
-      
-      The output was:
-      No such file or directory
-      
-      
-  -
-    kind: "message-v1"
-    backtrace:
-      - "/usr/share/cmake-3.28/Modules/CMakeDetermineCompilerId.cmake:1144 (message)"
-      - "/usr/share/cmake-3.28/Modules/CMakeDetermineCompilerId.cmake:86 (CMAKE_DETERMINE_COMPILER_ID_VENDOR)"
-      - "/usr/share/cmake-3.28/Modules/CMakeDetermineCXXCompiler.cmake:126 (CMAKE_DETERMINE_COMPILER_ID)"
-      - "CMakeLists.txt:2 (project)"
-    message: |
-      Checking whether the CXX compiler is IAR using "" did not match "IAR .+ Compiler":
-  -
-    kind: "message-v1"
-    backtrace:
-      - "/usr/share/cmake-3.28/Modules/CMakeDetermineCompilerId.cmake:1144 (message)"
-      - "/usr/share/cmake-3.28/Modules/CMakeDetermineCompilerId.cmake:86 (CMAKE_DETERMINE_COMPILER_ID_VENDOR)"
-      - "/usr/share/cmake-3.28/Modules/CMakeDetermineCXXCompiler.cmake:126 (CMAKE_DETERMINE_COMPILER_ID)"
-      - "CMakeLists.txt:2 (project)"
-    message: |
-      Checking whether the CXX compiler is IAR using "" did not match "IAR .+ Compiler":
 ...
 
 ---
@@ -1375,8 +920,8 @@ events:
       - "CMakeLists.txt:4 (include)"
     description: "The MPI test test_mpi for C in mode normal"
     directories:
-      source: "/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-Do17HN"
-      binary: "/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-Do17HN"
+      source: "/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-6aNZ0T"
+      binary: "/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-6aNZ0T"
     cmakeVariables:
       CMAKE_C_FLAGS: ""
       CMAKE_C_FLAGS_DEBUG: "-g"
@@ -1385,19 +930,17 @@ events:
       variable: "MPI_RESULT_C_test_mpi_normal"
       cached: true
       stdout: |
-        Change Dir: '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-Do17HN'
+        Change Dir: '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-6aNZ0T'
         
-        Run Build Command(s): /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/cmake -E env VERBOSE=1 /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/gmake -f Makefile cmTC_16f81/fast
-        gmake[1]: Entering directory '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-Do17HN'
-        /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/gmake  -f CMakeFiles/cmTC_16f81.dir/build.make CMakeFiles/cmTC_16f81.dir/build
-        gmake[2]: Entering directory '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-Do17HN'
-        Building C object CMakeFiles/cmTC_16f81.dir/test_mpi.c.o
-        /u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/gcc   -pthread -o CMakeFiles/cmTC_16f81.dir/test_mpi.c.o -c /home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-Do17HN/test_mpi.c
-        Linking C executable cmTC_16f81
-        /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/cmake -E cmake_link_script CMakeFiles/cmTC_16f81.dir/link.txt --verbose=1
-        /u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/gcc -Wl,-rpath -Wl,/u/sw/toolchains/gcc-glibc/11.2.0/base/lib -Wl,-rpath -Wl,/u/sw/toolchains/gcc-glibc/11.2.0/base/lib -Wl,--enable-new-dtags -pthread CMakeFiles/cmTC_16f81.dir/test_mpi.c.o -o cmTC_16f81  /u/sw/toolchains/gcc-glibc/11.2.0/base/lib/libmpi.so 
-        gmake[2]: Leaving directory '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-Do17HN'
-        gmake[1]: Leaving directory '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-Do17HN'
+        Run Build Command(s): /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/cmake -E env VERBOSE=1 /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/gmake -f Makefile cmTC_f0ae5/fast
+        /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/gmake  -f CMakeFiles/cmTC_f0ae5.dir/build.make CMakeFiles/cmTC_f0ae5.dir/build
+        gmake[1]: Entering directory '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-6aNZ0T'
+        Building C object CMakeFiles/cmTC_f0ae5.dir/test_mpi.c.o
+        /u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/gcc   -pthread -o CMakeFiles/cmTC_f0ae5.dir/test_mpi.c.o -c /home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-6aNZ0T/test_mpi.c
+        Linking C executable cmTC_f0ae5
+        /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/cmake -E cmake_link_script CMakeFiles/cmTC_f0ae5.dir/link.txt --verbose=1
+        /u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/gcc -Wl,-rpath -Wl,/u/sw/toolchains/gcc-glibc/11.2.0/base/lib -Wl,-rpath -Wl,/u/sw/toolchains/gcc-glibc/11.2.0/base/lib -Wl,--enable-new-dtags -pthread CMakeFiles/cmTC_f0ae5.dir/test_mpi.c.o -o cmTC_f0ae5  /u/sw/toolchains/gcc-glibc/11.2.0/base/lib/libmpi.so 
+        gmake[1]: Leaving directory '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-6aNZ0T'
         
       exitCode: 0
   -
@@ -1410,8 +953,8 @@ events:
       - "CMakeLists.txt:4 (include)"
     description: "The MPI test test_mpi for CXX in mode normal"
     directories:
-      source: "/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-EoCiJR"
-      binary: "/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-EoCiJR"
+      source: "/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-mkLpmk"
+      binary: "/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-mkLpmk"
     cmakeVariables:
       CMAKE_CXX_FLAGS: ""
       CMAKE_CXX_FLAGS_DEBUG: "-g"
@@ -1420,19 +963,17 @@ events:
       variable: "MPI_RESULT_CXX_test_mpi_normal"
       cached: true
       stdout: |
-        Change Dir: '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-EoCiJR'
+        Change Dir: '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-mkLpmk'
         
-        Run Build Command(s): /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/cmake -E env VERBOSE=1 /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/gmake -f Makefile cmTC_36363/fast
-        gmake[1]: Entering directory '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-EoCiJR'
-        /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/gmake  -f CMakeFiles/cmTC_36363.dir/build.make CMakeFiles/cmTC_36363.dir/build
-        gmake[2]: Entering directory '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-EoCiJR'
-        Building CXX object CMakeFiles/cmTC_36363.dir/test_mpi.cpp.o
-        /u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/g++   -std=gnu++17 -pthread -o CMakeFiles/cmTC_36363.dir/test_mpi.cpp.o -c /home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-EoCiJR/test_mpi.cpp
-        Linking CXX executable cmTC_36363
-        /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/cmake -E cmake_link_script CMakeFiles/cmTC_36363.dir/link.txt --verbose=1
-        /u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/g++ -Wl,-rpath -Wl,/u/sw/toolchains/gcc-glibc/11.2.0/base/lib -Wl,-rpath -Wl,/u/sw/toolchains/gcc-glibc/11.2.0/base/lib -Wl,--enable-new-dtags -pthread CMakeFiles/cmTC_36363.dir/test_mpi.cpp.o -o cmTC_36363  /u/sw/toolchains/gcc-glibc/11.2.0/base/lib/libmpi.so 
-        gmake[2]: Leaving directory '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-EoCiJR'
-        gmake[1]: Leaving directory '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-EoCiJR'
+        Run Build Command(s): /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/cmake -E env VERBOSE=1 /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/gmake -f Makefile cmTC_62c52/fast
+        /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/gmake  -f CMakeFiles/cmTC_62c52.dir/build.make CMakeFiles/cmTC_62c52.dir/build
+        gmake[1]: Entering directory '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-mkLpmk'
+        Building CXX object CMakeFiles/cmTC_62c52.dir/test_mpi.cpp.o
+        /u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/g++   -std=gnu++17 -pthread -o CMakeFiles/cmTC_62c52.dir/test_mpi.cpp.o -c /home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-mkLpmk/test_mpi.cpp
+        Linking CXX executable cmTC_62c52
+        /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/cmake -E cmake_link_script CMakeFiles/cmTC_62c52.dir/link.txt --verbose=1
+        /u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/g++ -Wl,-rpath -Wl,/u/sw/toolchains/gcc-glibc/11.2.0/base/lib -Wl,-rpath -Wl,/u/sw/toolchains/gcc-glibc/11.2.0/base/lib -Wl,--enable-new-dtags -pthread CMakeFiles/cmTC_62c52.dir/test_mpi.cpp.o -o cmTC_62c52  /u/sw/toolchains/gcc-glibc/11.2.0/base/lib/libmpi.so 
+        gmake[1]: Leaving directory '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-mkLpmk'
         
       exitCode: 0
   -
@@ -1444,8 +985,8 @@ events:
       - "CMakeLists.txt:4 (include)"
     description: "The MPI test test_mpi for CXX in mode MPICXX"
     directories:
-      source: "/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-ufeWyA"
-      binary: "/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-ufeWyA"
+      source: "/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-DGADTz"
+      binary: "/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-DGADTz"
     cmakeVariables:
       CMAKE_CXX_FLAGS: ""
       CMAKE_CXX_FLAGS_DEBUG: "-g"
@@ -1454,19 +995,17 @@ events:
       variable: "MPI_RESULT_CXX_test_mpi_MPICXX"
       cached: true
       stdout: |
-        Change Dir: '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-ufeWyA'
+        Change Dir: '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-DGADTz'
         
-        Run Build Command(s): /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/cmake -E env VERBOSE=1 /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/gmake -f Makefile cmTC_868ad/fast
-        gmake[1]: Entering directory '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-ufeWyA'
-        /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/gmake  -f CMakeFiles/cmTC_868ad.dir/build.make CMakeFiles/cmTC_868ad.dir/build
-        gmake[2]: Entering directory '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-ufeWyA'
-        Building CXX object CMakeFiles/cmTC_868ad.dir/test_mpi.cpp.o
-        /u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/g++   -std=gnu++17 -pthread -o CMakeFiles/cmTC_868ad.dir/test_mpi.cpp.o -c /home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-ufeWyA/test_mpi.cpp
-        Linking CXX executable cmTC_868ad
-        /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/cmake -E cmake_link_script CMakeFiles/cmTC_868ad.dir/link.txt --verbose=1
-        /u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/g++ -Wl,-rpath -Wl,/u/sw/toolchains/gcc-glibc/11.2.0/base/lib -Wl,-rpath -Wl,/u/sw/toolchains/gcc-glibc/11.2.0/base/lib -Wl,--enable-new-dtags -pthread CMakeFiles/cmTC_868ad.dir/test_mpi.cpp.o -o cmTC_868ad  /u/sw/toolchains/gcc-glibc/11.2.0/base/lib/libmpi.so 
-        gmake[2]: Leaving directory '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-ufeWyA'
-        gmake[1]: Leaving directory '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-ufeWyA'
+        Run Build Command(s): /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/cmake -E env VERBOSE=1 /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/gmake -f Makefile cmTC_409d2/fast
+        /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/gmake  -f CMakeFiles/cmTC_409d2.dir/build.make CMakeFiles/cmTC_409d2.dir/build
+        gmake[1]: Entering directory '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-DGADTz'
+        Building CXX object CMakeFiles/cmTC_409d2.dir/test_mpi.cpp.o
+        /u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/g++   -std=gnu++17 -pthread -o CMakeFiles/cmTC_409d2.dir/test_mpi.cpp.o -c /home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-DGADTz/test_mpi.cpp
+        Linking CXX executable cmTC_409d2
+        /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/cmake -E cmake_link_script CMakeFiles/cmTC_409d2.dir/link.txt --verbose=1
+        /u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/g++ -Wl,-rpath -Wl,/u/sw/toolchains/gcc-glibc/11.2.0/base/lib -Wl,-rpath -Wl,/u/sw/toolchains/gcc-glibc/11.2.0/base/lib -Wl,--enable-new-dtags -pthread CMakeFiles/cmTC_409d2.dir/test_mpi.cpp.o -o cmTC_409d2  /u/sw/toolchains/gcc-glibc/11.2.0/base/lib/libmpi.so 
+        gmake[1]: Leaving directory '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-DGADTz'
         
       exitCode: 0
 ...
