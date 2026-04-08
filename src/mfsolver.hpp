@@ -95,47 +95,6 @@ namespace MFSolver
     using Range = std::pair<unsigned int, unsigned int>;
 
     /**
-     * \brief Represents a generic ADR problem.
-     * \tparam dim The dimensionality of the space the ADR problem is living in.
-     */
-    template <int dim>
-    struct ADRProblem
-    {
-        RealFunction<dim> mu;                 /**< Diffusion coefficient. */
-        VectorFunctionWithGradient<dim> beta; /**< Advection coefficient. */
-        RealFunction<dim> gamma;              /**< Reaction coefficient. */
-
-        RealFunction<dim> f; /**< Forcing term. */
-
-        // RealFunction<dim> g; /**< Dirichlet boundary. */
-        // RealFunction<dim> h; /**< Neumann boundary. */
-
-        DirichletBoundaries<dim> dirichlet_boundaries; /**< Dirichlet boundaries. */
-        NeumannBoundaries<dim> neumann_boundaries;     /**< Neumann boundaries. */
-
-        std::string mesh_filename; /**< Filename from which to load the mesh. */
-
-        // unsigned int degree; // Unset as it needs to be a template argument
-
-        unsigned int num_levels; /**< Number of multigrid levels in the V-cycle. */
-
-        unsigned int num_quadrature_points; /**< Number of quadrature points. */
-
-        unsigned int refinement_coefficient; /**< How many times the mesh is refined each time it gets refined. */
-
-        double lv0_smoothing_range; /**< The range between the largest and the smaller eigenvalue for the lower level of the multigrid V-Cycle. */
-        // double lv0_smoothing_degree; // Unset as we use invalid int to make this a solver instead of a preconditioner. See PreconditionChebyshev documentation
-        // double lv0_smoothing_eigenvalue_max_iterations; // Unset as we use the number of rows of the lowest level matrix in muligrid V-Cycle
-
-        double lvgt0_smoothing_range;                     /**< The range between the largest and the smaller eigenvalue for all but the lower level of the multigrid V-Cycle. */
-        double lvgt0_smoothing_degree;                    /**< The number of smoothing iterations for all but the lower level of the multigrid V-Cycle. */
-        double lvgt0_smoothing_eigenvalue_max_iterations; /**< The maximum number of iterations used to find the maximum eigenvalue forall but the lower level of the multigrid V-Cycle. */
-
-        unsigned int solver_max_iterations; /**< Maximum number of iterations when solving the algebraic system. */
-        double solver_tolerance_factor;     /**< Factor to multiply to the l2 norm of the rhs of the algebraic system in order to get the absolute tolerance. */
-    };
-
-    /**
      * \brief Abstract class used to keep a common interface between the matrix-free solver (MatrixFreeADRSolver) and the matrix-based solver (MatrixBasedADRSolver).
      * \tparam dim The dimensionality of the space the ADR problem is living in.
      * \tparam fe_degree The degree of the finite elements used to solve the problem.
@@ -413,19 +372,17 @@ namespace MFSolver
     class MatrixFreeADRSolver : public ADRSolver<dim, fe_degree>
     {
     public:
-        MatrixFreeADRSolver(const ADR::ProblemData<dim> &_problem) 
+        MatrixFreeADRSolver(const ADR::ProblemData<dim> &_problem)
             : ADRSolver<dim, fe_degree>(_problem)
 #ifdef DEAL_II_WITH_P4EST
-            , triangulation(MPI_COMM_WORLD, Triangulation<dim>::limit_level_difference_at_vertices, parallel::distributed::Triangulation<dim>::construct_multigrid_hierarchy)
+              ,
+              triangulation(MPI_COMM_WORLD, Triangulation<dim>::limit_level_difference_at_vertices, parallel::distributed::Triangulation<dim>::construct_multigrid_hierarchy)
 #else
-            , triangulation(Triangulation<dim>::limit_level_difference_at_vertices)
+              ,
+              triangulation(Triangulation<dim>::limit_level_difference_at_vertices)
 #endif
-            , fe(fe_degree)
-            , dof_handler(triangulation)
-            , mapping()
-            , setup_time(0.0)
-            , pcout(std::cout, Utilities::MPI::this_mpi_process(MPI_COMM_WORLD) == 0)
-            , time_details(std::cout, false && Utilities::MPI::this_mpi_process(MPI_COMM_WORLD) == 0)
+              ,
+              fe(fe_degree), dof_handler(triangulation), mapping(), setup_time(0.0), pcout(std::cout, Utilities::MPI::this_mpi_process(MPI_COMM_WORLD) == 0), time_details(std::cout, false && Utilities::MPI::this_mpi_process(MPI_COMM_WORLD) == 0)
         {
         }
         ~MatrixFreeADRSolver() override {};
