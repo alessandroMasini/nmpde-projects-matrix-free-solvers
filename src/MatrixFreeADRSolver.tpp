@@ -119,17 +119,45 @@ namespace MFSolver
         system_rhs = 0;
 
         FEEvaluation<dim, fe_degree> phi(*system_matrix.get_matrix_free());
+        FEFaceEvaluation<dim, fe_degree, fe_degree + 1, 1, double> face_phi(*system_matrix.get_matrix_free());
 
         for (unsigned int cell = 0; cell < system_matrix.get_matrix_free()->n_cell_batches(); ++cell)
         {
             phi.reinit(cell);
             for (const unsigned int q : phi.quadrature_point_indices())
             {
-                phi.submit_value(make_vectorized_array<double>(1.0), q);
+                Point<dim, VectorizedArray<double>> quadrature_point = phi.quadrature_point(q);
+                VectorizedArray<double> value_of_f = this->problem.forcing_term->value(quadrature_point);
+                phi.submit_value(value_of_f, q);
             }
             phi.integrate(EvaluationFlags::values);
             phi.distribute_local_to_global(system_rhs);
         }
+
+        for (unsigned int face = 0; face < system_matrix.get_matrix_free()->n_boundary_face_batches(); ++face)
+        {
+            face_phi.reinit(face);
+
+            const unsigned int boundary_id = system_matrix.get_matrix_free()->get_boundary_id(face);
+
+            if (this->problem.neumann_boundaries.find(boundary_id) != this->problem.neumann_boundaries.end())
+            {
+                const auto &neumann = this->problem.neumann_boundaries.at(boundary_id);
+
+                for (const unsigned int q : face_phi.quadrature_point_indices())
+                {
+                    Point<dim, VectorizedArray<double>> quadrature_point = face_phi.quadrature_point(q);
+                    VectorizedArray<double> neumann_value = neumann->value(quadrature_point);
+                    VectorizedArray<double> mu = this->problem.mu->value(quadrature_point);
+
+                    face_phi.submit_value(neumann_value * mu, q);
+                }
+            }
+
+            face_phi.integrate(EvaluationFlags::values);
+            face_phi.distribute_local_to_global(system_rhs);
+        }
+
         system_rhs.compress(VectorOperation::add);
 
         setup_time += timer.wall_time();
