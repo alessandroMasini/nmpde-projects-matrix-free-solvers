@@ -30,4 +30,4 @@ find_package(deal.II 9.5.1 REQUIRED
 deal_ii_initialize_cached_variables()
 
 # Add useful compiler flags.
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wfloat-conversion -Wmissing-braces -Wnon-virtual-dtor -Og -g -fno-inline -fno-inline-functions")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wfloat-conversion -Wmissing-braces -Wnon-virtual-dtor")

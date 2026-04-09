@@ -1213,3 +1213,207 @@ events:
         
       exitCode: 0
 ...
+
+---
+events:
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/u/sw/toolchains/gcc-glibc/11.2.0/base/share/cmake-3.28/Modules/FindMPI.cmake:1278 (try_compile)"
+      - "/u/sw/toolchains/gcc-glibc/11.2.0/base/share/cmake-3.28/Modules/FindMPI.cmake:1322 (_MPI_try_staged_settings)"
+      - "/u/sw/toolchains/gcc-glibc/11.2.0/base/share/cmake-3.28/Modules/FindMPI.cmake:1645 (_MPI_check_lang_works)"
+      - "/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/common/cmake-common.cmake:16 (find_package)"
+      - "CMakeLists.txt:4 (include)"
+    description: "The MPI test test_mpi for C in mode normal"
+    directories:
+      source: "/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-B6onVd"
+      binary: "/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-B6onVd"
+    cmakeVariables:
+      CMAKE_C_FLAGS: ""
+      CMAKE_C_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+    buildResult:
+      variable: "MPI_RESULT_C_test_mpi_normal"
+      cached: true
+      stdout: |
+        Change Dir: '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-B6onVd'
+        
+        Run Build Command(s): /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/cmake -E env VERBOSE=1 /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/gmake -f Makefile cmTC_20793/fast
+        /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/gmake  -f CMakeFiles/cmTC_20793.dir/build.make CMakeFiles/cmTC_20793.dir/build
+        gmake[1]: Entering directory '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-B6onVd'
+        Building C object CMakeFiles/cmTC_20793.dir/test_mpi.c.o
+        /u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/gcc   -pthread -o CMakeFiles/cmTC_20793.dir/test_mpi.c.o -c /home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-B6onVd/test_mpi.c
+        Linking C executable cmTC_20793
+        /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/cmake -E cmake_link_script CMakeFiles/cmTC_20793.dir/link.txt --verbose=1
+        /u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/gcc -Wl,-rpath -Wl,/u/sw/toolchains/gcc-glibc/11.2.0/base/lib -Wl,-rpath -Wl,/u/sw/toolchains/gcc-glibc/11.2.0/base/lib -Wl,--enable-new-dtags -pthread CMakeFiles/cmTC_20793.dir/test_mpi.c.o -o cmTC_20793  /u/sw/toolchains/gcc-glibc/11.2.0/base/lib/libmpi.so 
+        gmake[1]: Leaving directory '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-B6onVd'
+        
+      exitCode: 0
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/u/sw/toolchains/gcc-glibc/11.2.0/base/share/cmake-3.28/Modules/FindMPI.cmake:1278 (try_compile)"
+      - "/u/sw/toolchains/gcc-glibc/11.2.0/base/share/cmake-3.28/Modules/FindMPI.cmake:1322 (_MPI_try_staged_settings)"
+      - "/u/sw/toolchains/gcc-glibc/11.2.0/base/share/cmake-3.28/Modules/FindMPI.cmake:1645 (_MPI_check_lang_works)"
+      - "/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/common/cmake-common.cmake:16 (find_package)"
+      - "CMakeLists.txt:4 (include)"
+    description: "The MPI test test_mpi for CXX in mode normal"
+    directories:
+      source: "/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-khr6Rk"
+      binary: "/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-khr6Rk"
+    cmakeVariables:
+      CMAKE_CXX_FLAGS: ""
+      CMAKE_CXX_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+    buildResult:
+      variable: "MPI_RESULT_CXX_test_mpi_normal"
+      cached: true
+      stdout: |
+        Change Dir: '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-khr6Rk'
+        
+        Run Build Command(s): /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/cmake -E env VERBOSE=1 /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/gmake -f Makefile cmTC_206e9/fast
+        /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/gmake  -f CMakeFiles/cmTC_206e9.dir/build.make CMakeFiles/cmTC_206e9.dir/build
+        gmake[1]: Entering directory '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-khr6Rk'
+        Building CXX object CMakeFiles/cmTC_206e9.dir/test_mpi.cpp.o
+        /u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/g++   -std=gnu++17 -pthread -o CMakeFiles/cmTC_206e9.dir/test_mpi.cpp.o -c /home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-khr6Rk/test_mpi.cpp
+        Linking CXX executable cmTC_206e9
+        /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/cmake -E cmake_link_script CMakeFiles/cmTC_206e9.dir/link.txt --verbose=1
+        /u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/g++ -Wl,-rpath -Wl,/u/sw/toolchains/gcc-glibc/11.2.0/base/lib -Wl,-rpath -Wl,/u/sw/toolchains/gcc-glibc/11.2.0/base/lib -Wl,--enable-new-dtags -pthread CMakeFiles/cmTC_206e9.dir/test_mpi.cpp.o -o cmTC_206e9  /u/sw/toolchains/gcc-glibc/11.2.0/base/lib/libmpi.so 
+        gmake[1]: Leaving directory '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-khr6Rk'
+        
+      exitCode: 0
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/u/sw/toolchains/gcc-glibc/11.2.0/base/share/cmake-3.28/Modules/FindMPI.cmake:1278 (try_compile)"
+      - "/u/sw/toolchains/gcc-glibc/11.2.0/base/share/cmake-3.28/Modules/FindMPI.cmake:1672 (_MPI_try_staged_settings)"
+      - "/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/common/cmake-common.cmake:16 (find_package)"
+      - "CMakeLists.txt:4 (include)"
+    description: "The MPI test test_mpi for CXX in mode MPICXX"
+    directories:
+      source: "/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-sPqBoc"
+      binary: "/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-sPqBoc"
+    cmakeVariables:
+      CMAKE_CXX_FLAGS: ""
+      CMAKE_CXX_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+    buildResult:
+      variable: "MPI_RESULT_CXX_test_mpi_MPICXX"
+      cached: true
+      stdout: |
+        Change Dir: '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-sPqBoc'
+        
+        Run Build Command(s): /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/cmake -E env VERBOSE=1 /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/gmake -f Makefile cmTC_0112c/fast
+        /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/gmake  -f CMakeFiles/cmTC_0112c.dir/build.make CMakeFiles/cmTC_0112c.dir/build
+        gmake[1]: Entering directory '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-sPqBoc'
+        Building CXX object CMakeFiles/cmTC_0112c.dir/test_mpi.cpp.o
+        /u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/g++   -std=gnu++17 -pthread -o CMakeFiles/cmTC_0112c.dir/test_mpi.cpp.o -c /home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-sPqBoc/test_mpi.cpp
+        Linking CXX executable cmTC_0112c
+        /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/cmake -E cmake_link_script CMakeFiles/cmTC_0112c.dir/link.txt --verbose=1
+        /u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/g++ -Wl,-rpath -Wl,/u/sw/toolchains/gcc-glibc/11.2.0/base/lib -Wl,-rpath -Wl,/u/sw/toolchains/gcc-glibc/11.2.0/base/lib -Wl,--enable-new-dtags -pthread CMakeFiles/cmTC_0112c.dir/test_mpi.cpp.o -o cmTC_0112c  /u/sw/toolchains/gcc-glibc/11.2.0/base/lib/libmpi.so 
+        gmake[1]: Leaving directory '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-sPqBoc'
+        
+      exitCode: 0
+...
+
+---
+events:
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/u/sw/toolchains/gcc-glibc/11.2.0/base/share/cmake-3.28/Modules/FindMPI.cmake:1278 (try_compile)"
+      - "/u/sw/toolchains/gcc-glibc/11.2.0/base/share/cmake-3.28/Modules/FindMPI.cmake:1322 (_MPI_try_staged_settings)"
+      - "/u/sw/toolchains/gcc-glibc/11.2.0/base/share/cmake-3.28/Modules/FindMPI.cmake:1645 (_MPI_check_lang_works)"
+      - "/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/common/cmake-common.cmake:16 (find_package)"
+      - "CMakeLists.txt:4 (include)"
+    description: "The MPI test test_mpi for C in mode normal"
+    directories:
+      source: "/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-Nxm6uX"
+      binary: "/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-Nxm6uX"
+    cmakeVariables:
+      CMAKE_C_FLAGS: ""
+      CMAKE_C_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+    buildResult:
+      variable: "MPI_RESULT_C_test_mpi_normal"
+      cached: true
+      stdout: |
+        Change Dir: '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-Nxm6uX'
+        
+        Run Build Command(s): /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/cmake -E env VERBOSE=1 /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/gmake -f Makefile cmTC_31467/fast
+        /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/gmake  -f CMakeFiles/cmTC_31467.dir/build.make CMakeFiles/cmTC_31467.dir/build
+        gmake[1]: Entering directory '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-Nxm6uX'
+        Building C object CMakeFiles/cmTC_31467.dir/test_mpi.c.o
+        /u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/gcc   -pthread -o CMakeFiles/cmTC_31467.dir/test_mpi.c.o -c /home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-Nxm6uX/test_mpi.c
+        Linking C executable cmTC_31467
+        /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/cmake -E cmake_link_script CMakeFiles/cmTC_31467.dir/link.txt --verbose=1
+        /u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/gcc -Wl,-rpath -Wl,/u/sw/toolchains/gcc-glibc/11.2.0/base/lib -Wl,-rpath -Wl,/u/sw/toolchains/gcc-glibc/11.2.0/base/lib -Wl,--enable-new-dtags -pthread CMakeFiles/cmTC_31467.dir/test_mpi.c.o -o cmTC_31467  /u/sw/toolchains/gcc-glibc/11.2.0/base/lib/libmpi.so 
+        gmake[1]: Leaving directory '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-Nxm6uX'
+        
+      exitCode: 0
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/u/sw/toolchains/gcc-glibc/11.2.0/base/share/cmake-3.28/Modules/FindMPI.cmake:1278 (try_compile)"
+      - "/u/sw/toolchains/gcc-glibc/11.2.0/base/share/cmake-3.28/Modules/FindMPI.cmake:1322 (_MPI_try_staged_settings)"
+      - "/u/sw/toolchains/gcc-glibc/11.2.0/base/share/cmake-3.28/Modules/FindMPI.cmake:1645 (_MPI_check_lang_works)"
+      - "/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/common/cmake-common.cmake:16 (find_package)"
+      - "CMakeLists.txt:4 (include)"
+    description: "The MPI test test_mpi for CXX in mode normal"
+    directories:
+      source: "/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-wzm8FT"
+      binary: "/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-wzm8FT"
+    cmakeVariables:
+      CMAKE_CXX_FLAGS: ""
+      CMAKE_CXX_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+    buildResult:
+      variable: "MPI_RESULT_CXX_test_mpi_normal"
+      cached: true
+      stdout: |
+        Change Dir: '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-wzm8FT'
+        
+        Run Build Command(s): /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/cmake -E env VERBOSE=1 /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/gmake -f Makefile cmTC_7531e/fast
+        /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/gmake  -f CMakeFiles/cmTC_7531e.dir/build.make CMakeFiles/cmTC_7531e.dir/build
+        gmake[1]: Entering directory '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-wzm8FT'
+        Building CXX object CMakeFiles/cmTC_7531e.dir/test_mpi.cpp.o
+        /u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/g++   -std=gnu++17 -pthread -o CMakeFiles/cmTC_7531e.dir/test_mpi.cpp.o -c /home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-wzm8FT/test_mpi.cpp
+        Linking CXX executable cmTC_7531e
+        /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/cmake -E cmake_link_script CMakeFiles/cmTC_7531e.dir/link.txt --verbose=1
+        /u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/g++ -Wl,-rpath -Wl,/u/sw/toolchains/gcc-glibc/11.2.0/base/lib -Wl,-rpath -Wl,/u/sw/toolchains/gcc-glibc/11.2.0/base/lib -Wl,--enable-new-dtags -pthread CMakeFiles/cmTC_7531e.dir/test_mpi.cpp.o -o cmTC_7531e  /u/sw/toolchains/gcc-glibc/11.2.0/base/lib/libmpi.so 
+        gmake[1]: Leaving directory '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-wzm8FT'
+        
+      exitCode: 0
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/u/sw/toolchains/gcc-glibc/11.2.0/base/share/cmake-3.28/Modules/FindMPI.cmake:1278 (try_compile)"
+      - "/u/sw/toolchains/gcc-glibc/11.2.0/base/share/cmake-3.28/Modules/FindMPI.cmake:1672 (_MPI_try_staged_settings)"
+      - "/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/common/cmake-common.cmake:16 (find_package)"
+      - "CMakeLists.txt:4 (include)"
+    description: "The MPI test test_mpi for CXX in mode MPICXX"
+    directories:
+      source: "/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-M5Rxc3"
+      binary: "/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-M5Rxc3"
+    cmakeVariables:
+      CMAKE_CXX_FLAGS: ""
+      CMAKE_CXX_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+    buildResult:
+      variable: "MPI_RESULT_CXX_test_mpi_MPICXX"
+      cached: true
+      stdout: |
+        Change Dir: '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-M5Rxc3'
+        
+        Run Build Command(s): /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/cmake -E env VERBOSE=1 /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/gmake -f Makefile cmTC_f1292/fast
+        /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/gmake  -f CMakeFiles/cmTC_f1292.dir/build.make CMakeFiles/cmTC_f1292.dir/build
+        gmake[1]: Entering directory '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-M5Rxc3'
+        Building CXX object CMakeFiles/cmTC_f1292.dir/test_mpi.cpp.o
+        /u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/g++   -std=gnu++17 -pthread -o CMakeFiles/cmTC_f1292.dir/test_mpi.cpp.o -c /home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-M5Rxc3/test_mpi.cpp
+        Linking CXX executable cmTC_f1292
+        /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/cmake -E cmake_link_script CMakeFiles/cmTC_f1292.dir/link.txt --verbose=1
+        /u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/g++ -Wl,-rpath -Wl,/u/sw/toolchains/gcc-glibc/11.2.0/base/lib -Wl,-rpath -Wl,/u/sw/toolchains/gcc-glibc/11.2.0/base/lib -Wl,--enable-new-dtags -pthread CMakeFiles/cmTC_f1292.dir/test_mpi.cpp.o -o cmTC_f1292  /u/sw/toolchains/gcc-glibc/11.2.0/base/lib/libmpi.so 
+        gmake[1]: Leaving directory '/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/ADR_matrix_based_example/CMakeFiles/CMakeScratch/TryCompile-M5Rxc3'
+        
+      exitCode: 0
+...
