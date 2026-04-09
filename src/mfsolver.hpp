@@ -107,7 +107,7 @@ namespace MFSolver
          * \brief Constructs a new instance of ADRSolver
          * \param _problem The problem this solver will solve.
          */
-        ADRSolver(const ADR::ProblemData<dim> &_problem)
+        ADRSolver(const ADR::ProblemData<dim, fe_degree> &_problem)
             : problem(_problem)
         {
         }
@@ -146,7 +146,7 @@ namespace MFSolver
         /**
          * \brief The problem this solver will solve.
          */
-        ADR::ProblemData<dim> problem;
+        ADR::ProblemData<dim, fe_degree> problem;
     };
 
     /**
@@ -372,7 +372,7 @@ namespace MFSolver
     class MatrixFreeADRSolver : public ADRSolver<dim, fe_degree>
     {
     public:
-        MatrixFreeADRSolver(const ADR::ProblemData<dim> &_problem)
+        MatrixFreeADRSolver(const ADR::ProblemData<dim, fe_degree> &_problem)
             : ADRSolver<dim, fe_degree>(_problem)
 #ifdef DEAL_II_WITH_P4EST
               ,
@@ -439,11 +439,11 @@ namespace MFSolver
     class MatrixBasedADRSolver : public ADRSolver<dim, fe_degree>
     {
     public:
-        MatrixBasedADRSolver(const ADRProblem<dim> &_problem) : ADRSolver<dim, fe_degree>(_problem),
-                                                                mpi_size(Utilities::MPI::n_mpi_processes(MPI_COMM_WORLD)),
-                                                                mpi_rank(Utilities::MPI::this_mpi_process(MPI_COMM_WORLD)),
-                                                                mesh(MPI_COMM_WORLD),
-                                                                pcout(std::cout, mpi_rank == 0)
+        MatrixBasedADRSolver(const ADR::ProblemData<dim, fe_degree> &_problem) : ADRSolver<dim, fe_degree>(_problem),
+                                                                                 mpi_size(Utilities::MPI::n_mpi_processes(MPI_COMM_WORLD)),
+                                                                                 mpi_rank(Utilities::MPI::this_mpi_process(MPI_COMM_WORLD)),
+                                                                                 mesh(MPI_COMM_WORLD),
+                                                                                 pcout(std::cout, mpi_rank == 0)
         {
         }
         ~MatrixBasedADRSolver() override {};

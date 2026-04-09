@@ -91,11 +91,12 @@ namespace ADR
     template <int dim, int fe_degree>
     struct ProblemData
     {
-        std::string mesh_filename;
+        std::string mesh_filename; /**< Filename from which to load the mesh. */
 
-        unsigned int num_levels;
+        unsigned int num_levels; /**< Number of multigrid levels in the V-cycle. */
 
-        unsigned int num_quadrature_points;
+        // TODO: is this actually used?
+        unsigned int num_quadrature_points; /**< Number of quadrature points. */
 
         double lv0_smoothing_range; /**< The range between the largest and the smaller eigenvalue for the lower level of the multigrid V-Cycle. */
         // double lv0_smoothing_degree; // Unset as we use invalid int to make this a solver instead of a preconditioner. See PreconditionChebyshev documentation
@@ -108,46 +109,51 @@ namespace ADR
         unsigned int solver_max_iterations; /**< Maximum number of iterations when solving the algebraic system. */
         double solver_tolerance_factor;     /**< Factor to multiply to the l2 norm of the rhs of the algebraic system in order to get the absolute tolerance. */
 
-        // Mesh refinement level (if generating a hyper_cube/hyper_ball)
-        unsigned int refinement_coefficient_per_level = 4;
+        // TODO: where is this used???
+        unsigned int refinement_coefficient_per_level = 4; /**< Mesh refinement level (if generating a hyper_cube/hyper_ball) */
 
         // Number of elements in each direction (if using a subdivision)
         // unsigned int elements_per_direction = 10;
 
         // --- PDE Coefficients ---
 
-        // Diffusion coefficient function: mu(x)
-        std::shared_ptr<MFSolver::RealFunction<dim>> mu;
+        std::shared_ptr<MFSolver::RealFunction<dim>> mu;                 /**< Diffusion coefficient function: mu(x) */
+        std::shared_ptr<MFSolver::VectorFunctionWithGradient<dim>> beta; /**< Advection coefficient function: beta(x) (velocity field) */
+        std::shared_ptr<MFSolver::RealFunction<dim>> gamma;              /**< Reaction coefficient function: gamma(x) (or k in some notations) */
 
-        // Advection coefficient function: beta(x) (velocity field)
-        std::shared_ptr<MFSolver::VectorFunctionWithGradient<dim>> beta;
+        std::shared_ptr<MFSolver::RealFunction<dim>> forcing_term; /**< Forcing term: f(x) */
 
-        // Reaction coefficient function: gamma(x) (or k in some notations)
-        std::shared_ptr<MFSolver::RealFunction<dim>> gamma;
-
-        // Forcing term: f(x, t)
-        std::shared_ptr<MFSolver::RealFunction<dim>> forcing_term;
-
-        // Dirichlet boundary condition: g(x, t) for the general lifting
-        std::shared_ptr<MFSolver::RealFunction<dim>> dirichlet_boundary_value;
-
-        std::shared_ptr<MFSolver::RealFunction<dim>> neumann_boundary_value;
+        std::shared_ptr<MFSolver::RealFunction<dim>> dirichlet_boundary_value; /**< Dirichlet boundary condition: g(x) for the general lifting */
+        std::shared_ptr<MFSolver::RealFunction<dim>> neumann_boundary_value;   /**< Neumann boundary conditions: h(g) */
 
         /**
          * @brief Helper to initialize with some default test-case values
          */
-        static ProblemData<dim> standard_test_case()
+        static ProblemData<dim, fe_degree> standard_test_case()
         {
-            ProblemData<dim> data;
+            ProblemData<dim, fe_degree> data;
 
-            data.fe_degree = 1;
-            data.refinement_level = 5;
+            // data.fe_degree = 1;
+            // data.refinement_level = 5;
 
             data.mu = std::make_shared<ConstantRealFunction<dim>>(1.0);
             data.beta = std::make_shared<ConstantVectorFunctionWithGradient<dim>>(1.0);
             data.gamma = std::make_shared<ConstantRealFunction<dim>>(0.0);
             data.forcing_term = std::make_shared<ConstantRealFunction<dim>>(1.0);
             data.dirichlet_boundary_value = std::make_shared<ConstantRealFunction<dim>>(0.0);
+
+            data.mesh_filename = "input.msh";
+            data.num_levels = 5;
+            data.num_quadrature_points = 3;
+
+            data.lv0_smoothing_range = 1.e-3;
+
+            data.lvgt0_smoothing_range = 15;
+            data.lvgt0_smoothing_degree = 5;
+            data.lvgt0_smoothing_eigenvalue_max_iterations = 10;
+
+            data.solver_max_iterations = 100;
+            data.solver_tolerance_factor = 1e-12;
 
             return data;
         }
