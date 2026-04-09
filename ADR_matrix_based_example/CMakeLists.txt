@@ -3,7 +3,9 @@ project(MatrixBasedSolver)
 
 include(../common/cmake-common.cmake)
 
-add_compile_options(-Og -g -fno-inline -fno-inline-functions -fsanitize=address)
+# At some point we should also use -Wall -Wextra -Wpedantic
+add_compile_options(-std=c++20 -Og -g -fno-inline -fno-inline-functions)
+# add_compile_options(-std=c++20 -Og -g -fno-inline -fno-inline-functions -fsanitize=address)
 
 add_executable(MatrixBasedTest MatrixBasedTest.cpp)
 deal_ii_setup_target(MatrixBasedTest)

@@ -1,14 +1,18 @@
-#include <deal.II/grid/grid_generator.h>
-#include <deal.II/grid/grid_in.h>
-#include <deal.II/grid/grid_tools.h>
 #include <deal.II/fe/fe_simplex_p.h>
-#include <deal.II/numerics/vector_tools.h>
-#include <deal.II/numerics/matrix_tools.h>
+
+#include <deal.II/grid/grid_generator.h>
+// #include <deal.II/grid/grid_in.h>
+#include <deal.II/grid/grid_tools.h>
+
+#include <deal.II/lac/trilinos_precondition.h>
+// #include <deal.II/lac/solver_cg.h>
 #include <deal.II/lac/solver_control.h>
-#include <deal.II/lac/solver_cg.h>
-#include <deal.II/lac/trilinos_vector.h>
-#include <deal.II/numerics/data_out.h>
-#include <deal.II/lac/vector.h>
+// #include <deal.II/lac/vector.h>
+
+// #include <deal.II/numerics/data_out.h>
+#include <deal.II/numerics/matrix_tools.h>
+#include <deal.II/numerics/vector_tools.h>
+
 
 // TODO: employ SIMD vectorization
 
@@ -109,7 +113,7 @@ namespace MFSolver{
       pcout << "  Initializing system_rhs" << std::endl;
       std::fflush(NULL);
       system_rhs.reinit (locally_owned_dofs, MPI_COMM_WORLD);
-      
+
       pcout << "  Initializing owned solution" << std::endl;
       std::fflush(NULL);
       solution_owned.reinit (locally_owned_dofs, MPI_COMM_WORLD);
@@ -154,11 +158,11 @@ namespace MFSolver{
       cell_rhs = 0.0;
 
       for (unsigned int q = 0; q < n_q; ++q) {
-        const double mu_loc = this->problem.mu.value (fe_values.quadrature_point (q));
-        b_loc = this->problem.beta.value (fe_values.quadrature_point (q));
-        const double k_loc = this->problem.gamma.value (fe_values.quadrature_point (q));
+        const double mu_loc = this->problem.mu->value (fe_values.quadrature_point (q));
+        b_loc = this->problem.beta->value (fe_values.quadrature_point (q));
+        const double k_loc = this->problem.gamma->value (fe_values.quadrature_point (q));
         const double f_loc =
-          this->problem.f.value (fe_values.quadrature_point (q));
+          this->problem.forcing_term->value (fe_values.quadrature_point (q));
 
         for (unsigned int i = 0; i < dofs_per_cell; ++i) {
           for (unsigned int j = 0; j < dofs_per_cell; ++j) {
