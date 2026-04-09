@@ -5,5 +5,7 @@ int main()
 {
     ADR::ProblemData<3, 2> data = ADR::ProblemData<3, 2>::standard_test_case();
 
+    MFSolver::MatrixFreeADRSolver<3, 2> solver(data);
+
     return 0;
 }

@@ -36,9 +36,9 @@ namespace MFSolver
             for (const auto &[boundary_id, function] : this->problem.dirichlet_boundaries)
             {
                 // Interpolates the specific function onto the nodes belonging to boundary_id
-                VectorTools::interpolate_boundary_values(mapping, dof_handler, boundary_id, function, constraints);
+                VectorTools::interpolate_boundary_values(mapping, dof_handler, boundary_id, *function, constraints);
             }
-            
+
             constraints.close();
         }
 
@@ -47,7 +47,7 @@ namespace MFSolver
         timer.restart();
 
         {
-            { 
+            {
                 // Initialize the system matrix with the correct settings
                 typename MatrixFree<dim, double>::AdditionalData additional_data;
                 additional_data.tasks_parallel_scheme = MatrixFree<dim, double>::AdditionalData::TasksParallelScheme::partition_color;
@@ -55,8 +55,9 @@ namespace MFSolver
 
                 std::shared_ptr<MatrixFree<dim, double>>
                     system_mf_storage(new MatrixFree<dim, double>());
-                
+
                 system_mf_storage->reinit(mapping, dof_handler, constraints, QGaussLobatto<1>(fe.degree + 1), additional_data);
+
                 system_matrix.initialize(system_mf_storage);
             }
 
@@ -68,7 +69,7 @@ namespace MFSolver
         time_details << "Setup mf system (cpu/wall): " << timer.cpu_time() << "s/" << timer.wall_time() << "s" << std::endl;
         timer.restart();
 
-        { 
+        {
             // Initialize all multigrid matrices with correct data
             const unsigned int nlevels = triangulation.n_global_levels();
             mg_matrices.resize(0, nlevels - 1);
@@ -78,7 +79,7 @@ namespace MFSolver
             {
                 dirichlet_boundary_ids.insert(boundary_id);
             }
-            
+
             mg_constrained_dofs.initialize(dof_handler);
             mg_constrained_dofs.make_zero_boundary_constraints(dof_handler, dirichlet_boundary_ids);
 
@@ -97,12 +98,51 @@ namespace MFSolver
                 additional_data.tasks_parallel_scheme = MatrixFree<dim, float>::AdditionalData::TasksParallelScheme::partition_color;
                 additional_data.mapping_update_flags = update_gradients | update_JxW_values | update_quadrature_points | update_values;
                 additional_data.mg_level = level;
-                
+
                 std::shared_ptr<MatrixFree<dim, float>> mg_mf_storage_level = std::make_shared<MatrixFree<dim, float>>();
                 mg_mf_storage_level->reinit(mapping, dof_handler, level_constraints, QGaussLobatto<1>(fe.degree + 1), additional_data);
 
                 mg_matrices[level].initialize(mg_mf_storage_level, mg_constrained_dofs, level);
             }
         }
+
+        setup_time += timer.wall_time();
+        time_details << "Setup matrix-free levels   (CPU/wall) " << timer.cpu_time()
+                     << "s/" << timer.wall_time() << 's' << std::endl;
     }
+
+    template <int dim, int fe_degree>
+    void MatrixFreeADRSolver<dim, fe_degree>::assemble()
+    {
+        Timer timer;
+
+        system_rhs = 0;
+
+        FEEvaluation<dim, fe_degree> phi(*system_matrix.get_matrix_free());
+
+        for (unsigned int cell = 0; cell < system_matrix.get_matrix_free()->n_cell_batches(); ++cell)
+        {
+            phi.reinit(cell);
+            for (const unsigned int q : phi.quadrature_point_indices())
+            {
+                phi.submit_value(make_vectorized_array<double>(1.0), q);
+            }
+            phi.integrate(EvaluationFlags::values);
+            phi.distribute_local_to_global(system_rhs);
+        }
+        system_rhs.compress(VectorOperation::add);
+
+        setup_time += timer.wall_time();
+        time_details << "Assemble right hand side   (CPU/wall) " << timer.cpu_time()
+                     << "s/" << timer.wall_time() << 's' << std::endl;
+    }
+
+    template <int dim, int fe_degree>
+    void MatrixFreeADRSolver<dim, fe_degree>::solve() {}
+
+    template <int dim, int fe_degree>
+    void MatrixFreeADRSolver<dim, fe_degree>::output_results() {}
+
+    template <int dim, int fe_degree>
+    void MatrixFreeADRSolver<dim, fe_degree>::run() {}
 }

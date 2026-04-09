@@ -6,7 +6,6 @@
 #include <stdexcept>
 #include <functional>
 #include <string>
-#include <unordered_map>
 
 #include <deal.II/base/conditional_ostream.h>
 #include <deal.II/base/function.h>
@@ -55,41 +54,6 @@ namespace MFSolver
     using DVector = LinearAlgebra::distributed::Vector<T>;
 
     /**
-     * \brief Represents a function that describes a Dirichlet boundary condition.
-     * \tparam dim The dimensionality of the space the ADR problem is living in.
-     */
-    template <int dim>
-    using DirichletBoundary = RealFunction<dim>;
-
-    /**
-     * \brief Represents a function tht describes a Neumann boundary condition.
-     * \tparam dim The dimensionality of the space the ADR problem is living in.
-     */
-    template <int dim>
-    using NeumannBoundary = RealFunction<dim>;
-
-    /**
-     * \brief Represents a mapping between boundaries (identified by boundary IDs) and the corresponding boundary condition.
-     * \tparam T The type of boundary condition.
-     */
-    template <typename T>
-    using Boundaries = std::unordered_map<types::boundary_id, T>;
-
-    /**
-     * \brief Represents a mapping between boundaries (represented by boundary IDs) and the corresponding Dirichlet boundary condition.
-     * \tparam dim The dimensionality of the space the ADR problem is living in.
-     */
-    template <int dim>
-    using DirichletBoundaries = Boundaries<DirichletBoundary<dim>>;
-
-    /**
-     * \brief Represents a mapping between boundaries (represented by boundary IDs) and the corresponding Neumann boundary condition.
-     * \tparam dim The dimensionality of the space the ADR problem is living in.
-     */
-    template <int dim>
-    using NeumannBoundaries = Boundaries<NeumannBoundary<dim>>;
-
-    /**
      * \brief Represents a range of cells.
      */
     using Range = std::pair<unsigned int, unsigned int>;
@@ -113,12 +77,12 @@ namespace MFSolver
         }
 
         /**
-         * \brief Destructor for ADRProblem.
+         * \brief Destructor for the solver.
          */
         virtual ~ADRSolver() {};
 
         /**
-         * \brief Actually solve the ADRProblem.
+         * \brief Actually solve the problem.
          */
         virtual void run() = 0;
 
@@ -158,7 +122,7 @@ namespace MFSolver
      * The ADR operator is built to represent an operator \f( L \f) such that the problem to solve can be expressed as \f[ Lu := -\nabla \cdot (\mu \nabla u) + \nabla \cdot (\beta u) + \gamma u = f \f]
      */
     template <int dim, int fe_degree, typename Number>
-    class ADROperator : MatrixFreeOperators::Base<dim, DVector<Number>>
+    class ADROperator : public MatrixFreeOperators::Base<dim, DVector<Number>>
     {
     public:
         /**
@@ -385,13 +349,14 @@ namespace MFSolver
               fe(fe_degree), dof_handler(triangulation), mapping(), setup_time(0.0), pcout(std::cout, Utilities::MPI::this_mpi_process(MPI_COMM_WORLD) == 0), time_details(std::cout, false && Utilities::MPI::this_mpi_process(MPI_COMM_WORLD) == 0)
         {
         }
+
         ~MatrixFreeADRSolver() override {};
 
         void run() override;
 
     private:
         void setup_system() override;
-        void assemble() override;
+        void assemble() override; // <-- this one assembles the RHS, the LHS initialization was already performed somewhere else
         void solve() override;
         void output_results() override;
 

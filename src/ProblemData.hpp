@@ -6,6 +6,7 @@
 #include <deal.II/base/function.h>
 
 #include "function_types.hpp"
+#include "boundaries.hpp"
 
 #include <memory>
 
@@ -123,8 +124,11 @@ namespace ADR
 
         std::shared_ptr<MFSolver::RealFunction<dim>> forcing_term; /**< Forcing term: f(x) */
 
-        std::shared_ptr<MFSolver::RealFunction<dim>> dirichlet_boundary_value; /**< Dirichlet boundary condition: g(x) for the general lifting */
-        std::shared_ptr<MFSolver::RealFunction<dim>> neumann_boundary_value;   /**< Neumann boundary conditions: h(g) */
+        // std::shared_ptr<MFSolver::RealFunction<dim>> dirichlet_boundary_value; /**< Dirichlet boundary condition: g(x) for the general lifting */
+        // std::shared_ptr<MFSolver::RealFunction<dim>> neumann_boundary_value;   /**< Neumann boundary conditions: h(g) */
+
+        MFSolver::DirichletBoundaries<dim> dirichlet_boundaries; /**< Dirichlet boundaries. */
+        MFSolver::NeumannBoundaries<dim> neumann_boundaries;     /**< Neumann boundaries. */
 
         /**
          * @brief Helper to initialize with some default test-case values
@@ -140,7 +144,12 @@ namespace ADR
             data.beta = std::make_shared<ConstantVectorFunctionWithGradient<dim>>(1.0);
             data.gamma = std::make_shared<ConstantRealFunction<dim>>(0.0);
             data.forcing_term = std::make_shared<ConstantRealFunction<dim>>(1.0);
-            data.dirichlet_boundary_value = std::make_shared<ConstantRealFunction<dim>>(0.0);
+            // data.dirichlet_boundary_value = std::make_shared<ConstantRealFunction<dim>>(0.0);
+
+            data.dirichlet_boundaries = MFSolver::DirichletBoundaries<dim>();
+
+            ConstantRealFunction<dim> crf(1.0);
+            data.dirichlet_boundaries[0] = &crf;
 
             data.mesh_filename = "input.msh";
             data.num_levels = 5;
