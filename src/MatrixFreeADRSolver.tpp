@@ -10,6 +10,15 @@
 #include <deal.II/matrix_free/fe_evaluation.h>
 #include <deal.II/matrix_free/tools.h>
 #include <deal.II/base/timer.h>
+#include <deal.II/lac/solver_gmres.h>
+#include <deal.II/lac/solver_cg.h>
+#include <deal.II/lac/precondition.h>
+#include <deal.II/multigrid/multigrid.h>
+#include <deal.II/multigrid/mg_transfer_matrix_free.h>
+#include <deal.II/multigrid/mg_tools.h>
+#include <deal.II/multigrid/mg_coarse.h>
+#include <deal.II/multigrid/mg_smoother.h>
+#include <deal.II/multigrid/mg_matrix.h>
 
 namespace MFSolver
 {
