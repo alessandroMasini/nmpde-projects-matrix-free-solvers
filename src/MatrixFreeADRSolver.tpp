@@ -116,6 +116,8 @@ namespace MFSolver
     {
         Timer timer;
 
+        system_matrix.evaluate_coefficients(*(this->problem.mu), *(this->problem.beta), *(this->problem.gamma));
+
         system_rhs = 0;
 
         FEEvaluation<dim, fe_degree> phi(*system_matrix.get_matrix_free());
