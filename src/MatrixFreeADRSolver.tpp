@@ -119,6 +119,13 @@ namespace MFSolver
         system_matrix.evaluate_coefficients(*(this->problem.mu), *(this->problem.beta), *(this->problem.gamma));
         system_matrix.compute_diagonal();
 
+        const unsigned int nlevels = triangulation.n_global_levels();
+        for (unsigned int level = 0; level < nlevels; ++level)
+        {
+            mg_matrices[level].evaluate_coefficients(*(this->problem.mu), *(this->problem.beta), *(this->problem.gamma));
+            mg_matrices[level].compute_diagonal();
+        }
+
         system_rhs = 0;
 
         FEEvaluation<dim, fe_degree> phi(*system_matrix.get_matrix_free());
