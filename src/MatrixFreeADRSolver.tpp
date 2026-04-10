@@ -214,6 +214,33 @@ namespace MFSolver
             smoother_data[level].preconditioner = mg_matrices[level].get_matrix_diagonal_inverse();
         }
         mg_smoother.initialize(mg_matrices, smoother_data);
+
+        MGCoarseGridApplySmoother<DVector<float>> mg_coarse;
+        mg_coarse.initialize(mg_smoother);
+
+        mg::Matrix<DVector<float>> mg_matrix(mg_matrices);
+
+        MGLevelObject<MatrixFreeOperators::MGInterfaceOperator<LevelMatrixType>> mg_interface_matrices;
+        mg_interface_matrices.resize(0, triangulation.n_global_levels() - 1);
+        for (unsigned int level = 0; level < triangulation.n_global_levels(); ++level)
+            mg_interface_matrices[level].initialize(mg_matrices[level]);
+
+        mg::Matrix<DVector<float>> mg_interface(mg_interface_matrices);
+
+        Multigrid<DVector<float>> mg(mg_matrix, mg_coarse, mg_transfer, mg_smoother, mg_smoother);
+        mg.set_edge_matrices(mg_interface, mg_interface);
+
+        PreconditionMG<dim, DVector<float>, MGTransferMatrixFree<dim, float>> preconditioner(dof_handler, mg, mg_transfer);
+
+        SolverControl solver_control(1000, 1e-12 * system_rhs.l2_norm());
+        SolverGMRES<DVector<double>> gmres(solver_control);
+
+        constraints.set_zero(solution);
+        gmres.solve(system_matrix, solution, system_rhs, preconditioner);
+        constraints.distribute(solution);
+
+        pcout << "Solved in " << solver_control.last_step() << " iterations." << std::endl;
+        time_details << "Time solve (CPU/wall) " << timer.cpu_time() << "s/" << timer.wall_time() << "s\n";
     }
 
     template <int dim, int fe_degree>
