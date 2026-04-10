@@ -117,6 +117,7 @@ namespace MFSolver
         Timer timer;
 
         system_matrix.evaluate_coefficients(*(this->problem.mu), *(this->problem.beta), *(this->problem.gamma));
+        system_matrix.compute_diagonal();
 
         system_rhs = 0;
 
