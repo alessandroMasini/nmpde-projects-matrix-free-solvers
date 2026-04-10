@@ -29,7 +29,7 @@ namespace MFSolver
             pcout << "Number of DoFs: " << dof_handler.n_dofs() << std::endl;
 
             constraints.clear();
-            constraints.reinit(dof_handler.locally_owned_dofs(), DoFTools::extract_locally_relevant_dofs(dof_handler));
+            constraints.reinit(DoFTools::extract_locally_relevant_dofs(dof_handler));
             DoFTools::make_hanging_node_constraints(dof_handler, constraints);
 
             // Interpolate the Dirichlet boundary conditions from our ProblemData map
@@ -85,7 +85,7 @@ namespace MFSolver
 
             for (unsigned int level = 0; level < nlevels; ++level)
             {
-                AffineConstraints<double> level_constraints(dof_handler.locally_owned_mg_dofs(level), DoFTools::extract_locally_relevant_level_dofs(dof_handler, level));
+                AffineConstraints<double> level_constraints(DoFTools::extract_locally_relevant_level_dofs(dof_handler, level));
 
                 for (const types::global_dof_index dof_index : mg_constrained_dofs.get_boundary_indices(level))
                 {
