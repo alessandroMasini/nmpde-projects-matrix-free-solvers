@@ -185,7 +185,36 @@ namespace MFSolver
     }
 
     template <int dim, int fe_degree>
-    void MatrixFreeADRSolver<dim, fe_degree>::solve() {}
+    void MatrixFreeADRSolver<dim, fe_degree>::solve()
+    {
+        Timer timer;
+
+        MGTransferMatrixFree<dim, float> mg_transfer(mg_constrained_dofs);
+        mg_transfer.build(dof_handler);
+
+        using SmootherType = PreconditionChebyshev<LevelMatrixType, DVector<float>>;
+        mg::SmootherRelaxation<SmootherType, DVector<float>> mg_smoother;
+        MGLevelObject<typename SmootherType::AdditionalData> smoother_data;
+        smoother_data.resize(0, triangulation.n_global_levels() - 1);
+
+        for (unsigned int level = 0; level < triangulation.n_global_levels(); ++level)
+        {
+            if (level > 0)
+            {
+                smoother_data[level].smoothing_range     = 15.;
+                smoother_data[level].degree              = 5;
+                smoother_data[level].eig_cg_n_iterations = 10;
+            }
+            else
+            {
+                smoother_data[0].smoothing_range     = 1e-3;
+                smoother_data[0].degree              = numbers::invalid_unsigned_int;
+                smoother_data[0].eig_cg_n_iterations = mg_matrices[0].m();
+            }
+            smoother_data[level].preconditioner = mg_matrices[level].get_matrix_diagonal_inverse();
+        }
+        mg_smoother.initialize(mg_matrices, smoother_data);
+    }
 
     template <int dim, int fe_degree>
     void MatrixFreeADRSolver<dim, fe_degree>::output_results() {}
