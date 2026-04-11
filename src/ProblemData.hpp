@@ -82,6 +82,21 @@ namespace ADR
         }
     };
 
+    template <int dim>
+    class ConstantDirichletBoundary : public MFSolver::DirichletBoundary<dim>
+    {
+    private:
+        double storage;
+
+    public:
+        ConstantDirichletBoundary(double _storage) : MFSolver::DirichletBoundary<dim>(), storage(_storage) {}
+
+        virtual double value(const dealii::Point<dim> &p, const unsigned int component = 0) const override
+        {
+            return storage;
+        }
+    };
+
     /**
      * @brief A common structure to hold the algebraic and analytical data
      * required defining the Advection-Diffusion-Reaction (ADR) problem.
@@ -148,8 +163,8 @@ namespace ADR
 
             data.dirichlet_boundaries = MFSolver::DirichletBoundaries<dim>();
 
-            ConstantRealFunction<dim> crf(1.0);
-            data.dirichlet_boundaries[0] = &crf;
+            ConstantDirichletBoundary<dim> cdb(1.0);
+            data.dirichlet_boundaries[0] = &cdb;
 
             data.mesh_filename = "input.msh";
             data.num_levels = 5;

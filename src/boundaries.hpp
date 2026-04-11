@@ -2,6 +2,7 @@
 
 #include <unordered_map>
 
+#include <deal.II/base/function.h>
 #include <deal.II/base/types.h>
 
 #include "function_types.hpp"
@@ -13,7 +14,7 @@ namespace MFSolver
      * \tparam dim The dimensionality of the space the ADR problem is living in.
      */
     template <int dim>
-    using DirichletBoundary = RealFunction<dim>;
+    using DirichletBoundary = dealii::Function<dim>;
 
     /**
      * \brief Represents a function tht describes a Neumann boundary condition.
