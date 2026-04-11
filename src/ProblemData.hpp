@@ -104,9 +104,13 @@ namespace ADR
      * This ensures that both the Matrix-Based and Matrix-Free solvers
      * solve the exact same mathematical problem.
      */
-    template <int dim, int fe_degree>
+    template <int dim, int fe_degree, template <int> typename MuCoeffType, template <int> typename BetaCoeffType, template <int> typename GammaCoeffType>
     struct ProblemData
     {
+        // using MuCoeffType = _MuCoeffType;
+        // using BetaCoeffType = _BetaCoeffType;
+        // using GammaCoeffType = _GammaCoeffType;
+
         std::string mesh_filename; /**< Filename from which to load the mesh. */
 
         unsigned int num_levels; /**< Number of multigrid levels in the V-cycle. */
@@ -128,19 +132,13 @@ namespace ADR
         // TODO: where is this used???
         unsigned int refinement_coefficient_per_level = 4; /**< Mesh refinement level (if generating a hyper_cube/hyper_ball) */
 
-        // Number of elements in each direction (if using a subdivision)
-        // unsigned int elements_per_direction = 10;
-
         // --- PDE Coefficients ---
 
-        std::shared_ptr<MFSolver::RealFunction<dim>> mu;                 /**< Diffusion coefficient function: mu(x) */
-        std::shared_ptr<MFSolver::VectorFunctionWithGradient<dim>> beta; /**< Advection coefficient function: beta(x) (velocity field) */
-        std::shared_ptr<MFSolver::RealFunction<dim>> gamma;              /**< Reaction coefficient function: gamma(x) (or k in some notations) */
+        MuCoeffType<dim> mu;       /**< Diffusion coefficient function: mu(x) */
+        BetaCoeffType<dim> beta;   /**< Advection coefficient function: beta(x) (velocity field) */
+        GammaCoeffType<dim> gamma; /**< Reaction coefficient function: gamma(x) (or k in some notations) */
 
         std::shared_ptr<MFSolver::RealFunction<dim>> forcing_term; /**< Forcing term: f(x) */
-
-        // std::shared_ptr<MFSolver::RealFunction<dim>> dirichlet_boundary_value; /**< Dirichlet boundary condition: g(x) for the general lifting */
-        // std::shared_ptr<MFSolver::RealFunction<dim>> neumann_boundary_value;   /**< Neumann boundary conditions: h(g) */
 
         MFSolver::DirichletBoundaries<dim> dirichlet_boundaries; /**< Dirichlet boundaries. */
         MFSolver::NeumannBoundaries<dim> neumann_boundaries;     /**< Neumann boundaries. */
@@ -148,36 +146,37 @@ namespace ADR
         /**
          * @brief Helper to initialize with some default test-case values
          */
-        static ProblemData<dim, fe_degree> standard_test_case()
+        static ProblemData<dim, fe_degree, ConstantRealFunction, ConstantVectorFunctionWithGradient, ConstantRealFunction> standard_test_case()
         {
-            ProblemData<dim, fe_degree> data;
-
-            // data.fe_degree = 1;
-            // data.refinement_level = 5;
-
-            data.mu = std::make_shared<ConstantRealFunction<dim>>(1.0);
-            data.beta = std::make_shared<ConstantVectorFunctionWithGradient<dim>>(1.0);
-            data.gamma = std::make_shared<ConstantRealFunction<dim>>(0.0);
-            data.forcing_term = std::make_shared<ConstantRealFunction<dim>>(1.0);
-            // data.dirichlet_boundary_value = std::make_shared<ConstantRealFunction<dim>>(0.0);
-
-            data.dirichlet_boundaries = MFSolver::DirichletBoundaries<dim>();
-
             ConstantDirichletBoundary<dim> cdb(1.0);
-            data.dirichlet_boundaries[0] = &cdb;
 
-            data.mesh_filename = "input.msh";
-            data.num_levels = 5;
-            data.num_quadrature_points = 3;
+            MFSolver::DirichletBoundaries<dim> dirichlet_boundaries;
+            dirichlet_boundaries[0] = &cdb;
 
-            data.lv0_smoothing_range = 1.e-3;
+            ProblemData<dim, fe_degree, ConstantRealFunction, ConstantVectorFunctionWithGradient, ConstantRealFunction> data{
+                .mesh_filename = "input.msh",
+                .num_levels = 5,
 
-            data.lvgt0_smoothing_range = 15;
-            data.lvgt0_smoothing_degree = 5;
-            data.lvgt0_smoothing_eigenvalue_max_iterations = 10;
+                .num_quadrature_points = fe_degree + 1,
 
-            data.solver_max_iterations = 100;
-            data.solver_tolerance_factor = 1e-12;
+                .lv0_smoothing_range = 1.e-3,
+
+                .lvgt0_smoothing_range = 15,
+                .lvgt0_smoothing_degree = 5,
+                .lvgt0_smoothing_eigenvalue_max_iterations = 10,
+
+                .solver_max_iterations = 100,
+                .solver_tolerance_factor = 1e-12,
+
+                .mu = ConstantRealFunction<dim>(1.0),
+                .beta = ConstantVectorFunctionWithGradient<dim>(1.0),
+                .gamma = ConstantRealFunction<dim>(0.0),
+
+                .forcing_term = std::make_shared<ConstantRealFunction<dim>>(1.0),
+
+                .dirichlet_boundaries = dirichlet_boundaries,
+                .neumann_boundaries = MFSolver::NeumannBoundaries<dim>(),
+            };
 
             return data;
         }
