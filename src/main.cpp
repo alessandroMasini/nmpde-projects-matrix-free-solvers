@@ -7,8 +7,7 @@ int main()
 
     MFSolver::MatrixFreeADRSolver<3, 2> solver(data);
 
-    // solver.setup_system();
-    // solver.assemble();
+    solver.run();
 
     return 0;
 }

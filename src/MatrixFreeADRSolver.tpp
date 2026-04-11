@@ -201,14 +201,14 @@ namespace MFSolver
         {
             if (level > 0)
             {
-                smoother_data[level].smoothing_range     = 15.;
-                smoother_data[level].degree              = 5;
+                smoother_data[level].smoothing_range = 15.;
+                smoother_data[level].degree = 5;
                 smoother_data[level].eig_cg_n_iterations = 10;
             }
             else
             {
-                smoother_data[0].smoothing_range     = 1e-3;
-                smoother_data[0].degree              = numbers::invalid_unsigned_int;
+                smoother_data[0].smoothing_range = 1e-3;
+                smoother_data[0].degree = numbers::invalid_unsigned_int;
                 smoother_data[0].eig_cg_n_iterations = mg_matrices[0].m();
             }
             smoother_data[level].preconditioner = mg_matrices[level].get_matrix_diagonal_inverse();
@@ -247,5 +247,24 @@ namespace MFSolver
     void MatrixFreeADRSolver<dim, fe_degree>::output_results() {}
 
     template <int dim, int fe_degree>
-    void MatrixFreeADRSolver<dim, fe_degree>::run() {}
+    void MatrixFreeADRSolver<dim, fe_degree>::run()
+    {
+        {
+            const unsigned int n_vect_doubles = VectorizedArray<double>::size();
+            const unsigned int n_vect_bits = 8 * sizeof(double) * n_vect_doubles;
+
+            pcout << "Vectorization over " << n_vect_doubles
+                  << " doubles = " << n_vect_bits << " bits ("
+                  << Utilities::System::get_current_vectorization_level() << ')'
+                  << std::endl;
+        }
+
+        GridGenerator::hyper_cube(triangulation, 0., 1.);
+        triangulation.refine_global(3 - dim);
+        triangulation.refine_global(1);
+
+        setup_system();
+        assemble();
+        solve();
+    }
 }
