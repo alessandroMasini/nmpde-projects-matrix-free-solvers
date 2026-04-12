@@ -22,8 +22,8 @@
 
 namespace MFSolver
 {
-    template <int dim, int fe_degree, template <int> typename MuCoeffFunc, template <int> typename BetaCoeffFunc, template <int> typename GammaCoeffFunc>
-    void MatrixFreeADRSolver<dim, fe_degree, MuCoeffFunc, BetaCoeffFunc, GammaCoeffFunc>::setup_system()
+    template <int dim, int fe_degree>
+    void MatrixFreeADRSolver<dim, fe_degree>::setup_system()
     {
         dealii::Timer timer;
         setup_time = 0;
@@ -34,8 +34,6 @@ namespace MFSolver
 
             dof_handler.distribute_dofs(fe);
             dof_handler.distribute_mg_dofs();
-
-            pcout << "Number of DoFs: " << dof_handler.n_dofs() << std::endl;
 
             constraints.clear();
             constraints.reinit(DoFTools::extract_locally_relevant_dofs(dof_handler));
@@ -120,24 +118,18 @@ namespace MFSolver
                      << "s/" << timer.wall_time() << 's' << std::endl;
     }
 
-    template <int dim, int fe_degree, template <int> typename MuCoeffFunc, template <int> typename BetaCoeffFunc, template <int> typename GammaCoeffFunc>
-    void MatrixFreeADRSolver<dim, fe_degree, MuCoeffFunc, BetaCoeffFunc, GammaCoeffFunc>::assemble()
+    template <int dim, int fe_degree>
+    void MatrixFreeADRSolver<dim, fe_degree>::assemble()
     {
         Timer timer;
 
-        system_matrix.evaluate_coefficients(
-            this->problem.mu,
-            this->problem.beta,
-            this->problem.gamma);
+        system_matrix.evaluate_coefficients(this->problem.mu, this->problem.beta, this->problem.gamma);
         system_matrix.compute_diagonal();
 
         const unsigned int nlevels = triangulation.n_global_levels();
         for (unsigned int level = 0; level < nlevels; ++level)
         {
-            mg_matrices[level].evaluate_coefficients(
-                this->problem.mu,
-                this->problem.beta,
-                this->problem.gamma);
+            mg_matrices[level].evaluate_coefficients(this->problem.mu, this->problem.beta, this->problem.gamma);
             mg_matrices[level].compute_diagonal();
         }
 
@@ -173,7 +165,7 @@ namespace MFSolver
                 {
                     Point<dim, VectorizedArray<double>> quadrature_point = face_phi.quadrature_point(q);
                     VectorizedArray<double> neumann_value = neumann->value(quadrature_point);
-                    VectorizedArray<double> mu = this->problem.mu.value(quadrature_point);
+                    VectorizedArray<double> mu = this->problem.mu->value(quadrature_point);
 
                     face_phi.submit_value(neumann_value * mu, q);
                 }
@@ -190,8 +182,8 @@ namespace MFSolver
                      << "s/" << timer.wall_time() << 's' << std::endl;
     }
 
-    template <int dim, int fe_degree, template <int> typename MuCoeffFunc, template <int> typename BetaCoeffFunc, template <int> typename GammaCoeffFunc>
-    void MatrixFreeADRSolver<dim, fe_degree, MuCoeffFunc, BetaCoeffFunc, GammaCoeffFunc>::solve()
+    template <int dim, int fe_degree>
+    void MatrixFreeADRSolver<dim, fe_degree>::solve()
     {
         Timer timer;
 
@@ -249,11 +241,11 @@ namespace MFSolver
         time_details << "Time solve (CPU/wall) " << timer.cpu_time() << "s/" << timer.wall_time() << "s\n";
     }
 
-    template <int dim, int fe_degree, template <int> typename MuCoeffFunc, template <int> typename BetaCoeffFunc, template <int> typename GammaCoeffFunc>
-    void MatrixFreeADRSolver<dim, fe_degree, MuCoeffFunc, BetaCoeffFunc, GammaCoeffFunc>::output_results() {}
+    template <int dim, int fe_degree>
+    void MatrixFreeADRSolver<dim, fe_degree>::output_results() {}
 
-    template <int dim, int fe_degree, template <int> typename MuCoeffFunc, template <int> typename BetaCoeffFunc, template <int> typename GammaCoeffFunc>
-    void MatrixFreeADRSolver<dim, fe_degree, MuCoeffFunc, BetaCoeffFunc, GammaCoeffFunc>::run()
+    template <int dim, int fe_degree>
+    void MatrixFreeADRSolver<dim, fe_degree>::run()
     {
         {
             const unsigned int n_vect_doubles = VectorizedArray<double>::size();
@@ -265,6 +257,7 @@ namespace MFSolver
                   << std::endl;
         }
 
+        // TODO: load from file
         GridGenerator::hyper_cube(triangulation, 0., 1.);
         triangulation.refine_global(3 - dim);
         triangulation.refine_global(1);

@@ -50,11 +50,9 @@ namespace MFSolver
 
         virtual double value(const Point<dim> &p, const unsigned int component = 0) const override = 0;
 
-        template <typename Number>
-        Number value(const Point<dim, Number> &p, const unsigned int component = 0) const
-        {
-            throw std::logic_error("If you see this, you have not extended this class (RealFunction - value) correctly. See docs for more information.");
-        }
+        virtual VectorizedArray<float> value(const Point<dim, VectorizedArray<float>> &p, const unsigned int component = 0) const = 0;
+
+        virtual VectorizedArray<double> value(const Point<dim, VectorizedArray<double>> &p, const unsigned int component = 0) const = 0;
     };
 
     /**
@@ -102,11 +100,9 @@ namespace MFSolver
 
         virtual value_type<double> value(const Point<dim> &p) const override = 0;
 
-        template <typename Number>
-        value_type<Number> value(const Point<dim, Number> &p) const
-        {
-            throw std::logic_error("If you see this, you have not extended this class (VectorFunction - value) correctly. See docs for more information.");
-        }
+        virtual value_type<VectorizedArray<float>> value(const Point<dim, VectorizedArray<float>> &p) const = 0;
+
+        virtual value_type<VectorizedArray<double>> value(const Point<dim, VectorizedArray<double>> &p) const = 0;
     };
 
     /**
@@ -186,19 +182,15 @@ namespace MFSolver
 
         virtual double divergence(const Point<dim> &p) const = 0;
 
-        template <typename Number>
-        Number divergence(const Point<dim, Number> &p) const
-        {
-            throw std::logic_error("If you see this, you have not extended this class (VectorFunctionWithGradient - divergence) correctly. See docs for more information.");
-        }
+        virtual VectorizedArray<float> divergence(const Point<dim, VectorizedArray<float>> &p) const = 0;
+
+        virtual VectorizedArray<double> divergence(const Point<dim, VectorizedArray<double>> &p) const = 0;
 
         virtual gradient_type<double> gradient(const Point<dim> &p) const override = 0;
 
-        template <typename Number>
-        gradient_type<Number> gradient(const Point<dim, Number> &p) const
-        {
-            throw std::logic_error("If you see this, you have not extended this class (VectorFunctionWithGradient - gradient) correctly. See docs for more information.");
-        }
+        virtual gradient_type<VectorizedArray<float>> gradient(const Point<dim, VectorizedArray<float>> &p) const = 0;
+
+        virtual gradient_type<VectorizedArray<double>> gradient(const Point<dim, VectorizedArray<double>> &p) const = 0;
     };
 
 } // namespace MFSolver

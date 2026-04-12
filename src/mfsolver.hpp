@@ -63,7 +63,7 @@ namespace MFSolver
      * \tparam dim The dimensionality of the space the ADR problem is living in.
      * \tparam fe_degree The degree of the finite elements used to solve the problem.
      */
-    template <unsigned int dim, unsigned int fe_degree, template <int> typename MuCoeffFunc, template <int> typename BetaCoeffFunc, template <int> typename GammaCoeffFunc>
+    template <unsigned int dim, unsigned int fe_degree>
     class ADRSolver
     {
     public:
@@ -71,7 +71,7 @@ namespace MFSolver
          * \brief Constructs a new instance of ADRSolver
          * \param _problem The problem this solver will solve.
          */
-        ADRSolver(const ADR::ProblemData<dim, fe_degree, MuCoeffFunc, BetaCoeffFunc, GammaCoeffFunc> &_problem)
+        ADRSolver(const ADR::ProblemData<dim, fe_degree> &_problem)
             : problem(_problem)
         {
         }
@@ -110,7 +110,7 @@ namespace MFSolver
         /**
          * \brief The problem this solver will solve.
          */
-        ADR::ProblemData<dim, fe_degree, MuCoeffFunc, BetaCoeffFunc, GammaCoeffFunc> problem;
+        ADR::ProblemData<dim, fe_degree> problem;
     };
 
     /**
@@ -121,7 +121,7 @@ namespace MFSolver
      *
      * The ADR operator is built to represent an operator \f( L \f) such that the problem to solve can be expressed as \f[ Lu := -\nabla \cdot (\mu \nabla u) + \nabla \cdot (\beta u) + \gamma u = f \f]
      */
-    template <int dim, int fe_degree, typename Number, template <int> typename MuCoeffFunc, template <int> typename BetaCoeffFunc, template <int> typename GammaCoeffFunc>
+    template <int dim, int fe_degree, typename Number>
     class ADROperator : public MatrixFreeOperators::Base<dim, DVector<Number>>
     {
     public:
@@ -158,9 +158,9 @@ namespace MFSolver
          * If this is not true, this method will just crash with a segmentation fault trying to access non initialized pointers.
          */
         void evaluate_coefficients(
-            const MuCoeffFunc<dim> &mu_coeff_function,
-            const BetaCoeffFunc<dim> &beta_coeff_function,
-            const GammaCoeffFunc<dim> &gamma_coeff_function)
+            const std::shared_ptr<RealFunction<dim>> &mu_coeff_function,
+            const std::shared_ptr<VectorFunctionWithGradient<dim>> &beta_coeff_function,
+            const std::shared_ptr<RealFunction<dim>> &gamma_coeff_function)
         {
             const unsigned int n_cells = this->data->n_cell_batches();
             Phi phi(*this->data);
@@ -177,10 +177,10 @@ namespace MFSolver
                 {
                     Point<dim, VectorizedArray<Number>> quadrature_point = phi.quadrature_point(q);
 
-                    mu_coeff(cell, q) = mu_coeff_function.value(quadrature_point);
-                    beta_coeff(cell, q) = beta_coeff_function.value(quadrature_point);
-                    div_beta_coeff(cell, q) = beta_coeff_function.divergence(quadrature_point);
-                    gamma_coeff(cell, q) = gamma_coeff_function.value(quadrature_point);
+                    mu_coeff(cell, q) = mu_coeff_function->value(quadrature_point);
+                    beta_coeff(cell, q) = beta_coeff_function->value(quadrature_point);
+                    div_beta_coeff(cell, q) = beta_coeff_function->divergence(quadrature_point);
+                    gamma_coeff(cell, q) = gamma_coeff_function->value(quadrature_point);
                 }
             }
         }
@@ -332,12 +332,12 @@ namespace MFSolver
      * \tparam dim The dimensionality of the space the ADR problem is living in.
      * \tparam fe_degree The degree of the finite elements used to solve the problem.
      */
-    template <int dim, int fe_degree, template <int> typename MuCoeffFunc, template <int> typename BetaCoeffFunc, template <int> typename GammaCoeffFunc>
-    class MatrixFreeADRSolver : public ADRSolver<dim, fe_degree, MuCoeffFunc, BetaCoeffFunc,  GammaCoeffFunc>
+    template <int dim, int fe_degree>
+    class MatrixFreeADRSolver : public ADRSolver<dim, fe_degree>
     {
     public:
-        MatrixFreeADRSolver(const ADR::ProblemData<dim, fe_degree, MuCoeffFunc, BetaCoeffFunc, GammaCoeffFunc> &_problem)
-            : ADRSolver<dim, fe_degree, MuCoeffFunc, BetaCoeffFunc, GammaCoeffFunc>(_problem)
+        MatrixFreeADRSolver(const ADR::ProblemData<dim, fe_degree> &_problem)
+            : ADRSolver<dim, fe_degree>(_problem)
 #ifdef DEAL_II_WITH_P4EST
               ,
               triangulation(MPI_COMM_WORLD, Triangulation<dim>::limit_level_difference_at_vertices, parallel::distributed::Triangulation<dim>::construct_multigrid_hierarchy)
@@ -379,12 +379,12 @@ namespace MFSolver
         // the laplace operator type needs it a compile time
 
         // TODO: last 4 arguments were set considering deal.II documentation; shall it be our implementation choice?
-        using SystemMatrixType = ADROperator<dim, fe_degree, double, MuCoeffFunc, BetaCoeffFunc, GammaCoeffFunc>;
+        using SystemMatrixType = ADROperator<dim, fe_degree, double>;
         SystemMatrixType system_matrix;
 
         MGConstrainedDoFs mg_constrained_dofs;
 
-        using LevelMatrixType = ADROperator<dim, fe_degree, float, MuCoeffFunc, BetaCoeffFunc, GammaCoeffFunc>;
+        using LevelMatrixType = ADROperator<dim, fe_degree, float>;
         MGLevelObject<LevelMatrixType> mg_matrices;
 
         DVector<double> solution;
