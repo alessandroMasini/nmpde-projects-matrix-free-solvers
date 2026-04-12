@@ -1,37 +1,44 @@
 #pragma once
 
-// Standard Library imports
-// #include <exception>
-// #include <functional>
-// #include <stdexcept>
-// #include <string>
-// #include <unordered_map>
-#include <memory>
+// TODO: reorder imports in a neat way
 
-// // deal.II imports
+#include <exception>
+#include <stdexcept>
+#include <functional>
+#include <string>
+
 #include <deal.II/base/conditional_ostream.h>
-#include <deal.II/base/mg_level_object.h>
-// #include <deal.II/base/tensor.h>
-// #include <deal.II/base/types.h>
+#include <deal.II/base/function.h>
+#include <deal.II/base/point.h>
+#include <deal.II/base/tensor_function.h>
+#include <deal.II/base/tensor.h>
+#include <deal.II/base/types.h>
 
-#include <deal.II/distributed/fully_distributed_tria.h>
-// #include <deal.II/distributed/tria.h>
-
-#include <deal.II/fe/fe_q.h>
-#include <deal.II/fe/mapping_q1.h>
-
-#include <deal.II/lac/affine_constraints.h>
 #include <deal.II/lac/la_parallel_vector.h>
-#include <deal.II/lac/trilinos_sparse_matrix.h>
 
-// #include <deal.II/matrix_free/fe_evaluation.h>
+#include <deal.II/matrix_free/fe_evaluation.h>
 #include <deal.II/matrix_free/operators.h>
 
+// TODO: deal.II libraries: did we actually need these?
+#include <deal.II/fe/fe_q.h>
+#include <deal.II/fe/mapping_q1.h>
+#include <deal.II/lac/affine_constraints.h>
+#include <deal.II/matrix_free/operators.h>
 #include <deal.II/multigrid/mg_constrained_dofs.h>
+#include <deal.II/base/mg_level_object.h>
+#include <deal.II/base/conditional_ostream.h>
 
-// Homemade imports
+#include <deal.II/lac/trilinos_precondition.h>
+#include <deal.II/lac/trilinos_sparse_matrix.h>
+#include <deal.II/distributed/tria.h>
+#include <deal.II/distributed/fully_distributed_tria.h>
+
+#include <deal.II/lac/trilinos_sparse_matrix.h>
+#include <deal.II/lac/trilinos_vector.h>
+
 #include "function_types.hpp"
 #include "ProblemData.hpp"
+#include "boundaries.hpp"
 
 /**
  * \brief Namespace containing all the methods and type definitions used in the project.
@@ -46,41 +53,6 @@ namespace MFSolver
      */
     template <typename T>
     using DVector = LinearAlgebra::distributed::Vector<T>;
-
-    /**
-     * \brief Represents a function that describes a Dirichlet boundary condition.
-     * \tparam dim The dimensionality of the space the ADR problem is living in.
-     */
-    template <int dim>
-    using DirichletBoundary = RealFunction<dim>;
-
-    /**
-     * \brief Represents a function tht describes a Neumann boundary condition.
-     * \tparam dim The dimensionality of the space the ADR problem is living in.
-     */
-    template <int dim>
-    using NeumannBoundary = RealFunction<dim>;
-
-    /**
-     * \brief Represents a mapping between boundaries (identified by boundary IDs) and the corresponding boundary condition.
-     * \tparam T The type of boundary condition.
-     */
-    template <typename T>
-    using Boundaries = std::unordered_map<types::boundary_id, T>;
-
-    /**
-     * \brief Represents a mapping between boundaries (represented by boundary IDs) and the corresponding Dirichlet boundary condition.
-     * \tparam dim The dimensionality of the space the ADR problem is living in.
-     */
-    template <int dim>
-    using DirichletBoundaries = Boundaries<DirichletBoundary<dim>>;
-
-    /**
-     * \brief Represents a mapping between boundaries (represented by boundary IDs) and the corresponding Neumann boundary condition.
-     * \tparam dim The dimensionality of the space the ADR problem is living in.
-     */
-    template <int dim>
-    using NeumannBoundaries = Boundaries<NeumannBoundary<dim>>;
 
     /**
      * \brief Represents a range of cells.
@@ -106,12 +78,12 @@ namespace MFSolver
         }
 
         /**
-         * \brief Destructor for ADRProblem.
+         * \brief Destructor for the solver.
          */
         virtual ~ADRSolver() {};
 
         /**
-         * \brief Actually solve the ADRProblem.
+         * \brief Actually solve the problem.
          */
         virtual void run() = 0;
 
@@ -151,7 +123,7 @@ namespace MFSolver
      * The ADR operator is built to represent an operator \f( L \f) such that the problem to solve can be expressed as \f[ Lu := -\nabla \cdot (\mu \nabla u) + \nabla \cdot (\beta u) + \gamma u = f \f]
      */
     template <int dim, int fe_degree, typename Number>
-    class ADROperator : MatrixFreeOperators::Base<dim, DVector<Number>>
+    class ADROperator : public MatrixFreeOperators::Base<dim, DVector<Number>>
     {
     public:
         /**
@@ -187,9 +159,9 @@ namespace MFSolver
          * If this is not true, this method will just crash with a segmentation fault trying to access non initialized pointers.
          */
         void evaluate_coefficients(
-            const RealFunction<dim> &mu_coeff_function,
-            const VectorFunctionWithGradient<dim> &beta_coeff_function,
-            const RealFunction<dim> &gamma_coeff_function)
+            const std::shared_ptr<RealFunction<dim>> &mu_coeff_function,
+            const std::shared_ptr<VectorFunctionWithGradient<dim>> &beta_coeff_function,
+            const std::shared_ptr<RealFunction<dim>> &gamma_coeff_function)
         {
             const unsigned int n_cells = this->data->n_cell_batches();
             Phi phi(*this->data);
@@ -206,10 +178,10 @@ namespace MFSolver
                 {
                     Point<dim, VectorizedArray<Number>> quadrature_point = phi.quadrature_point(q);
 
-                    mu_coeff(cell, q) = mu_coeff_function.value(quadrature_point);
-                    beta_coeff(cell, q) = beta_coeff_function.value(quadrature_point);
-                    div_beta_coeff(cell, q) = beta_coeff_function.divergence(quadrature_point);
-                    gamma_coeff(cell, q) = gamma_coeff_function.value(quadrature_point);
+                    mu_coeff(cell, q) = mu_coeff_function->value(quadrature_point);
+                    beta_coeff(cell, q) = beta_coeff_function->value(quadrature_point);
+                    div_beta_coeff(cell, q) = beta_coeff_function->divergence(quadrature_point);
+                    gamma_coeff(cell, q) = gamma_coeff_function->value(quadrature_point);
                 }
             }
         }
@@ -378,13 +350,14 @@ namespace MFSolver
               fe(fe_degree), dof_handler(triangulation), mapping(), setup_time(0.0), pcout(std::cout, Utilities::MPI::this_mpi_process(MPI_COMM_WORLD) == 0), time_details(std::cout, false && Utilities::MPI::this_mpi_process(MPI_COMM_WORLD) == 0)
         {
         }
+
         ~MatrixFreeADRSolver() override {};
 
         void run() override;
 
     private:
         void setup_system() override;
-        void assemble() override;
+        void assemble() override; // <-- this one assembles the RHS, the LHS initialization was already performed somewhere else
         void solve() override;
         void output_results() override;
 
@@ -435,9 +408,9 @@ namespace MFSolver
         MatrixBasedADRSolver(const ADR::ProblemData<dim, fe_degree> &_problem) : ADRSolver<dim, fe_degree>(_problem),
                                                                                  mpi_size(Utilities::MPI::n_mpi_processes(MPI_COMM_WORLD)),
                                                                                  mpi_rank(Utilities::MPI::this_mpi_process(MPI_COMM_WORLD)),
+                                                                                 mesh(MPI_COMM_WORLD),
                                                                                  pcout(std::cout, mpi_rank == 0)
         {
-            mesh = std::make_shared<parallel::fullydistributed::Triangulation<dim, dim>>(MPI_COMM_WORLD);
         }
         ~MatrixBasedADRSolver() override {};
 
@@ -457,11 +430,11 @@ namespace MFSolver
 
         // Triangulation.
         // TODO: clarify difference with MatrixFreeADRSolver mesh types
-        std::shared_ptr<parallel::fullydistributed::Triangulation<dim, dim>> mesh;
+        parallel::fullydistributed::Triangulation<dim, dim> mesh;
 
         // Finite element space.
         // TODO: clarify difference with MatrixFreeADRSolver fe non-pointer
-        std::shared_ptr<FiniteElement<dim>> fe;
+        std::unique_ptr<FiniteElement<dim>> fe;
 
         // TODO: should we add
         // - mapping
@@ -469,22 +442,22 @@ namespace MFSolver
         // here?
 
         // Quadrature formula.
-        std::shared_ptr<Quadrature<dim>> quadrature;
+        std::unique_ptr<Quadrature<dim>> quadrature;
 
         // DoF handler.
         std::shared_ptr<DoFHandler<dim>> dof_handler;
 
         // System matrix.
-        std::shared_ptr<TrilinosWrappers::SparseMatrix> system_matrix;
+        TrilinosWrappers::SparseMatrix system_matrix;
 
         // System right-hand side.
-        std::shared_ptr<TrilinosWrappers::MPI::Vector> system_rhs;
+        TrilinosWrappers::MPI::Vector system_rhs;
 
         // System solution, without ghost elements.
-        std::shared_ptr<TrilinosWrappers::MPI::Vector> solution_owned;
+        TrilinosWrappers::MPI::Vector solution_owned;
 
         // System solution, with ghost elements.
-        std::shared_ptr<TrilinosWrappers::MPI::Vector> solution;
+        TrilinosWrappers::MPI::Vector solution;
 
         // Output stream for process 0.
         ConditionalOStream pcout;
@@ -492,4 +465,5 @@ namespace MFSolver
 };
 
 // Including template function implementations
-#include "../ADR_matrix_based_example/MatrixBasedADRSolver.tpp"
+// #include "MatrixBasedADRSolver.tpp"
+#include "MatrixBasedADRSolver.tpp"

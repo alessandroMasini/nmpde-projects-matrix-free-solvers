@@ -1,12 +1,14 @@
 #ifndef PROBLEMDATA_HPP
 #define PROBLEMDATA_HPP
 
-// #include <memory>
-
-// #include <deal.II/base/tensor_function.h>
-// #include <deal.II/base/function.h>
+#include <deal.II/base/point.h>
+#include <deal.II/base/tensor_function.h>
+#include <deal.II/base/function.h>
 
 #include "function_types.hpp"
+#include "boundaries.hpp"
+
+#include <memory>
 
 namespace ADR
 {
@@ -18,15 +20,25 @@ namespace ADR
         double val;
 
     public:
-        ConstantRealFunction(double v) : val(v) {}
+        ConstantRealFunction(double v) : MFSolver::RealFunction<dim>(), val(v) {}
 
         virtual double value(const dealii::Point<dim> &p, const unsigned int component = 0) const override
         {
-            return value<double>(p, component);
+            return do_compute_value<double>(p, component);
+        }
+
+        virtual dealii::VectorizedArray<float> value(const dealii::Point<dim, dealii::VectorizedArray<float>> &p, const unsigned int component = 0) const override
+        {
+            return do_compute_value<dealii::VectorizedArray<float>>(p, component);
+        }
+
+        virtual dealii::VectorizedArray<double> value(const dealii::Point<dim, dealii::VectorizedArray<double>> &p, const unsigned int component = 0) const override
+        {
+            return do_compute_value<dealii::VectorizedArray<double>>(p, component);
         }
 
         template <typename Number>
-        Number value(const dealii::Point<dim, Number> & /*p*/, const unsigned int /*component*/ = 0) const
+        Number do_compute_value(const dealii::Point<dim, Number> & /*p*/, const unsigned int /*component*/ = 0) const
         {
             return Number(val);
         }
@@ -45,11 +57,21 @@ namespace ADR
 
         virtual typename Super::template value_type<double> value(const dealii::Point<dim> &p) const override
         {
-            return value<double>(p);
+            return do_compute_value<double>(p);
+        }
+
+        virtual typename Super::template value_type<dealii::VectorizedArray<float>> value(const dealii::Point<dim, dealii::VectorizedArray<float>> &p) const override
+        {
+            return do_compute_value<dealii::VectorizedArray<float>>(p);
+        }
+
+        virtual typename Super::template value_type<dealii::VectorizedArray<double>> value(const dealii::Point<dim, dealii::VectorizedArray<double>> &p) const override
+        {
+            return do_compute_value<dealii::VectorizedArray<double>>(p);
         }
 
         template <typename Number>
-        typename Super::template value_type<Number> value(const dealii::Point<dim, Number> & /*p*/) const
+        typename Super::template value_type<Number> do_compute_value(const dealii::Point<dim, Number> & /*p*/) const
         {
             dealii::Tensor<1, dim, Number> b;
             for (unsigned int d = 0; d < dim; ++d)
@@ -59,24 +81,59 @@ namespace ADR
 
         virtual double divergence(const dealii::Point<dim> &p) const override
         {
-            return divergence<double>(p);
+            return do_compute_divergence<double>(p);
+        }
+
+        virtual dealii::VectorizedArray<float> divergence(const dealii::Point<dim, dealii::VectorizedArray<float>> &p) const override
+        {
+            return do_compute_divergence<dealii::VectorizedArray<float>>(p);
+        }
+
+        virtual dealii::VectorizedArray<double> divergence(const dealii::Point<dim, dealii::VectorizedArray<double>> &p) const override
+        {
+            return do_compute_divergence<dealii::VectorizedArray<double>>(p);
         }
 
         template <typename Number>
-        Number divergence(const dealii::Point<dim, Number> & /*p*/) const
+        Number do_compute_divergence(const dealii::Point<dim, Number> & /*p*/) const
         {
             return Number(0.0);
         }
 
         virtual typename Super::template gradient_type<double> gradient(const dealii::Point<dim> &p) const override
         {
-            return gradient<double>(p);
+            return do_compute_gradient<double>(p);
+        }
+
+        virtual typename Super::template gradient_type<dealii::VectorizedArray<float>> gradient(const dealii::Point<dim, dealii::VectorizedArray<float>> &p) const override
+        {
+            return do_compute_gradient<dealii::VectorizedArray<float>>(p);
+        }
+
+        virtual typename Super::template gradient_type<dealii::VectorizedArray<double>> gradient(const dealii::Point<dim, dealii::VectorizedArray<double>> &p) const override
+        {
+            return do_compute_gradient<dealii::VectorizedArray<double>>(p);
         }
 
         template <typename Number>
-        typename Super::template gradient_type<Number> gradient(const dealii::Point<dim, Number> & /*p*/) const
+        typename Super::template gradient_type<Number> do_compute_gradient(const dealii::Point<dim, Number> & /*p*/) const
         {
             return typename Super::template gradient_type<Number>();
+        }
+    };
+
+    template <int dim>
+    class ConstantDirichletBoundary : public MFSolver::DirichletBoundary<dim>
+    {
+    private:
+        double storage;
+
+    public:
+        ConstantDirichletBoundary(double _storage) : MFSolver::DirichletBoundary<dim>(), storage(_storage) {}
+
+        virtual double value(const dealii::Point<dim> &p, const unsigned int component = 0) const override
+        {
+            return storage;
         }
     };
 
@@ -111,9 +168,6 @@ namespace ADR
         // TODO: where is this used???
         unsigned int refinement_coefficient_per_level = 4; /**< Mesh refinement level (if generating a hyper_cube/hyper_ball) */
 
-        // Number of elements in each direction (if using a subdivision)
-        // unsigned int elements_per_direction = 10;
-
         // --- PDE Coefficients ---
 
         std::shared_ptr<MFSolver::RealFunction<dim>> mu;                 /**< Diffusion coefficient function: mu(x) */
@@ -122,37 +176,47 @@ namespace ADR
 
         std::shared_ptr<MFSolver::RealFunction<dim>> forcing_term; /**< Forcing term: f(x) */
 
-        std::shared_ptr<MFSolver::RealFunction<dim>> dirichlet_boundary_value; /**< Dirichlet boundary condition: g(x) for the general lifting */
-        std::shared_ptr<MFSolver::RealFunction<dim>> neumann_boundary_value;   /**< Neumann boundary conditions: h(g) */
+        MFSolver::DirichletBoundaries<dim> dirichlet_boundaries; /**< Dirichlet boundaries. */
+        MFSolver::NeumannBoundaries<dim> neumann_boundaries;     /**< Neumann boundaries. */
 
         /**
          * @brief Helper to initialize with some default test-case values
          */
         static ProblemData<dim, fe_degree> standard_test_case()
         {
-            ProblemData<dim, fe_degree> data;
+            // ConstantDirichletBoundary<dim> cdb(1.0);
 
-            // data.fe_degree = 1;
-            // data.refinement_level = 5;
+            MFSolver::DirichletBoundaries<dim> dirichlet_boundaries;
+            for (int i = 0; i < 5; i++)
+                dirichlet_boundaries[i] = std::make_shared<ConstantRealFunction<dim>>(static_cast<double>(i));
 
-            data.mu = std::make_shared<ConstantRealFunction<dim>>(1.0);
-            data.beta = std::make_shared<ConstantVectorFunctionWithGradient<dim>>(1.0);
-            data.gamma = std::make_shared<ConstantRealFunction<dim>>(0.0);
-            data.forcing_term = std::make_shared<ConstantRealFunction<dim>>(1.0);
-            data.dirichlet_boundary_value = std::make_shared<ConstantRealFunction<dim>>(0.0);
+            MFSolver::NeumannBoundaries<dim> neumann_boundaries;
+            neumann_boundaries[5] = std::make_shared<ConstantRealFunction<dim>>(1.0);
 
-            data.mesh_filename = "input.msh";
-            data.num_levels = 5;
-            data.num_quadrature_points = 3;
+            ProblemData<dim, fe_degree> data{
+                .mesh_filename = "input.msh",
+                .num_levels = 5,
 
-            data.lv0_smoothing_range = 1.e-3;
+                .num_quadrature_points = fe_degree + 1,
 
-            data.lvgt0_smoothing_range = 15;
-            data.lvgt0_smoothing_degree = 5;
-            data.lvgt0_smoothing_eigenvalue_max_iterations = 10;
+                .lv0_smoothing_range = 1.e-3,
 
-            data.solver_max_iterations = 100;
-            data.solver_tolerance_factor = 1e-12;
+                .lvgt0_smoothing_range = 15,
+                .lvgt0_smoothing_degree = 5,
+                .lvgt0_smoothing_eigenvalue_max_iterations = 10,
+
+                .solver_max_iterations = 100,
+                .solver_tolerance_factor = 1e-12,
+
+                .mu = std::make_shared<ConstantRealFunction<dim>>(1.0),
+                .beta = std::make_shared<ConstantVectorFunctionWithGradient<dim>>(0.0),
+                .gamma = std::make_shared<ConstantRealFunction<dim>>(0.0),
+
+                .forcing_term = std::make_shared<ConstantRealFunction<dim>>(1.0),
+
+                .dirichlet_boundaries = dirichlet_boundaries,
+                .neumann_boundaries = neumann_boundaries,
+            };
 
             return data;
         }

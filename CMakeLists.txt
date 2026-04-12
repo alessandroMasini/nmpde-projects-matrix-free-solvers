@@ -1,9 +1,12 @@
 cmake_minimum_required(VERSION 3.12.0)
-project(project_title LANGUAGES CXX C)
+project(MatrixBasedSolver)
 
-include(../common/cmake-common.cmake)
+include(./common/cmake-common.cmake)
 
-add_compile_options(-Wall -Wextra -Wpedantic -march=native -O2 -std=c++26)
+# At some point we should also use -Wall -Wextra -Wpedantic
+add_compile_options(-std=c++20 -O0 -g3 -fno-inline -fno-inline-functions -Wall -Wextra)
+add_link_options(-fsanitize=address)
+# add_compile_options(-std=c++20 -Og -g -fno-inline -fno-inline-functions  -fno-omit-frame-pointer)
 
-add_executable(mfsolver src/main.cpp)
-deal_ii_setup_target(mfsolver)
+add_executable(MatrixBasedTest src/MatrixBasedTest.cpp)
+deal_ii_setup_target(MatrixBasedTest)
