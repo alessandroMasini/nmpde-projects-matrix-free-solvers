@@ -173,7 +173,7 @@ namespace MFSolver
                 {
                     Point<dim, VectorizedArray<double>> quadrature_point = face_phi.quadrature_point(q);
                     VectorizedArray<double> neumann_value = neumann->value(quadrature_point);
-                    VectorizedArray<double> mu = this->problem.mu->value(quadrature_point);
+                    VectorizedArray<double> mu = this->problem.mu.value(quadrature_point);
 
                     face_phi.submit_value(neumann_value * mu, q);
                 }
