@@ -4,7 +4,7 @@
 // #include <stdexcept>
 
 #include <deal.II/base/function.h>
-// #include <deal.II/base/tensor_function.h>
+#include <deal.II/base/tensor_function.h>
 // #include <deal.II/base/tensor.h>
 
 

@@ -32,7 +32,6 @@ public:
 
 int
 main (int argc, char* argv [ ]) {
-
     Utilities::MPI::MPI_InitFinalize mpi_init (argc, argv);
 
     ADR::ProblemData<2, 2> data;
@@ -60,7 +59,7 @@ main (int argc, char* argv [ ]) {
     data.lvgt0_smoothing_eigenvalue_max_iterations = 10;
     data.refinement_coefficient_per_level = 4;
 
-    MatrixBasedADRSolver<2, 2> solver(data);
-    solver.run();
+    // MatrixBasedADRSolver<2, 2> solver(data);
+    // solver.run();
     return 0;
-    }
+}

@@ -6,6 +6,7 @@
 // #include <stdexcept>
 // #include <string>
 // #include <unordered_map>
+#include <memory>
 
 // // deal.II imports
 #include <deal.II/base/conditional_ostream.h>
@@ -13,7 +14,7 @@
 // #include <deal.II/base/tensor.h>
 // #include <deal.II/base/types.h>
 
-// #include <deal.II/distributed/fully_distributed_tria.h>
+#include <deal.II/distributed/fully_distributed_tria.h>
 // #include <deal.II/distributed/tria.h>
 
 #include <deal.II/fe/fe_q.h>
@@ -434,9 +435,9 @@ namespace MFSolver
         MatrixBasedADRSolver(const ADR::ProblemData<dim, fe_degree> &_problem) : ADRSolver<dim, fe_degree>(_problem),
                                                                                  mpi_size(Utilities::MPI::n_mpi_processes(MPI_COMM_WORLD)),
                                                                                  mpi_rank(Utilities::MPI::this_mpi_process(MPI_COMM_WORLD)),
-                                                                                 mesh(MPI_COMM_WORLD),
                                                                                  pcout(std::cout, mpi_rank == 0)
         {
+            mesh = std::make_shared<parallel::fullydistributed::Triangulation<dim, dim>>(MPI_COMM_WORLD);
         }
         ~MatrixBasedADRSolver() override {};
 
@@ -456,11 +457,11 @@ namespace MFSolver
 
         // Triangulation.
         // TODO: clarify difference with MatrixFreeADRSolver mesh types
-        parallel::fullydistributed::Triangulation<dim, dim> mesh;
+        std::shared_ptr<parallel::fullydistributed::Triangulation<dim, dim>> mesh;
 
         // Finite element space.
         // TODO: clarify difference with MatrixFreeADRSolver fe non-pointer
-        std::unique_ptr<FiniteElement<dim>> fe;
+        std::shared_ptr<FiniteElement<dim>> fe;
 
         // TODO: should we add
         // - mapping
@@ -468,22 +469,22 @@ namespace MFSolver
         // here?
 
         // Quadrature formula.
-        std::unique_ptr<Quadrature<dim>> quadrature;
+        std::shared_ptr<Quadrature<dim>> quadrature;
 
         // DoF handler.
-        DoFHandler<dim> dof_handler;
+        std::shared_ptr<DoFHandler<dim>> dof_handler;
 
         // System matrix.
-        TrilinosWrappers::SparseMatrix system_matrix;
+        std::shared_ptr<TrilinosWrappers::SparseMatrix> system_matrix;
 
         // System right-hand side.
-        TrilinosWrappers::MPI::Vector system_rhs;
+        std::shared_ptr<TrilinosWrappers::MPI::Vector> system_rhs;
 
         // System solution, without ghost elements.
-        TrilinosWrappers::MPI::Vector solution_owned;
+        std::shared_ptr<TrilinosWrappers::MPI::Vector> solution_owned;
 
         // System solution, with ghost elements.
-        TrilinosWrappers::MPI::Vector solution;
+        std::shared_ptr<TrilinosWrappers::MPI::Vector> solution;
 
         // Output stream for process 0.
         ConditionalOStream pcout;

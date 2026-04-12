@@ -1,3 +1,5 @@
+#include <deal.II/dofs/dof_handler.h>
+
 #include <deal.II/fe/fe_simplex_p.h>
 
 #include <deal.II/grid/grid_generator.h>
@@ -5,11 +7,11 @@
 #include <deal.II/grid/grid_tools.h>
 
 #include <deal.II/lac/trilinos_precondition.h>
-// #include <deal.II/lac/solver_cg.h>
+#include <deal.II/lac/solver_cg.h>
 #include <deal.II/lac/solver_control.h>
 // #include <deal.II/lac/vector.h>
 
-// #include <deal.II/numerics/data_out.h>
+#include <deal.II/numerics/data_out.h>
 #include <deal.II/numerics/matrix_tools.h>
 #include <deal.II/numerics/vector_tools.h>
 
@@ -20,13 +22,11 @@ namespace MFSolver{
   template <int dim, int fe_degree>
   void MatrixBasedADRSolver<dim, fe_degree>::setup_system () {
     pcout << "===============================================" << std::endl;
-    std::fflush(NULL);
 
     // Create the mesh.
     // TODO: adapt this so it actually uses the this->problem's mesh
     {
       pcout << "Initializing the mesh" << std::endl;
-      std::fflush(NULL);
 
       // Copy the serial mesh into the parallel one.
       {
@@ -34,93 +34,80 @@ namespace MFSolver{
         GridGenerator::subdivided_hyper_cube (mesh_serial, 40, 0.0, 1.0, /* colorize = */true);
         pcout << "  Number of elements = " << mesh_serial.n_active_cells ()
           << std::endl;
-        std::fflush(NULL);
 
         GridTools::partition_triangulation (mpi_size, mesh_serial);
 
         const auto construction_data = TriangulationDescription::Utilities::
           create_description_from_triangulation (mesh_serial, MPI_COMM_WORLD);
-        mesh.create_triangulation (construction_data);
+        mesh->create_triangulation (construction_data);
       }
 
 
-      pcout << "  Number of elements = " << mesh.n_global_active_cells ()
+      pcout << "  Number of elements = " << mesh->n_global_active_cells ()
         << std::endl;
-      std::fflush(NULL);
     }
 
     pcout << "-----------------------------------------------" << std::endl;
-    std::fflush(NULL);
 
     // Initialize the finite element space.
     {
       pcout << "Initializing the finite element space" << std::endl;
-      std::fflush(NULL);
 
-      fe = std::make_unique<FE_SimplexP<dim>> (fe_degree);
+      fe = std::make_shared<FE_SimplexP<dim>> (fe_degree);
 
       pcout << "  Degree                     = " << fe->degree << std::endl;
-      std::fflush(NULL);
       pcout << "  DoFs per cell              = " << fe->dofs_per_cell
         << std::endl;
-      std::fflush(NULL);
 
-      quadrature = std::make_unique<QGaussSimplex<dim>> (this->problem.num_quadrature_points);
+      quadrature = std::make_shared<QGaussSimplex<dim>> (this->problem.num_quadrature_points);
 
       pcout << "  Quadrature points per cell = " << quadrature->size ()
         << std::endl;
-      std::fflush(NULL);
     }
 
     pcout << "-----------------------------------------------" << std::endl;
-    std::fflush(NULL);
 
     // Initialize the DoF handler.
     {
       pcout << "Initializing the DoF handler" << std::endl;
-      std::fflush(NULL);
 
-      dof_handler.reinit (mesh);
-      dof_handler.distribute_dofs (*fe);
+      dof_handler = std::make_shared<DoFHandler<dim>>();
+      dof_handler->reinit (*mesh);
+      dof_handler->distribute_dofs (*fe);
 
-      pcout << "  Number of DoFs = " << dof_handler.n_dofs () << std::endl;
-      std::fflush(NULL);
+      pcout << "  Number of DoFs = " << dof_handler->n_dofs () << std::endl;
     }
 
     pcout << "-----------------------------------------------" << std::endl;
-    std::fflush(NULL);
 
     // Initialize the linear system.
     {
       pcout << "Initializing the linear system" << std::endl;
-      std::fflush(NULL);
 
-      const IndexSet locally_owned_dofs = dof_handler.locally_owned_dofs ();
+      const IndexSet locally_owned_dofs = dof_handler->locally_owned_dofs ();
       const IndexSet locally_relevant_dofs =
-        DoFTools::extract_locally_relevant_dofs(dof_handler);
+        DoFTools::extract_locally_relevant_dofs(*dof_handler);
+
+      Assert(locally_relevant_dofs.n_elements() > 0, ExcInternalError());
+      std::cout << locally_relevant_dofs.n_elements() << std::endl;
 
       pcout << "  Initializing the sparsity pattern" << std::endl;
-      std::fflush(NULL);
       TrilinosWrappers::SparsityPattern sparsity (locally_owned_dofs,
         MPI_COMM_WORLD);
-      DoFTools::make_sparsity_pattern (dof_handler, sparsity);
+      DoFTools::make_sparsity_pattern (*dof_handler, sparsity);
       sparsity.compress ();
-
+      
       pcout << "  Initializing the system matrix" << std::endl;
-      std::fflush(NULL);
-      system_matrix.reinit (sparsity);
+      system_matrix = std::make_shared<TrilinosWrappers::SparseMatrix>(sparsity);
 
       pcout << "  Initializing system_rhs" << std::endl;
-      std::fflush(NULL);
-      system_rhs.reinit (locally_owned_dofs, MPI_COMM_WORLD);
-
+      system_rhs = std::make_shared<TrilinosWrappers::MPI::Vector>(locally_owned_dofs, MPI_COMM_WORLD);
+      
       pcout << "  Initializing owned solution" << std::endl;
-      std::fflush(NULL);
-      solution_owned.reinit (locally_owned_dofs, MPI_COMM_WORLD);
-
+      solution_owned = std::make_shared<TrilinosWrappers::MPI::Vector>(locally_owned_dofs, MPI_COMM_WORLD);
+      
       pcout << "  Initializing solution" << std::endl;
-      std::fflush(NULL);
-      solution.reinit (locally_owned_dofs, locally_relevant_dofs, MPI_COMM_WORLD);
+      solution = std::make_shared<TrilinosWrappers::MPI::Vector>(locally_owned_dofs, locally_relevant_dofs, MPI_COMM_WORLD);
     }
   }
 
@@ -144,11 +131,11 @@ namespace MFSolver{
     std::vector<types::global_dof_index> dof_indices (dofs_per_cell);
 
     // Reset the global matrix and vector, just in case.
-    system_matrix = 0.0;
-    system_rhs = 0.0;
+    *system_matrix = 0.0;
+    *system_rhs = 0.0;
     Tensor<1, dim, double> b_loc;
-
-    for (const auto& cell : dof_handler.active_cell_iterators ()) {
+    
+    for (const auto& cell : dof_handler->active_cell_iterators ()) {
       if (!cell->is_locally_owned ())
         continue;
 
@@ -195,13 +182,13 @@ namespace MFSolver{
 
       cell->get_dof_indices (dof_indices);
 
-      system_matrix.add (dof_indices, cell_matrix);
-      system_rhs.add (dof_indices, cell_rhs);
+      system_matrix->add (dof_indices, cell_matrix);
+      system_rhs->add (dof_indices, cell_rhs);
     }
-
-    system_matrix.compress (VectorOperation::add);
-    system_rhs.compress (VectorOperation::add);
-
+    
+    system_matrix->compress (VectorOperation::add);
+    system_rhs->compress (VectorOperation::add);
+    
     {
       std::map<types::global_dof_index, double> boundary_values;
       Functions::ZeroFunction<dim> bc_function;
@@ -209,28 +196,28 @@ namespace MFSolver{
       boundary_functions[0] = &bc_function;
 
       // interpolate_boundary_values fills the boundary_values map.
-      VectorTools::interpolate_boundary_values (dof_handler,
+      VectorTools::interpolate_boundary_values (*dof_handler,
         boundary_functions,
         boundary_values);
 
       MatrixTools::apply_boundary_values (
-        boundary_values, system_matrix, solution, system_rhs, true);
+        boundary_values, *system_matrix, *solution, *system_rhs, true);
     }
-
-  }
+    
+}
 
   template <int dim, int fe_degree>
   void MatrixBasedADRSolver<dim, fe_degree>::solve () {
     TrilinosWrappers::PreconditionSSOR preconditioner;
     preconditioner.initialize (
-      system_matrix, TrilinosWrappers::PreconditionSSOR::AdditionalData (1.0));
+      *system_matrix, TrilinosWrappers::PreconditionSSOR::AdditionalData (1.0));
 
     SolverControl solver_control (/* maxiter = */ this->problem.solver_max_iterations,
       /* tolerance = */ this->problem.solver_tolerance_factor);
 
     SolverCG<TrilinosWrappers::MPI::Vector> solver (solver_control);
 
-    solver.solve (system_matrix, solution_owned, system_rhs, preconditioner);
+    solver.solve (*system_matrix, *solution_owned, *system_rhs, preconditioner);
     pcout << solver_control.last_step () << " CG iterations" << std::endl;
   }
 
@@ -238,11 +225,11 @@ namespace MFSolver{
   void MatrixBasedADRSolver<dim, fe_degree>::output_results () {
     DataOut<dim> data_out;
 
-    data_out.add_data_vector (dof_handler, solution, "solution");
+    data_out.add_data_vector (*dof_handler, *solution, "solution");
 
     // Add vector for parallel partition.
-    std::vector<unsigned int> partition_int (mesh.n_active_cells ());
-    GridTools::get_subdomain_association (mesh, partition_int);
+    std::vector<unsigned int> partition_int (mesh->n_active_cells ());
+    GridTools::get_subdomain_association (*mesh, partition_int);
     const Vector<double> partitioning (partition_int.begin (), partition_int.end ());
     data_out.add_data_vector (partitioning, "partitioning");
 
