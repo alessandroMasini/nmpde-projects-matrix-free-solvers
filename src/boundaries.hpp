@@ -35,7 +35,7 @@ namespace MFSolver
      * \tparam dim The dimensionality of the space the ADR problem is living in.
      */
     template <int dim>
-    using DirichletBoundaries = Boundaries<const DirichletBoundary<dim> *>;
+    using DirichletBoundaries = Boundaries<std::shared_ptr<DirichletBoundary<dim>>>;
 
     /**
      * \brief Represents a mapping between boundaries (represented by boundary IDs) and the corresponding Neumann boundary condition.

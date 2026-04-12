@@ -148,10 +148,10 @@ namespace ADR
          */
         static ProblemData<dim, fe_degree, ConstantRealFunction, ConstantVectorFunctionWithGradient, ConstantRealFunction> standard_test_case()
         {
-            ConstantDirichletBoundary<dim> cdb(1.0);
+            // ConstantDirichletBoundary<dim> cdb(1.0);
 
             MFSolver::DirichletBoundaries<dim> dirichlet_boundaries;
-            dirichlet_boundaries[0] = &cdb;
+            dirichlet_boundaries[0] = std::make_shared<ConstantRealFunction<dim>>(1.0);
 
             ProblemData<dim, fe_degree, ConstantRealFunction, ConstantVectorFunctionWithGradient, ConstantRealFunction> data{
                 .mesh_filename = "input.msh",
