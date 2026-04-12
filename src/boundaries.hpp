@@ -42,5 +42,5 @@ namespace MFSolver
      * \tparam dim The dimensionality of the space the ADR problem is living in.
      */
     template <int dim>
-    using NeumannBoundaries = Boundaries<const NeumannBoundary<dim> *>;
+    using NeumannBoundaries = Boundaries<std::shared_ptr<NeumannBoundary<dim>>>;
 };

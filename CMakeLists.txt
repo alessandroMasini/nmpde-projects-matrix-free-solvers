@@ -3,7 +3,7 @@ project(project_title LANGUAGES CXX C)
 
 include(common/cmake-common.cmake)
 
-add_compile_options(-Wall -Wextra -Wpedantic -march=native -std=c++20 -g -O0 -Wno-deprecated-declarations)
+add_compile_options(-Wall -Wextra -Wpedantic -march=native -std=c++20 -g -O0 -Wno-deprecated-declarations -Wno-float-conversion)
 
 add_executable(mfsolver src/main.cpp)
 deal_ii_setup_target(mfsolver)

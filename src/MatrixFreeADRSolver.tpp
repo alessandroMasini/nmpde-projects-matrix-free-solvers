@@ -242,7 +242,29 @@ namespace MFSolver
     }
 
     template <int dim, int fe_degree>
-    void MatrixFreeADRSolver<dim, fe_degree>::output_results() {}
+    void MatrixFreeADRSolver<dim, fe_degree>::output_results()
+    {
+        Timer time;
+        if (triangulation.n_global_active_cells() > 1000000)
+            return;
+
+        DataOut<dim> data_out;
+
+        solution.update_ghost_values();
+        data_out.attach_dof_handler(dof_handler);
+        data_out.add_data_vector(solution, "solution");
+        data_out.build_patches(mapping);
+
+        DataOutBase::VtkFlags flags;
+        flags.compression_level = DataOutBase::CompressionLevel::best_speed;
+        data_out.set_flags(flags);
+        std::ofstream output_file("output.vtk");
+        data_out.write_vtk(output_file);
+
+        time_details
+            << "Time write output          (CPU/wall) " << time.cpu_time()
+            << "s/" << time.wall_time() << "s\n";
+    }
 
     template <int dim, int fe_degree>
     void MatrixFreeADRSolver<dim, fe_degree>::run()
@@ -259,11 +281,24 @@ namespace MFSolver
 
         // TODO: load from file
         GridGenerator::hyper_cube(triangulation, 0., 1.);
-        triangulation.refine_global(3 - dim);
-        triangulation.refine_global(1);
+        triangulation.refine_global(3);
+
+        // Triangulation<dim> mesh_serial;
+
+        // GridIn<dim> grid_in;
+        // grid_in.attach_triangulation(mesh_serial);
+
+        // std::ifstream grid_in_file(mesh_file_name);
+        // grid_in.read_msh(grid_in_file);
+
+        // GridTools::partition_triangulation(mpi_size, mesh_serial);
+        // const auto construction_data = TriangulationDescription::Utilities::
+        //     create_description_from_triangulation(mesh_serial, MPI_COMM_WORLD);
+        // mesh.create_triangulation(triangulation);
 
         setup_system();
         assemble();
         solve();
+        output_results();
     }
 }
