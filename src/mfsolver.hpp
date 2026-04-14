@@ -45,7 +45,7 @@ namespace MFSolver
      * \tparam T The type of elements stored in the vector.
      */
     template <typename T>
-    using DVector = LinearAlgebra::distributed::Vector<T>;
+    using DVector = LinearAlgebraTrilinos::distributed::Vector<T>;
 
     /**
      * \brief Represents a function that describes a Dirichlet boundary condition.
@@ -432,13 +432,22 @@ namespace MFSolver
     class MatrixBasedADRSolver : public ADRSolver<dim, fe_degree>
     {
     public:
-        MatrixBasedADRSolver(const ADR::ProblemData<dim, fe_degree> &_problem) : ADRSolver<dim, fe_degree>(_problem),
-                                                                                 mpi_size(Utilities::MPI::n_mpi_processes(MPI_COMM_WORLD)),
-                                                                                 mpi_rank(Utilities::MPI::this_mpi_process(MPI_COMM_WORLD)),
-                                                                                 pcout(std::cout, mpi_rank == 0)
-        {
-            mesh = std::make_shared<parallel::fullydistributed::Triangulation<dim, dim>>(MPI_COMM_WORLD);
-        }
+        MatrixBasedADRSolver(const ADR::ProblemData<dim, fe_degree> &_problem) : 
+        ADRSolver<dim, fe_degree>(_problem),
+        mpi_communicator(MPI_COMM_WORLD),
+        triangulation(mpi_communicator,
+                    typename Triangulation<dim>::MeshSmoothing(
+                      Triangulation<dim>::smoothing_on_refinement |
+                      Triangulation<dim>::smoothing_on_coarsening)),
+        dof_handler(triangulation),
+        fe(fe_degree),
+        pcout(std::cout,
+            (Utilities::MPI::this_mpi_process(mpi_communicator) == 0)),
+        computing_timer(mpi_communicator,
+                      pcout,
+                      TimerOutput::never,
+                      TimerOutput::wall_times)
+        {}
         ~MatrixBasedADRSolver() override {};
 
         void run() override;
@@ -449,47 +458,28 @@ namespace MFSolver
         void solve() override;
         void output_results() override;
 
-        // Number of MPI processes.
-        const unsigned int mpi_size;
+        MPI_Comm mpi_communicator;
+ 
+        parallel::distributed::Triangulation<dim> triangulation;
+    
+        const FE_Q<dim> fe;
+        DoFHandler<dim> dof_handler;
+    
+        IndexSet locally_owned_dofs;
+        IndexSet locally_relevant_dofs;
+    
+        AffineConstraints<double> constraints;
+    
+        LinearAlgebraTrilinos::MPI::SparseMatrix system_matrix;
 
-        // Rank of the current MPI process.
-        const unsigned int mpi_rank;
-
-        // Triangulation.
-        // TODO: clarify difference with MatrixFreeADRSolver mesh types
-        std::shared_ptr<parallel::fullydistributed::Triangulation<dim, dim>> mesh;
-
-        // Finite element space.
-        // TODO: clarify difference with MatrixFreeADRSolver fe non-pointer
-        std::shared_ptr<FiniteElement<dim>> fe;
-
-        // TODO: should we add
-        // - mapping
-        // - affine constraints
-        // here?
-
-        // Quadrature formula.
-        std::shared_ptr<Quadrature<dim>> quadrature;
-
-        // DoF handler.
-        std::shared_ptr<DoFHandler<dim>> dof_handler;
-
-        // System matrix.
-        std::shared_ptr<TrilinosWrappers::SparseMatrix> system_matrix;
-
-        // System right-hand side.
-        std::shared_ptr<TrilinosWrappers::MPI::Vector> system_rhs;
-
-        // System solution, without ghost elements.
-        std::shared_ptr<TrilinosWrappers::MPI::Vector> solution_owned;
-
-        // System solution, with ghost elements.
-        std::shared_ptr<TrilinosWrappers::MPI::Vector> solution;
-
-        // Output stream for process 0.
+        // TODO: use the correct vector type
+        LinearAlgebraTrilinos::MPI::Vector       locally_relevant_solution;
+        LinearAlgebraTrilinos::MPI::Vector       system_rhs;
+    
         ConditionalOStream pcout;
+        TimerOutput        computing_timer;
     };
 };
 
 // Including template function implementations
-#include "../ADR_matrix_based_example/MatrixBasedADRSolver.tpp"
+#include "../step40/MatrixBasedADRSolver.tpp"
