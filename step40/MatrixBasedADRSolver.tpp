@@ -110,25 +110,36 @@ namespace MFSolver{
                                                  system_matrix,
                                                  system_rhs);
         }
+
+    pcout<<"After for loop I'm still alive :)"<<std::endl;
  
     system_matrix.compress(VectorOperation::add);
+
+    pcout<<"After matrix is compressed"<<std::endl;
     system_rhs.compress(VectorOperation::add);
+
+
   }
 
   template <int dim, int fe_degree>
   void MatrixBasedADRSolver<dim, fe_degree>::solve () {
     TimerOutput::Scope t(computing_timer, "solve");
  
-    DVector<double> completely_distributed_solution(locally_owned_dofs,
+    LA::MPI::Vector completely_distributed_solution(locally_owned_dofs,
                                                     mpi_communicator);
  
     SolverControl solver_control(this->problem.solver_max_iterations,
                                  this->problem.solver_tolerance_factor * system_rhs.l2_norm());
-    SolverCG<DVector<double>>  solver(solver_control);
+    LA::SolverCG  solver(solver_control);
  
  
-    TrilinosWrappers::PreconditionAMG::AdditionalData data;
-    TrilinosWrappers::PreconditionAMG preconditioner;
+    LA::MPI::PreconditionAMG::AdditionalData data;
+#ifdef USE_PETSC_LA
+    data.symmetric_operator = true;
+#else
+    /* Trilinos defaults are good */
+#endif
+    LA::MPI::PreconditionAMG preconditioner;
     preconditioner.initialize(system_matrix, data);
  
     solver.solve(system_matrix,
@@ -176,8 +187,11 @@ namespace MFSolver{
           << " MPI rank(s)..." << std::endl;
 
     setup_system ();
+    pcout<<"Finished setup"<<std::endl;
     assemble ();
+    pcout<<"Finished assemble"<<std::endl;
     solve ();
+    pcout<<"Finished solve"<<std::endl;
     output_results ();
 
     computing_timer.print_summary();
