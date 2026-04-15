@@ -69,6 +69,12 @@ namespace MFSolver{
     Vector<double>     cell_rhs(dofs_per_cell);
  
     std::vector<types::global_dof_index> local_dof_indices(dofs_per_cell);
+
+    double mu_loc;
+    Tensor<1, dim, double> b_loc;
+    double b_div;
+    double k_loc;
+    double f_loc;
       
     // TODO: implement ADR with actual functions
     for (const auto &cell : dof_handler.active_cell_iterators())
@@ -79,28 +85,41 @@ namespace MFSolver{
           cell_matrix = 0.;
           cell_rhs    = 0.;
  
-          for (unsigned int q_point = 0; q_point < n_q_points; ++q_point)
-            {
-              const double rhs_value =
-                (fe_values.quadrature_point(q_point)[1] >
-                     0.5 +
-                       0.25 * std::sin(4.0 * numbers::PI *
-                                       fe_values.quadrature_point(q_point)[0]) ?
-                   1. :
-                   -1.);
- 
-              for (unsigned int i = 0; i < dofs_per_cell; ++i)
-                {
-                  for (unsigned int j = 0; j < dofs_per_cell; ++j)
-                    cell_matrix(i, j) += fe_values.shape_grad(i, q_point) *
-                                         fe_values.shape_grad(j, q_point) *
-                                         fe_values.JxW(q_point);
- 
-                  cell_rhs(i) += rhs_value *                         
-                                 fe_values.shape_value(i, q_point) * 
-                                 fe_values.JxW(q_point);
-                }
-            }
+        for (unsigned int q = 0; q < n_q_points; ++q) {
+          mu_loc = this->problem.mu->value (fe_values.quadrature_point (q));
+          b_loc = this->problem.beta->value (fe_values.quadrature_point (q));
+          b_div = this->problem.beta->divergence(fe_values.quadrature_point (q));
+          k_loc = this->problem.gamma->value (fe_values.quadrature_point (q));
+          f_loc = this->problem.forcing_term->value (fe_values.quadrature_point (q));
+
+          for (unsigned int i = 0; i < dofs_per_cell; ++i) {
+            for (unsigned int j = 0; j < dofs_per_cell; ++j) {
+              // Diffusion.
+              cell_matrix (i, j) +=
+                mu_loc *                             //
+                fe_values.shape_grad (i, q) *  //
+                fe_values.shape_grad (j, q) * //
+                fe_values.JxW (q);
+
+              // Advection
+              cell_matrix (i, j) += b_loc *
+                fe_values.shape_grad (i, q) *
+                fe_values.shape_value (j, q) *
+                fe_values.JxW (q);
+
+              // Reaction
+              cell_matrix (i, j) += (k_loc + b_div)*
+                fe_values.shape_value (i, q) *
+                fe_values.shape_value (j, q) *
+                fe_values.JxW (q);
+          }
+
+          // Forcing term.
+          cell_rhs (i) += f_loc * //
+            fe_values.shape_value (i, q) *                     //
+            fe_values.JxW (q);
+        }
+      }
             
           // TODO: apply b.c.
           cell->get_dof_indices(local_dof_indices);

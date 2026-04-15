@@ -23,10 +23,7 @@ public:
 
     template <typename Number>
     Number value(const dealii::Point<dim, Number> & p, const unsigned int /*component*/ = 0) const {
-        return 2*1.0e-2*(M_PI*M_PI) * std::sin (M_PI * p[0]) * std::sin (M_PI * p[1])
-        + M_PI * std::cos (M_PI * p[0]) * std::sin (M_PI * p[1])
-        + M_PI * std::cos (M_PI * p[1]) * std::sin (M_PI * p[0])
-        + std::sin (M_PI * p[0]) * std::sin (M_PI * p[1]);
+        return p[0]<0.5 ? 100.0 : 1.0;
     }
 };
 
@@ -35,23 +32,24 @@ main (int argc, char* argv [ ]) {
     // TODO: decide what to do with the number of threads
     Utilities::MPI::MPI_InitFinalize mpi_init (argc, argv, 1);
 
-    ADR::ProblemData<2, 2> data;
+    ADR::ProblemData<3, 1> data;
     // data.fe_degree = 1;
     // data.refinement_level = 5;
 
-    data.mu = std::make_shared<ADR::ConstantRealFunction<2>>(1.0e-2);
-    data.beta = std::make_shared<ADR::ConstantVectorFunctionWithGradient<2>>(1.0);
-    data.gamma = std::make_shared<ADR::ConstantRealFunction<2>>(1.0);
+    data.mu = std::make_shared<TrigonometricF<3>> ();
+    data.beta = std::make_shared<ADR::ConstantVectorFunctionWithGradient<3>>(0.0);
+    data.gamma = std::make_shared<ADR::ConstantRealFunction<3>>(1.0);
 
-    data.forcing_term = std::make_shared<TrigonometricF<2>> ();
+    data.forcing_term = std::make_shared<ADR::ConstantRealFunction<3>>(1.0);
+    
 
-    data.num_quadrature_points = 2 + 1;
+    data.num_quadrature_points = 1 + 1;
     data.solver_max_iterations = 10000;
-    data.solver_tolerance_factor = 1.0e-16;
+    data.solver_tolerance_factor = 1.0e-14;
 
     // Currently not used
-    data.dirichlet_boundary_value = std::make_shared<ADR::ConstantRealFunction<2>>(0.0);
-    data.dirichlet_boundary_value = std::make_shared<ADR::ConstantRealFunction<2>>(0.0);
+    data.dirichlet_boundary_value = std::make_shared<ADR::ConstantRealFunction<3>>(0.0);
+    data.dirichlet_boundary_value = std::make_shared<ADR::ConstantRealFunction<3>>(0.0);
     data.mesh_filename = "input.msh";
     data.num_levels = 5;
     data.lv0_smoothing_range = 1.e-3;
@@ -60,7 +58,7 @@ main (int argc, char* argv [ ]) {
     data.lvgt0_smoothing_eigenvalue_max_iterations = 10;
     data.refinement_coefficient_per_level = 4;
 
-    MatrixBasedADRSolver<2, 2> solver(data);
+    MatrixBasedADRSolver<3, 1> solver(data);
     solver.run();
     return 0;
 }

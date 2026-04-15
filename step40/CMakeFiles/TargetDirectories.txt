@@ -1,0 +1,3 @@
+/home/federica23/NMPDE/nmpde-projects-matrix-free-solvers/step40/CMakeFiles/MatrixBasedTest.dir
+/home/federica23/NMPDE/nmpde-projects-matrix-free-solvers/step40/CMakeFiles/edit_cache.dir
+/home/federica23/NMPDE/nmpde-projects-matrix-free-solvers/step40/CMakeFiles/rebuild_cache.dir
