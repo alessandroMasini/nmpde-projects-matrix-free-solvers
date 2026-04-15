@@ -103,8 +103,8 @@ namespace MFSolver{
 
               // Advection
               cell_matrix (i, j) += b_loc *
-                fe_values.shape_grad (i, q) *
-                fe_values.shape_value (j, q) *
+                fe_values.shape_grad (j, q) *
+                fe_values.shape_value (i, q) *
                 fe_values.JxW (q);
 
               // Reaction
@@ -194,6 +194,8 @@ namespace MFSolver{
       "./", "solution", 0, mpi_communicator, 2, 8);
   }
 
+  
+
   template <int dim, int fe_degree>
   void MatrixBasedADRSolver<dim, fe_degree>::run () {
     pcout << "Running with "
@@ -218,4 +220,5 @@ namespace MFSolver{
 
     pcout << std::endl;
   }
+
 }
