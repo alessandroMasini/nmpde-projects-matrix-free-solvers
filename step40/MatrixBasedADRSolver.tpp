@@ -1,34 +1,3 @@
-#include <deal.II/base/quadrature_lib.h>
-#include <deal.II/base/function.h>
-#include <deal.II/base/timer.h>
- 
-#include <deal.II/lac/generic_linear_algebra.h>
-#include <deal.II/lac/vector.h>
-#include <deal.II/lac/full_matrix.h>
-#include <deal.II/lac/solver_cg.h>
-#include <deal.II/lac/affine_constraints.h>
-#include <deal.II/lac/dynamic_sparsity_pattern.h>
- 
-#include <deal.II/grid/grid_generator.h>
-#include <deal.II/dofs/dof_handler.h>
-#include <deal.II/dofs/dof_tools.h>
-#include <deal.II/fe/fe_values.h>
-#include <deal.II/fe/fe_q.h>
-#include <deal.II/numerics/vector_tools.h>
-#include <deal.II/numerics/data_out.h>
-#include <deal.II/numerics/error_estimator.h>
- 
-#include <deal.II/base/utilities.h>
-#include <deal.II/base/conditional_ostream.h>
-#include <deal.II/base/index_set.h>
-#include <deal.II/lac/sparsity_tools.h>
-#include <deal.II/distributed/tria.h>
-#include <deal.II/distributed/grid_refinement.h>
- 
-#include <fstream>
-#include <iostream>
-
-
 // TODO: employ SIMD vectorization
 
 namespace MFSolver{
@@ -86,7 +55,7 @@ namespace MFSolver{
   void MatrixBasedADRSolver<dim, fe_degree>::assemble () {
     TimerOutput::Scope t(computing_timer, "assembly");
  
-    const QGauss<dim> quadrature_formula(num_quadrature_points);
+    const QGauss<dim> quadrature_formula(this->problem.num_quadrature_points);
  
     FEValues<dim> fe_values(fe,
                             quadrature_formula,
@@ -150,21 +119,21 @@ namespace MFSolver{
   void MatrixBasedADRSolver<dim, fe_degree>::solve () {
     TimerOutput::Scope t(computing_timer, "solve");
  
-    LinearAlgebraTrilinos::MPI::Vector completely_distributed_solution(locally_owned_dofs,
+    LA::MPI::Vector completely_distributed_solution(locally_owned_dofs,
                                                     mpi_communicator);
  
-    SolverControl solver_control(problem.solver_max_iterations,
-                                 problem.solver_tolerance_factor * system_rhs.l2_norm());
-    LinearAlgebraTrilinos::SolverCG  solver(solver_control);
+    SolverControl solver_control(this->problem.solver_max_iterations,
+                                 this->problem.solver_tolerance_factor * system_rhs.l2_norm());
+    LA::SolverCG  solver(solver_control);
  
  
-    LinearAlgebraTrilinos::MPI::PreconditionAMG::AdditionalData data;
+    LA::MPI::PreconditionAMG::AdditionalData data;
 #ifdef USE_PETSC_LA
     data.symmetric_operator = true;
 #else
     /* Trilinos defaults are good */
 #endif
-    LinearAlgebraTrilinos::MPI::PreconditionAMG preconditioner;
+    LA::MPI::PreconditionAMG preconditioner;
     preconditioner.initialize(system_matrix, data);
  
     solver.solve(system_matrix,
@@ -197,7 +166,7 @@ namespace MFSolver{
     
     // TODO: inquire this hardwired numbers
     data_out.write_vtu_with_pvtu_record(
-      "./", "solution", cycle, mpi_communicator, 2, 8);
+      "./", "solution", 0, mpi_communicator, 2, 8);
   }
 
   template <int dim, int fe_degree>

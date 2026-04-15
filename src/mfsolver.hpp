@@ -33,6 +33,40 @@
 #include "function_types.hpp"
 #include "ProblemData.hpp"
 
+// Imports from step40
+// TODO: rationalize
+
+
+#include <deal.II/base/quadrature_lib.h>
+#include <deal.II/base/function.h>
+#include <deal.II/base/timer.h>
+ 
+#include <deal.II/lac/generic_linear_algebra.h>
+#include <deal.II/lac/vector.h>
+#include <deal.II/lac/full_matrix.h>
+#include <deal.II/lac/solver_cg.h>
+#include <deal.II/lac/affine_constraints.h>
+#include <deal.II/lac/dynamic_sparsity_pattern.h>
+ 
+#include <deal.II/grid/grid_generator.h>
+#include <deal.II/dofs/dof_handler.h>
+#include <deal.II/dofs/dof_tools.h>
+#include <deal.II/fe/fe_values.h>
+#include <deal.II/fe/fe_q.h>
+#include <deal.II/numerics/vector_tools.h>
+#include <deal.II/numerics/data_out.h>
+#include <deal.II/numerics/error_estimator.h>
+ 
+#include <deal.II/base/utilities.h>
+#include <deal.II/base/conditional_ostream.h>
+#include <deal.II/base/index_set.h>
+#include <deal.II/lac/sparsity_tools.h>
+#include <deal.II/distributed/tria.h>
+#include <deal.II/distributed/grid_refinement.h>
+ 
+#include <fstream>
+#include <iostream>
+
 /**
  * \brief Namespace containing all the methods and type definitions used in the project.
  */
@@ -40,12 +74,25 @@ namespace MFSolver
 {
     using namespace dealii;
 
+    namespace LA
+    {
+        #if defined(DEAL_II_WITH_PETSC) && !defined(DEAL_II_PETSC_WITH_COMPLEX) && \
+        !(defined(DEAL_II_WITH_TRILINOS) && defined(FORCE_USE_OF_TRILINOS))
+        using namespace LinearAlgebraPETSc;
+        #  define USE_PETSC_LA
+        #elif defined(DEAL_II_WITH_TRILINOS)
+        using namespace LinearAlgebraTrilinos;
+        #else
+        #  error DEAL_II_WITH_PETSC or DEAL_II_WITH_TRILINOS required
+        #endif
+    } // namespace LA
+
     /**
      * \brief Like a vector, but distributed.
      * \tparam T The type of elements stored in the vector.
      */
     template <typename T>
-    using DVector = LinearAlgebraTrilinos::distributed::Vector<T>;
+    using DVector = LinearAlgebra::distributed::Vector<T>;
 
     /**
      * \brief Represents a function that describes a Dirichlet boundary condition.
@@ -439,8 +486,8 @@ namespace MFSolver
                     typename Triangulation<dim>::MeshSmoothing(
                       Triangulation<dim>::smoothing_on_refinement |
                       Triangulation<dim>::smoothing_on_coarsening)),
-        dof_handler(triangulation),
         fe(fe_degree),
+        dof_handler(triangulation),
         pcout(std::cout,
             (Utilities::MPI::this_mpi_process(mpi_communicator) == 0)),
         computing_timer(mpi_communicator,
@@ -470,11 +517,11 @@ namespace MFSolver
     
         AffineConstraints<double> constraints;
     
-        LinearAlgebraTrilinos::MPI::SparseMatrix system_matrix;
+        LA::MPI::SparseMatrix system_matrix;
 
         // TODO: use the correct vector type
-        LinearAlgebraTrilinos::MPI::Vector       locally_relevant_solution;
-        LinearAlgebraTrilinos::MPI::Vector       system_rhs;
+        LA::MPI::Vector       locally_relevant_solution;
+        LA::MPI::Vector       system_rhs;
     
         ConditionalOStream pcout;
         TimerOutput        computing_timer;
