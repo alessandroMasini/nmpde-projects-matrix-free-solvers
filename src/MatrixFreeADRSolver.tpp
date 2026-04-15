@@ -38,11 +38,13 @@ namespace MFSolver
 
             pcout << "Number of DoFs: " << dof_handler.n_dofs() << std::endl;
 
+            pcout << "  Initialize constraints..." << std::endl;
             // Handle hanging nodes (created by adaptive h-refinement) to ensure solution continuity
             constraints.clear();
             constraints.reinit(DoFTools::extract_locally_relevant_dofs(dof_handler));
             DoFTools::make_hanging_node_constraints(dof_handler, constraints);
 
+            pcout << "  Interpolating boundary values..." << std::endl;
             // Interpolate the Dirichlet (essential) boundary conditions from our ProblemData map
             for (const auto &[boundary_id, function] : this->problem.dirichlet_boundaries)
             {
@@ -51,6 +53,8 @@ namespace MFSolver
             }
 
             constraints.close();
+
+            pcout << "  Setup vectors..." << std::endl;
         }
 
         setup_time += timer.wall_time();
@@ -266,5 +270,42 @@ namespace MFSolver
     void MatrixFreeADRSolver<dim, fe_degree>::output_results() {}
 
     template <int dim, int fe_degree>
-    void MatrixFreeADRSolver<dim, fe_degree>::run() {}
+    void MatrixFreeADRSolver<dim, fe_degree>::run()
+    {
+        pcout << "===========================================" << std::endl;
+        pcout << "   Matrix-Free ADR Solver                  " << std::endl;
+        pcout << "===========================================" << std::endl;
+
+        pcout << "Number of MPI ranks:            "
+              << dealii::Utilities::MPI::n_mpi_processes(MPI_COMM_WORLD) << std::endl;
+        const unsigned int n_vect_doubles = dealii::VectorizedArray<double>::size();
+        const unsigned int n_vect_bits    = 8 * sizeof(double) * n_vect_doubles;
+        pcout << "Vectorization over " << n_vect_doubles
+              << " doubles = " << n_vect_bits << " bits ("
+              << Utilities::System::get_current_vectorization_level() << ')'
+              << std::endl << std::endl;
+
+        GridGenerator::hyper_cube(triangulation, 0., 1.);
+        triangulation.refine_global(4 - dim); 
+
+        for (unsigned int cycle = 0; cycle < 3; ++cycle) // let's do 3 cycles for the test
+        {
+            pcout << "Cycle " << cycle << std::endl;
+            if (cycle > 0)
+                triangulation.refine_global(1);
+
+            setup_system();
+            
+            pcout << "   Assembling..." << std::endl;
+            assemble();
+            
+            pcout << "   Solving..." << std::endl;
+            solve();
+            
+            pcout << "   Outputting results..." << std::endl;
+            output_results();
+            
+            pcout << "===========================================" << std::endl;
+        }
+    }
 }
