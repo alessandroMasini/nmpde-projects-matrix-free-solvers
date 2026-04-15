@@ -23,6 +23,7 @@
 #include <deal.II/lac/affine_constraints.h>
 #include <deal.II/lac/la_parallel_vector.h>
 #include <deal.II/lac/trilinos_sparse_matrix.h>
+#include <deal.II/lac/solver_cg.h>
 
 // #include <deal.II/matrix_free/fe_evaluation.h>
 #include <deal.II/matrix_free/operators.h>
@@ -517,11 +518,11 @@ namespace MFSolver
     
         AffineConstraints<double> constraints;
     
-        LA::MPI::SparseMatrix system_matrix;
+        TrilinosWrappers::SparseMatrix system_matrix;
 
         // TODO: use the correct vector type
-        LA::MPI::Vector       locally_relevant_solution;
-        LA::MPI::Vector       system_rhs;
+        DVector<double>       locally_relevant_solution;
+        DVector<double>       system_rhs;
     
         ConditionalOStream pcout;
         TimerOutput        computing_timer;

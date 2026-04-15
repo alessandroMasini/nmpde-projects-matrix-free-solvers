@@ -119,21 +119,16 @@ namespace MFSolver{
   void MatrixBasedADRSolver<dim, fe_degree>::solve () {
     TimerOutput::Scope t(computing_timer, "solve");
  
-    LA::MPI::Vector completely_distributed_solution(locally_owned_dofs,
+    DVector<double> completely_distributed_solution(locally_owned_dofs,
                                                     mpi_communicator);
  
     SolverControl solver_control(this->problem.solver_max_iterations,
                                  this->problem.solver_tolerance_factor * system_rhs.l2_norm());
-    LA::SolverCG  solver(solver_control);
+    SolverCG<DVector<double>>  solver(solver_control);
  
  
-    LA::MPI::PreconditionAMG::AdditionalData data;
-#ifdef USE_PETSC_LA
-    data.symmetric_operator = true;
-#else
-    /* Trilinos defaults are good */
-#endif
-    LA::MPI::PreconditionAMG preconditioner;
+    TrilinosWrappers::PreconditionAMG::AdditionalData data;
+    TrilinosWrappers::PreconditionAMG preconditioner;
     preconditioner.initialize(system_matrix, data);
  
     solver.solve(system_matrix,
