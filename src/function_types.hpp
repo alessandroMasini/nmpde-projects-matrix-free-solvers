@@ -53,7 +53,14 @@ namespace MFSolver
         template <typename Number>
         Number value(const Point<dim, Number> &p, const unsigned int component = 0) const
         {
-            throw std::logic_error("If you see this, you have not extended this class (RealFunction - value) correctly. See docs for more information.");
+            Number result;
+            for (unsigned int v = 0; v < Number::size(); ++v)
+            {
+                Point<dim> p_v;
+                for (int d = 0; d < dim; ++d) p_v[d] = p[d][v];
+                result[v] = this->value(p_v, component);
+            }
+            return result;
         }
     };
 
@@ -105,7 +112,15 @@ namespace MFSolver
         template <typename Number>
         value_type<Number> value(const Point<dim, Number> &p) const
         {
-            throw std::logic_error("If you see this, you have not extended this class (VectorFunction - value) correctly. See docs for more information.");
+            value_type<Number> result;
+            for (unsigned int v = 0; v < Number::size(); ++v)
+            {
+                Point<dim> p_v;
+                for (int d = 0; d < dim; ++d) p_v[d] = p[d][v];
+                auto val = this->value(p_v);
+                for (int d = 0; d < dim; ++d) result[d][v] = val[d];
+            }
+            return result;
         }
     };
 
@@ -189,7 +204,14 @@ namespace MFSolver
         template <typename Number>
         Number divergence(const Point<dim, Number> &p) const
         {
-            throw std::logic_error("If you see this, you have not extended this class (VectorFunctionWithGradient - divergence) correctly. See docs for more information.");
+            Number result;
+            for (unsigned int v = 0; v < Number::size(); ++v)
+            {
+                Point<dim> p_v;
+                for (int d = 0; d < dim; ++d) p_v[d] = p[d][v];
+                result[v] = this->divergence(p_v);
+            }
+            return result;
         }
 
         virtual gradient_type<double> gradient(const Point<dim> &p) const override = 0;
@@ -197,7 +219,17 @@ namespace MFSolver
         template <typename Number>
         gradient_type<Number> gradient(const Point<dim, Number> &p) const
         {
-            throw std::logic_error("If you see this, you have not extended this class (VectorFunctionWithGradient - gradient) correctly. See docs for more information.");
+            gradient_type<Number> result;
+            for (unsigned int v = 0; v < Number::size(); ++v)
+            {
+                Point<dim> p_v;
+                for (int d = 0; d < dim; ++d) p_v[d] = p[d][v];
+                auto grad = this->gradient(p_v);
+                for (int i = 0; i < dim; ++i)
+                    for (int j = 0; j < dim; ++j)
+                        result[i][j][v] = grad[i][j];
+            }
+            return result;
         }
     };
 
