@@ -166,7 +166,7 @@ namespace MFSolver
         system_rhs *= -1.0;
 
         FEEvaluation<dim, fe_degree> phi(*inhomogeneous_operator.get_matrix_free());
-        // FEFaceEvaluation<dim, fe_degree, fe_degree + 1, 1, double> face_phi(*system_matrix.get_matrix_free());
+        FEFaceEvaluation<dim, fe_degree, fe_degree + 1, 1, double> face_phi(*inhomogeneous_operator.get_matrix_free());
 
         for (unsigned int cell = 0; cell < inhomogeneous_operator.get_matrix_free()->n_cell_batches(); ++cell)
         {
@@ -183,34 +183,34 @@ namespace MFSolver
 
         system_rhs.compress(VectorOperation::add);
 
-        // for (unsigned int face = 0; face < system_matrix.get_matrix_free()->n_boundary_face_batches(); ++face)
-        // {
-        //     face_phi.reinit(face);
+        for (unsigned int face = 0; face < inhomogeneous_operator.get_matrix_free()->n_boundary_face_batches(); ++face)
+        {
+            face_phi.reinit(face);
 
-        //     const unsigned int boundary_id = system_matrix.get_matrix_free()->get_boundary_id(face);
+            const unsigned int boundary_id = inhomogeneous_operator.get_matrix_free()->get_boundary_id(face);
 
-        //     if (this->problem.neumann_boundaries.find(boundary_id) != this->problem.neumann_boundaries.end())
-        //     {
-        //         const auto &neumann = this->problem.neumann_boundaries.at(boundary_id);
+            if (this->problem.neumann_boundaries.find(boundary_id) != this->problem.neumann_boundaries.end())
+            {
+                const auto &neumann = this->problem.neumann_boundaries.at(boundary_id);
 
-        //         for (const unsigned int q : face_phi.quadrature_point_indices())
-        //         {
-        //             Point<dim, VectorizedArray<double>> quadrature_point = face_phi.quadrature_point(q);
-        //             VectorizedArray<double> neumann_value = neumann->value(quadrature_point);
-        //             VectorizedArray<double> mu = this->problem.mu->value(quadrature_point);
+                for (const unsigned int q : face_phi.quadrature_point_indices())
+                {
+                    Point<dim, VectorizedArray<double>> quadrature_point = face_phi.quadrature_point(q);
+                    VectorizedArray<double> neumann_value = neumann->value(quadrature_point);
+                    VectorizedArray<double> mu = this->problem.mu->value(quadrature_point);
 
-        //             face_phi.submit_value(neumann_value * mu, q);
-        //         }
-        //     }
+                    face_phi.submit_value(neumann_value * mu, q);
+                }
 
-        //     face_phi.integrate(EvaluationFlags::values);
-        //     face_phi.distribute_local_to_global(system_rhs);
-        // }
+                face_phi.integrate(EvaluationFlags::values);
+                face_phi.distribute_local_to_global(system_rhs);
+            }
+        }
 
-        // system_rhs.compress(VectorOperation::add);
+        system_rhs.compress(VectorOperation::add);
 
         // Zero out the right-hand side entries corresponding to constrained DoFs
-        // constraints.set_zero(system_rhs);
+        constraints.set_zero(system_rhs);
 
         setup_time += timer.wall_time();
         time_details << "Assemble right hand side   (CPU/wall) " << timer.cpu_time()
