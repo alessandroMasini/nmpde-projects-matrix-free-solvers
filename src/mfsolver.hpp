@@ -518,11 +518,11 @@ namespace MFSolver
     
         AffineConstraints<double> constraints;
     
-        TrilinosWrappers::SparseMatrix system_matrix;
+        LA::MPI::SparseMatrix system_matrix;
 
         // TODO: use the correct vector type
-        DVector<double>       locally_relevant_solution;
-        DVector<double>       system_rhs;
+        LA::MPI::Vector       locally_relevant_solution;
+        LA::MPI::Vector       system_rhs;
     
         ConditionalOStream pcout;
         TimerOutput        computing_timer;
