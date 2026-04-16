@@ -306,7 +306,7 @@ namespace MFSolver
               << Utilities::System::get_current_vectorization_level() << ')'
               << std::endl << std::endl;
 
-        GridGenerator::hyper_cube(triangulation, 0., 1.);
+        GridGenerator::hyper_cube(triangulation, 0., 1., true); // `true` colorizes the boundaries: 0=left, 1=right, 2=bottom, 3=top, 4=back, 5=front
         triangulation.refine_global(4 - dim); 
 
         for (unsigned int cycle = 0; cycle < 3; ++cycle) // let's do 3 cycles for the test
