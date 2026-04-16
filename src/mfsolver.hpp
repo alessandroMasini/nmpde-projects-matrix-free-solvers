@@ -34,6 +34,10 @@
 #include "function_types.hpp"
 #include "ProblemData.hpp"
 
+// Needed for multithreading
+#include <deal.II/base/work_stream.h>
+#include <deal.II/base/multithread_info.h>
+
 // Imports from step40
 // TODO: rationalize
 
