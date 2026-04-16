@@ -37,9 +37,11 @@ namespace MFSolver
             // Distribute degrees of freedom for the fine mesh and the multigrid hierarchy
             dof_handler.distribute_dofs(fe);
             dof_handler.distribute_mg_dofs();
+
             pcout << "Number of DoFs: " << dof_handler.n_dofs() << std::endl;
 
             pcout << "  Initialize constraints..." << std::endl;
+
             // Handle hanging nodes (created by adaptive h-refinement) to ensure solution continuity
             constraints.clear();
             constraints.reinit(DoFTools::extract_locally_relevant_dofs(dof_handler));
@@ -146,11 +148,27 @@ namespace MFSolver
         }
 
         system_rhs = 0;
+        AffineConstraints<double> no_constraints;
+        no_constraints.close();
 
-        FEEvaluation<dim, fe_degree> phi(*system_matrix.get_matrix_free());
-        FEFaceEvaluation<dim, fe_degree, fe_degree + 1, 1, double> face_phi(*system_matrix.get_matrix_free());
+        ADROperator<dim, fe_degree, double> inhomogeneous_operator;
 
-        for (unsigned int cell = 0; cell < system_matrix.get_matrix_free()->n_cell_batches(); ++cell)
+        typename MatrixFree<dim, double>::AdditionalData additional_data;
+        additional_data.mapping_update_flags = update_gradients | update_JxW_values | update_quadrature_points;
+        std::shared_ptr<MatrixFree<dim, double>> inhomogeneous_mf_storage(new MatrixFree<dim, double>());
+        inhomogeneous_mf_storage->reinit(mapping, dof_handler, no_constraints, QGaussLobatto<1>(fe.degree + 1), additional_data);
+        inhomogeneous_operator.initialize(inhomogeneous_mf_storage);
+
+        solution = 0.0;
+        constraints.distribute(solution);
+        inhomogeneous_operator.evaluate_coefficients(this->problem.mu, this->problem.beta, this->problem.gamma);
+        inhomogeneous_operator.vmult(system_rhs, solution);
+        system_rhs *= -1.0;
+
+        FEEvaluation<dim, fe_degree> phi(*inhomogeneous_operator.get_matrix_free());
+        // FEFaceEvaluation<dim, fe_degree, fe_degree + 1, 1, double> face_phi(*system_matrix.get_matrix_free());
+
+        for (unsigned int cell = 0; cell < inhomogeneous_operator.get_matrix_free()->n_cell_batches(); ++cell)
         {
             phi.reinit(cell);
             for (const unsigned int q : phi.quadrature_point_indices())
@@ -163,31 +181,36 @@ namespace MFSolver
             phi.distribute_local_to_global(system_rhs);
         }
 
-        for (unsigned int face = 0; face < system_matrix.get_matrix_free()->n_boundary_face_batches(); ++face)
-        {
-            face_phi.reinit(face);
-
-            const unsigned int boundary_id = system_matrix.get_matrix_free()->get_boundary_id(face);
-
-            if (this->problem.neumann_boundaries.find(boundary_id) != this->problem.neumann_boundaries.end())
-            {
-                const auto &neumann = this->problem.neumann_boundaries.at(boundary_id);
-
-                for (const unsigned int q : face_phi.quadrature_point_indices())
-                {
-                    Point<dim, VectorizedArray<double>> quadrature_point = face_phi.quadrature_point(q);
-                    VectorizedArray<double> neumann_value = neumann->value(quadrature_point);
-                    VectorizedArray<double> mu = this->problem.mu->value(quadrature_point);
-
-                    face_phi.submit_value(neumann_value * mu, q);
-                }
-            }
-
-            face_phi.integrate(EvaluationFlags::values);
-            face_phi.distribute_local_to_global(system_rhs);
-        }
-
         system_rhs.compress(VectorOperation::add);
+
+        // for (unsigned int face = 0; face < system_matrix.get_matrix_free()->n_boundary_face_batches(); ++face)
+        // {
+        //     face_phi.reinit(face);
+
+        //     const unsigned int boundary_id = system_matrix.get_matrix_free()->get_boundary_id(face);
+
+        //     if (this->problem.neumann_boundaries.find(boundary_id) != this->problem.neumann_boundaries.end())
+        //     {
+        //         const auto &neumann = this->problem.neumann_boundaries.at(boundary_id);
+
+        //         for (const unsigned int q : face_phi.quadrature_point_indices())
+        //         {
+        //             Point<dim, VectorizedArray<double>> quadrature_point = face_phi.quadrature_point(q);
+        //             VectorizedArray<double> neumann_value = neumann->value(quadrature_point);
+        //             VectorizedArray<double> mu = this->problem.mu->value(quadrature_point);
+
+        //             face_phi.submit_value(neumann_value * mu, q);
+        //         }
+        //     }
+
+        //     face_phi.integrate(EvaluationFlags::values);
+        //     face_phi.distribute_local_to_global(system_rhs);
+        // }
+
+        // system_rhs.compress(VectorOperation::add);
+
+        // Zero out the right-hand side entries corresponding to constrained DoFs
+        // constraints.set_zero(system_rhs);
 
         setup_time += timer.wall_time();
         time_details << "Assemble right hand side   (CPU/wall) " << timer.cpu_time()
@@ -260,6 +283,7 @@ namespace MFSolver
         // Zero out constraints before solving so the GMRES internal vectors aren't corrupted,
         // then distribute the exact boundary values back at the end
         constraints.set_zero(solution);
+        // solution = 0;
         gmres.solve(system_matrix, solution, system_rhs, preconditioner);
         constraints.distribute(solution);
 
@@ -320,7 +344,7 @@ namespace MFSolver
         //     create_description_from_triangulation(mesh_serial, MPI_COMM_WORLD);
         // mesh.create_triangulation(triangulation);
 
-        GridGenerator::hyper_cube(triangulation, 0., 1.);
+        GridGenerator::hyper_cube(triangulation, 0., 1., true);
         triangulation.refine_global(4 - dim);
 
         for (unsigned int cycle = 0; cycle < 3; ++cycle) // let's do 3 cycles for the test
@@ -343,3 +367,4 @@ namespace MFSolver
             pcout << "===========================================" << std::endl;
         }
     }
+}

@@ -393,6 +393,8 @@ namespace MFSolver
         double setup_time;
         ConditionalOStream pcout;
         ConditionalOStream time_details;
+
+        Vector<double> boundary_lifting_vector;
     };
 
     //     /**

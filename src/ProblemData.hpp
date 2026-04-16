@@ -187,11 +187,15 @@ namespace ADR
             // ConstantDirichletBoundary<dim> cdb(1.0);
 
             MFSolver::DirichletBoundaries<dim> dirichlet_boundaries;
-            for (int i = 0; i < 5; i++)
-                dirichlet_boundaries[i] = std::make_shared<ConstantRealFunction<dim>>(static_cast<double>(i));
+            dirichlet_boundaries[0] = std::make_shared<ConstantRealFunction<dim>>(2);
+            dirichlet_boundaries[1] = std::make_shared<ConstantRealFunction<dim>>(4);
 
             MFSolver::NeumannBoundaries<dim> neumann_boundaries;
-            neumann_boundaries[5] = std::make_shared<ConstantRealFunction<dim>>(1.0);
+            // neumann_boundaries[1] = std::make_shared<ConstantRealFunction<dim>>(-1.0);
+            // neumann_boundaries[2] = std::make_shared<ConstantRealFunction<dim>>(-1.0);
+            // neumann_boundaries[3] = std::make_shared<ConstantRealFunction<dim>>(-1.0);
+            // neumann_boundaries[4] = std::make_shared<ConstantRealFunction<dim>>(-1.0);
+            // neumann_boundaries[5] = std::make_shared<ConstantRealFunction<dim>>(-1.0);
 
             ProblemData<dim, fe_degree> data{
                 .mesh_filename = "input.msh",
