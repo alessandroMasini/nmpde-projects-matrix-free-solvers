@@ -31,7 +31,12 @@ public:
 int
 main (int argc, char* argv [ ]) {
     // TODO: decide what to do with the number of threads
-    Utilities::MPI::MPI_InitFinalize mpi_init (argc, argv, 1);
+    if (argc < 2){
+        cout << "Please insert the number of desired threads" << std::endl;
+        return 1;
+    }
+
+    Utilities::MPI::MPI_InitFinalize mpi_init (argc, argv, std::stoi(argv[1]));
 
     ADR::ProblemData<2, 1> data;
     // data.fe_degree = 1;
