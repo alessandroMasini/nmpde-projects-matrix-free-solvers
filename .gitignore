@@ -33,5 +33,9 @@
 *.out
 *.app
 
+# deal.II outputs
+*.vtu
+*.pvtu
+
 build/*
 .vscode/*
