@@ -148,7 +148,7 @@ namespace ADR
 
             data.dirichlet_boundaries = MFSolver::DirichletBoundaries<dim>();
 
-            ConstantRealFunction<dim> crf(1.0);
+            static ConstantRealFunction<dim> crf(1.0);
             data.dirichlet_boundaries[0] = &crf;
 
             data.mesh_filename = "input.msh";

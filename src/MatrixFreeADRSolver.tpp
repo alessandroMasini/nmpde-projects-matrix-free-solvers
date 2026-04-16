@@ -20,6 +20,8 @@
 #include <deal.II/multigrid/mg_smoother.h>
 #include <deal.II/multigrid/mg_matrix.h>
 
+#include <deal.II/numerics/data_out.h>
+
 namespace MFSolver
 {
     template <int dim, int fe_degree>
@@ -32,16 +34,20 @@ namespace MFSolver
             system_matrix.clear();
             mg_matrices.clear_elements();
 
+            // Distribute degrees of freedom for the fine mesh and the multigrid hierarchy
             dof_handler.distribute_dofs(fe);
             dof_handler.distribute_mg_dofs();
 
             pcout << "Number of DoFs: " << dof_handler.n_dofs() << std::endl;
 
+            pcout << "  Initialize constraints..." << std::endl;
+            // Handle hanging nodes (created by adaptive h-refinement) to ensure solution continuity
             constraints.clear();
             constraints.reinit(DoFTools::extract_locally_relevant_dofs(dof_handler));
             DoFTools::make_hanging_node_constraints(dof_handler, constraints);
 
-            // Interpolate the Dirichlet boundary conditions from our ProblemData map
+            pcout << "  Interpolating boundary values..." << std::endl;
+            // Interpolate the Dirichlet (essential) boundary conditions from our ProblemData map
             for (const auto &[boundary_id, function] : this->problem.dirichlet_boundaries)
             {
                 // Interpolates the specific function onto the nodes belonging to boundary_id
@@ -49,6 +55,8 @@ namespace MFSolver
             }
 
             constraints.close();
+
+            pcout << "  Setup vectors..." << std::endl;
         }
 
         setup_time += timer.wall_time();
@@ -57,7 +65,8 @@ namespace MFSolver
 
         {
             {
-                // Initialize the system matrix with the correct settings
+                // Set up the core Matrix-Free storage.
+                // We ask it to compute gradients, JxW (Jacobian * quadrature weights), and x-y-z points on the fly.
                 typename MatrixFree<dim, double>::AdditionalData additional_data;
                 additional_data.tasks_parallel_scheme = MatrixFree<dim, double>::AdditionalData::TasksParallelScheme::partition_color;
                 additional_data.mapping_update_flags = update_gradients | update_JxW_values | update_quadrature_points | update_values;
@@ -79,7 +88,8 @@ namespace MFSolver
         timer.restart();
 
         {
-            // Initialize all multigrid matrices with correct data
+            // Now repeat the matrix-free initialization for every single level of the multigrid hierarchy.
+            // We use 'float' instead of 'double' here to save memory bandwidth during the coarse grid iterations.
             const unsigned int nlevels = triangulation.n_global_levels();
             mg_matrices.resize(0, nlevels - 1);
 
@@ -189,9 +199,13 @@ namespace MFSolver
     {
         Timer timer;
 
+        // Grid Transfer: builds interpolation weights to move residual data to coarser grids (Restriction)
+        // and move algebraic corrections back up to finer grids (Prolongation).
         MGTransferMatrixFree<dim, float> mg_transfer(mg_constrained_dofs);
         mg_transfer.build(dof_handler);
 
+        // Smoother: Chebyshev iteration squashes high-frequency errors. It's mathematically
+        // perfect for matrix-free because it entirely relies on matrix-vector multiplications.
         using SmootherType = PreconditionChebyshev<LevelMatrixType, DVector<float>>;
         mg::SmootherRelaxation<SmootherType, DVector<float>> mg_smoother;
         MGLevelObject<typename SmootherType::AdditionalData> smoother_data;
@@ -201,6 +215,7 @@ namespace MFSolver
         {
             if (level > 0)
             {
+                // For intermediate and fine levels, do a quick 5-degree polynomial smoothing sweep
                 smoother_data[level].smoothing_range = 15.;
                 smoother_data[level].degree = 5;
                 smoother_data[level].eig_cg_n_iterations = 10;
@@ -211,15 +226,19 @@ namespace MFSolver
                 smoother_data[0].degree = numbers::invalid_unsigned_int;
                 smoother_data[0].eig_cg_n_iterations = mg_matrices[0].m();
             }
+            // Inject the cached inverse diagonals we extracted during assemble()
             smoother_data[level].preconditioner = mg_matrices[level].get_matrix_diagonal_inverse();
         }
         mg_smoother.initialize(mg_matrices, smoother_data);
 
+        // Tell the coarse solver to just run the level 0 smoother we just configured above
         MGCoarseGridApplySmoother<DVector<float>> mg_coarse;
         mg_coarse.initialize(mg_smoother);
 
         mg::Matrix<DVector<float>> mg_matrix(mg_matrices);
 
+        // Hanging node interfaces: when transferring residual data between levels, these
+        // special operators correctly account for the spatial discontinuities where h-refinement occurred.
         MGLevelObject<MatrixFreeOperators::MGInterfaceOperator<LevelMatrixType>> mg_interface_matrices;
         mg_interface_matrices.resize(0, triangulation.n_global_levels() - 1);
         for (unsigned int level = 0; level < triangulation.n_global_levels(); ++level)
@@ -227,14 +246,19 @@ namespace MFSolver
 
         mg::Matrix<DVector<float>> mg_interface(mg_interface_matrices);
 
+        // Assemble the full Multigrid V-Cycle Preconditioner structure
         Multigrid<DVector<float>> mg(mg_matrix, mg_coarse, mg_transfer, mg_smoother, mg_smoother);
         mg.set_edge_matrices(mg_interface, mg_interface);
 
         PreconditionMG<dim, DVector<float>, MGTransferMatrixFree<dim, float>> preconditioner(dof_handler, mg, mg_transfer);
 
+        // Outer Iterative Krylov Solver: Since our ADR equation has an asymmetric advection term,
+        // standard Conjugate Gradient (CG) could fail here. We use GMRES instead.
         SolverControl solver_control(1000, 1e-12 * system_rhs.l2_norm());
         SolverGMRES<DVector<double>> gmres(solver_control);
 
+        // Zero out constraints before solving so the GMRES internal vectors aren't corrupted,
+        // then distribute the exact boundary values back at the end
         constraints.set_zero(solution);
         gmres.solve(system_matrix, solution, system_rhs, preconditioner);
         constraints.distribute(solution);
@@ -244,27 +268,65 @@ namespace MFSolver
     }
 
     template <int dim, int fe_degree>
-    void MatrixFreeADRSolver<dim, fe_degree>::output_results() {}
+    void MatrixFreeADRSolver<dim, fe_degree>::output_results()
+    {
+        static unsigned int cycle = 0; // Using an internal counter since the method takes no arguments
+
+        dealii::DataOut<dim> data_out;
+
+        this->solution.update_ghost_values();
+        data_out.attach_dof_handler(dof_handler);
+        data_out.add_data_vector(this->solution, "solution");
+        data_out.build_patches(mapping);
+
+        dealii::DataOutBase::VtkFlags flags;
+        flags.compression_level = dealii::DataOutBase::CompressionLevel::best_speed;
+        data_out.set_flags(flags);
+
+        data_out.write_vtu_with_pvtu_record(
+            "./", "solution", cycle, MPI_COMM_WORLD, 3);
+
+        cycle++;
+    }
 
     template <int dim, int fe_degree>
     void MatrixFreeADRSolver<dim, fe_degree>::run()
     {
-        {
-            const unsigned int n_vect_doubles = VectorizedArray<double>::size();
-            const unsigned int n_vect_bits = 8 * sizeof(double) * n_vect_doubles;
+        pcout << "===========================================" << std::endl;
+        pcout << "   Matrix-Free ADR Solver                  " << std::endl;
+        pcout << "===========================================" << std::endl;
 
-            pcout << "Vectorization over " << n_vect_doubles
-                  << " doubles = " << n_vect_bits << " bits ("
-                  << Utilities::System::get_current_vectorization_level() << ')'
-                  << std::endl;
-        }
+        pcout << "Number of MPI ranks:            "
+              << dealii::Utilities::MPI::n_mpi_processes(MPI_COMM_WORLD) << std::endl;
+        const unsigned int n_vect_doubles = dealii::VectorizedArray<double>::size();
+        const unsigned int n_vect_bits = 8 * sizeof(double) * n_vect_doubles;
+        pcout << "Vectorization over " << n_vect_doubles
+              << " doubles = " << n_vect_bits << " bits ("
+              << Utilities::System::get_current_vectorization_level() << ')'
+              << std::endl
+              << std::endl;
 
         GridGenerator::hyper_cube(triangulation, 0., 1.);
-        triangulation.refine_global(3 - dim);
-        triangulation.refine_global(1);
+        triangulation.refine_global(4 - dim);
 
-        setup_system();
-        assemble();
-        solve();
+        for (unsigned int cycle = 0; cycle < 3; ++cycle) // let's do 3 cycles for the test
+        {
+            pcout << "Cycle " << cycle << std::endl;
+            if (cycle > 0)
+                triangulation.refine_global(1);
+
+            setup_system();
+
+            pcout << "   Assembling..." << std::endl;
+            assemble();
+
+            pcout << "   Solving..." << std::endl;
+            solve();
+
+            pcout << "   Outputting results..." << std::endl;
+            output_results();
+
+            pcout << "===========================================" << std::endl;
+        }
     }
 }
