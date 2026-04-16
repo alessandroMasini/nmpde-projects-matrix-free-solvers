@@ -20,6 +20,8 @@
 #include <deal.II/multigrid/mg_smoother.h>
 #include <deal.II/multigrid/mg_matrix.h>
 
+#include <deal.II/numerics/data_out.h>
+
 namespace MFSolver
 {
     template <int dim, int fe_degree>
@@ -37,11 +39,13 @@ namespace MFSolver
             dof_handler.distribute_mg_dofs();
             pcout << "Number of DoFs: " << dof_handler.n_dofs() << std::endl;
 
+            pcout << "  Initialize constraints..." << std::endl;
             // Handle hanging nodes (created by adaptive h-refinement) to ensure solution continuity
             constraints.clear();
             constraints.reinit(DoFTools::extract_locally_relevant_dofs(dof_handler));
             DoFTools::make_hanging_node_constraints(dof_handler, constraints);
 
+            pcout << "  Interpolating boundary values..." << std::endl;
             // Interpolate the Dirichlet (essential) boundary conditions from our ProblemData map
             for (const auto &[boundary_id, function] : this->problem.dirichlet_boundaries)
             {
@@ -50,6 +54,8 @@ namespace MFSolver
             }
 
             constraints.close();
+
+            pcout << "  Setup vectors..." << std::endl;
         }
 
         setup_time += timer.wall_time();
@@ -58,6 +64,7 @@ namespace MFSolver
 
         {
             {
+                // Set up the core Matrix-Free storage.
                 // Set up the core Matrix-Free storage.
                 // We ask it to compute gradients, JxW (Jacobian * quadrature weights), and x-y-z points on the fly.
                 typename MatrixFree<dim, double>::AdditionalData additional_data;
@@ -263,45 +270,43 @@ namespace MFSolver
     template <int dim, int fe_degree>
     void MatrixFreeADRSolver<dim, fe_degree>::output_results()
     {
-        Timer time;
-        if (triangulation.n_global_active_cells() > 1000000)
-            return;
+        static unsigned int cycle = 0; // Using an internal counter since the method takes no arguments
 
-        DataOut<dim> data_out;
+        dealii::DataOut<dim> data_out;
 
-        solution.update_ghost_values();
+        this->solution.update_ghost_values();
         data_out.attach_dof_handler(dof_handler);
-        data_out.add_data_vector(solution, "solution");
+        data_out.add_data_vector(this->solution, "solution");
         data_out.build_patches(mapping);
 
-        DataOutBase::VtkFlags flags;
-        flags.compression_level = DataOutBase::CompressionLevel::best_speed;
+        dealii::DataOutBase::VtkFlags flags;
+        flags.compression_level = dealii::DataOutBase::CompressionLevel::best_speed;
         data_out.set_flags(flags);
-        std::ofstream output_file("output.vtk");
-        data_out.write_vtk(output_file);
 
-        time_details
-            << "Time write output          (CPU/wall) " << time.cpu_time()
-            << "s/" << time.wall_time() << "s\n";
+        data_out.write_vtu_with_pvtu_record(
+            "./", "solution", cycle, MPI_COMM_WORLD, 3);
+
+        cycle++;
     }
 
     template <int dim, int fe_degree>
     void MatrixFreeADRSolver<dim, fe_degree>::run()
     {
-        {
-            const unsigned int n_vect_doubles = VectorizedArray<double>::size();
-            const unsigned int n_vect_bits = 8 * sizeof(double) * n_vect_doubles;
+        pcout << "===========================================" << std::endl;
+        pcout << "   Matrix-Free ADR Solver                  " << std::endl;
+        pcout << "===========================================" << std::endl;
 
-            pcout << "Vectorization over " << n_vect_doubles
-                  << " doubles = " << n_vect_bits << " bits ("
-                  << Utilities::System::get_current_vectorization_level() << ')'
-                  << std::endl;
-        }
+        pcout << "Number of MPI ranks:            "
+              << dealii::Utilities::MPI::n_mpi_processes(MPI_COMM_WORLD) << std::endl;
+        const unsigned int n_vect_doubles = dealii::VectorizedArray<double>::size();
+        const unsigned int n_vect_bits = 8 * sizeof(double) * n_vect_doubles;
+        pcout << "Vectorization over " << n_vect_doubles
+              << " doubles = " << n_vect_bits << " bits ("
+              << Utilities::System::get_current_vectorization_level() << ')'
+              << std::endl
+              << std::endl;
 
         // TODO: load from file
-        GridGenerator::hyper_cube(triangulation, 0., 1.);
-        triangulation.refine_global(3);
-
         // Triangulation<dim> mesh_serial;
 
         // GridIn<dim> grid_in;
@@ -315,9 +320,26 @@ namespace MFSolver
         //     create_description_from_triangulation(mesh_serial, MPI_COMM_WORLD);
         // mesh.create_triangulation(triangulation);
 
-        setup_system();
-        assemble();
-        solve();
-        output_results();
+        GridGenerator::hyper_cube(triangulation, 0., 1.);
+        triangulation.refine_global(4 - dim);
+
+        for (unsigned int cycle = 0; cycle < 3; ++cycle) // let's do 3 cycles for the test
+        {
+            pcout << "Cycle " << cycle << std::endl;
+            if (cycle > 0)
+                triangulation.refine_global(1);
+
+            setup_system();
+
+            pcout << "   Assembling..." << std::endl;
+            assemble();
+
+            pcout << "   Solving..." << std::endl;
+            solve();
+
+            pcout << "   Outputting results..." << std::endl;
+            output_results();
+
+            pcout << "===========================================" << std::endl;
+        }
     }
-}
