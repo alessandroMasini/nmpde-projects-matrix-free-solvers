@@ -20,6 +20,8 @@
 #include <deal.II/multigrid/mg_smoother.h>
 #include <deal.II/multigrid/mg_matrix.h>
 
+#include <deal.II/numerics/data_out.h>
+
 namespace MFSolver
 {
     template <int dim, int fe_degree>
@@ -267,7 +269,26 @@ namespace MFSolver
     }
 
     template <int dim, int fe_degree>
-    void MatrixFreeADRSolver<dim, fe_degree>::output_results() {}
+    void MatrixFreeADRSolver<dim, fe_degree>::output_results()
+    {
+        static unsigned int cycle = 0; // Using an internal counter since the method takes no arguments
+
+        dealii::DataOut<dim> data_out;
+
+        this->solution.update_ghost_values();
+        data_out.attach_dof_handler(dof_handler);
+        data_out.add_data_vector(this->solution, "solution");
+        data_out.build_patches(mapping);
+
+        dealii::DataOutBase::VtkFlags flags;
+        flags.compression_level = dealii::DataOutBase::CompressionLevel::best_speed;
+        data_out.set_flags(flags);
+        
+        data_out.write_vtu_with_pvtu_record(
+            "./", "solution", cycle, MPI_COMM_WORLD, 3);
+
+        cycle++;
+    }
 
     template <int dim, int fe_degree>
     void MatrixFreeADRSolver<dim, fe_degree>::run()
