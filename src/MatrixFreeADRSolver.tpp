@@ -72,6 +72,8 @@ namespace MFSolver
                 typename MatrixFree<dim, double>::AdditionalData additional_data;
                 additional_data.tasks_parallel_scheme = MatrixFree<dim, double>::AdditionalData::TasksParallelScheme::partition_color;
                 additional_data.mapping_update_flags = update_gradients | update_JxW_values | update_quadrature_points | update_values;
+                // Enable boundary face processing for Neumann BCs
+                additional_data.mapping_update_flags_boundary_faces = update_values | update_JxW_values | update_quadrature_points | update_normal_vectors;
 
                 std::shared_ptr<MatrixFree<dim, double>>
                     system_mf_storage(new MatrixFree<dim, double>());
@@ -166,7 +168,6 @@ namespace MFSolver
         system_rhs *= -1.0;
 
         FEEvaluation<dim, fe_degree> phi(*inhomogeneous_operator.get_matrix_free());
-        FEFaceEvaluation<dim, fe_degree, fe_degree + 1, 1, double> face_phi(*inhomogeneous_operator.get_matrix_free());
 
         for (unsigned int cell = 0; cell < inhomogeneous_operator.get_matrix_free()->n_cell_batches(); ++cell)
         {
@@ -183,15 +184,18 @@ namespace MFSolver
 
         system_rhs.compress(VectorOperation::add);
 
-        for (unsigned int face = 0; face < inhomogeneous_operator.get_matrix_free()->n_boundary_face_batches(); ++face)
+        FEFaceEvaluation<dim, fe_degree, fe_degree + 1, 1, double> face_phi(*system_matrix.get_matrix_free());
+        for (unsigned int face = 0; face < system_matrix.get_matrix_free()->n_boundary_face_batches(); ++face)
         {
-            face_phi.reinit(face);
-
-            const unsigned int boundary_id = inhomogeneous_operator.get_matrix_free()->get_boundary_id(face);
+            const unsigned int boundary_id = system_matrix.get_matrix_free()->get_boundary_id(face);
 
             if (this->problem.neumann_boundaries.find(boundary_id) != this->problem.neumann_boundaries.end())
             {
+                face_phi.reinit(face);
+
                 const auto &neumann = this->problem.neumann_boundaries.at(boundary_id);
+
+                std::cout << "Found boundary " << boundary_id << std::endl;
 
                 for (const unsigned int q : face_phi.quadrature_point_indices())
                 {
@@ -205,7 +209,13 @@ namespace MFSolver
                 face_phi.integrate(EvaluationFlags::values);
                 face_phi.distribute_local_to_global(system_rhs);
             }
+            else
+            {
+                std::cout << "Boundary NOT found " << boundary_id << std::endl;
+            }
         }
+
+        constraints.distribute(system_rhs);
 
         system_rhs.compress(VectorOperation::add);
 
