@@ -38,7 +38,7 @@ main (int argc, char* argv [ ]) {
 
     Utilities::MPI::MPI_InitFinalize mpi_init (argc, argv, std::stoi(argv[1]));
 
-    ADR::ProblemData<2, 1> data;
+    ADR::ProblemData<2, 2> data;
     // data.fe_degree = 1;
     // data.refinement_level = 5;
 
@@ -49,7 +49,7 @@ main (int argc, char* argv [ ]) {
     data.forcing_term = std::make_shared<TrigonometricF<2>>();
     
 
-    data.num_quadrature_points = 1 + 1;
+    data.num_quadrature_points = 2 + 1;
     data.solver_max_iterations = 10000;
     data.solver_tolerance_factor = 1.0e-16;
 
@@ -64,7 +64,7 @@ main (int argc, char* argv [ ]) {
     data.lvgt0_smoothing_eigenvalue_max_iterations = 10;
     data.refinement_coefficient_per_level = 4;
 
-    MatrixBasedADRSolver<2, 1> solver(data);
+    MatrixBasedADRSolver<2, 2> solver(data);
     solver.run();
     return 0;
 }
