@@ -2,20 +2,86 @@
 
 namespace MFSolver{
   template <int dim, int fe_degree>
+  void MatrixBasedADRSolver<dim, fe_degree>::create_test_grid () {
+    // This is only a temporary function to generate a test grid.
+    // TODO: remove this and generate grid with proper software.
+    Triangulation<dim> triangulation_serial;
+    GridGenerator::hyper_cube(triangulation_serial);
+    
+    GridOutFlags::Vtu vtu_flags(true);  // this is necessary for re-reading it afterwards
+    GridOut grid_out;
+    grid_out.set_flags(vtu_flags);
+    std::ofstream file_out("./test_grid.vtu");
+    grid_out.write_vtu(triangulation_serial, file_out);
+  }
+
+  template <int dim, int fe_degree>
   void MatrixBasedADRSolver<dim, fe_degree>::setup_system () {
     TimerOutput::Scope t(computing_timer, "setup");
 
     // TODO: use actual grid
-    GridGenerator::hyper_cube(triangulation);
+    //GridGenerator::hyper_cube(triangulation);
+    
+    // Create the mesh.
+    {
+      pcout << "Initializing the mesh" << std::endl;
+
+      // First, we read the mesh from file into a serial (i.e. not parallel)
+      // triangulation.
+      Triangulation<dim> triangulation_serial;
+
+      {
+        GridIn<dim> grid_in;
+        grid_in.attach_triangulation(triangulation_serial);
+
+        std::ifstream mesh_file(this->problem.mesh_filename);
+        grid_in.read_msh(mesh_file);
+      }
+
+      // Then, we copy the serial mesh into the parallel one.
+      {
+        int mpi_size = Utilities::MPI::n_mpi_processes(mpi_communicator);
+        GridTools::partition_triangulation(mpi_size, triangulation_serial);
+
+        const auto construction_data = TriangulationDescription::Utilities::
+          create_description_from_triangulation(triangulation_serial, MPI_COMM_WORLD);
+        triangulation.create_triangulation(construction_data);
+      }
+
+      // Notice that here we write the number of *global* active cells (across all
+      // processes).
+      pcout << "  Number of elements = " << triangulation.n_global_active_cells()
+            << std::endl;
+    }
+
+    /*
+    GridIn<dim> grid_in;
+    grid_in.attach_triangulation(triangulation);
+    std::ifstream input_file(this->problem.mesh_filename);
+    
+    pcout << "Created grid_in objected" << std::endl;
+    grid_in.read_msh(input_file);
+    pcout << "Read mesh" << std::endl;
+    // grid_in.read_ucd(input_file);
+    
+    const FlatManifold<dim> boundary;
+    triangulation.set_all_manifold_ids_on_boundary(0);
+    triangulation.set_manifold(0, boundary);
+
+    */
+    
+    pcout << "Triangulation created" << std::endl;
     triangulation.refine_global(10);
- 
+    pcout << "Triangulation refined" << std::endl;
+    dof_handler.reinit(triangulation);
     dof_handler.distribute_dofs(fe);
- 
+    
+    
     pcout << "   Number of active cells:       "
           << triangulation.n_global_active_cells() << std::endl
           << "   Number of degrees of freedom: " << dof_handler.n_dofs()
           << std::endl;
- 
+    
  
     locally_owned_dofs = dof_handler.locally_owned_dofs();
     locally_relevant_dofs =
@@ -49,6 +115,7 @@ namespace MFSolver{
                          locally_owned_dofs,
                          dsp,
                          mpi_communicator);
+
   }
 
   template <int dim, int fe_degree>

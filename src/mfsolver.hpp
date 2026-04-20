@@ -68,6 +68,12 @@
 #include <deal.II/lac/sparsity_tools.h>
 #include <deal.II/distributed/tria.h>
 #include <deal.II/distributed/grid_refinement.h>
+
+#include <deal.II/grid/grid_in.h>
+#include <deal.II/grid/grid_out.h>
+#include <deal.II/grid/manifold.h>
+#include <deal.II/grid/grid_tools.h>
+
  
 #include <fstream>
 #include <iostream>
@@ -521,10 +527,7 @@ namespace MFSolver
         MatrixBasedADRSolver(const ADR::ProblemData<dim, fe_degree> &_problem) : 
         ADRSolver<dim, fe_degree>(_problem),
         mpi_communicator(MPI_COMM_WORLD),
-        triangulation(mpi_communicator,
-                    typename Triangulation<dim>::MeshSmoothing(
-                      Triangulation<dim>::smoothing_on_refinement |
-                      Triangulation<dim>::smoothing_on_coarsening)),
+        triangulation(mpi_communicator),
         fe(fe_degree),
         dof_handler(triangulation),
         pcout(std::cout,
@@ -553,7 +556,8 @@ namespace MFSolver
                       TimerOutput::never,
                       TimerOutput::wall_times)
         {}
-
+        
+        void create_test_grid();
         void run() override;
 
     private:
@@ -569,7 +573,7 @@ namespace MFSolver
 
         MPI_Comm mpi_communicator;
  
-        parallel::distributed::Triangulation<dim> triangulation;
+        parallel::fullydistributed::Triangulation<dim> triangulation;
     
         const FE_Q<dim> fe;
         DoFHandler<dim> dof_handler;
