@@ -70,6 +70,7 @@ namespace MFSolver
                 typename MatrixFree<dim, double>::AdditionalData additional_data;
                 additional_data.tasks_parallel_scheme = MatrixFree<dim, double>::AdditionalData::TasksParallelScheme::partition_color;
                 additional_data.mapping_update_flags = update_gradients | update_JxW_values | update_quadrature_points | update_values;
+                additional_data.mapping_update_flags_boundary_faces = update_gradients | update_JxW_values | update_quadrature_points | update_values | update_normal_vectors;
 
                 std::shared_ptr<MatrixFree<dim, double>>
                     system_mf_storage(new MatrixFree<dim, double>());
@@ -186,7 +187,7 @@ namespace MFSolver
             face_phi.distribute_local_to_global(system_rhs);
         }
 
-        system_rhs.compress(VectorOperation::add);
+        std::cout << "Boundary face batches: " << system_matrix.get_matrix_free()->n_boundary_face_batches() << "\n"; system_rhs.compress(VectorOperation::add);
 
         setup_time += timer.wall_time();
         time_details << "Assemble right hand side   (CPU/wall) " << timer.cpu_time()
