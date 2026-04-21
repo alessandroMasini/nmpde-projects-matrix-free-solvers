@@ -206,7 +206,7 @@ namespace ADR
                 .solver_max_iterations = 100,
                 .solver_tolerance_factor = 1e-12,
 
-                .mu = std::make_shared<ConstantRealFunction<dim>>(1.0),
+                .mu = std::make_shared<ConstantRealFunction<dim>>(2.0),
                 .beta = std::make_shared<ConstantVectorFunctionWithGradient<dim>>(0.0),
                 .gamma = std::make_shared<ConstantRealFunction<dim>>(0.0),
 
@@ -247,7 +247,7 @@ namespace ADR
                 .solver_max_iterations = 100,
                 .solver_tolerance_factor = 1e-12,
 
-                .mu = std::make_shared<ConstantRealFunction<dim>>(1.0),
+                .mu = std::make_shared<ConstantRealFunction<dim>>(2.0),
                 .beta = std::make_shared<ConstantVectorFunctionWithGradient<dim>>(0.0),
                 .gamma = std::make_shared<ConstantRealFunction<dim>>(0.0),
 
@@ -258,6 +258,63 @@ namespace ADR
                 .neumann_boundaries = neumann_boundaries,
             };
 
+            return data;
+        }
+
+        static ProblemData<dim, fe_degree> test_case_neumann_fix()
+        {
+            MFSolver::DirichletBoundaries<dim> dirichlet_boundaries;
+            dirichlet_boundaries[0] = std::make_shared<ConstantRealFunction<dim>>(0.0);
+
+            MFSolver::NeumannBoundaries<dim> neumann_boundaries;
+            neumann_boundaries[1] = std::make_shared<ConstantRealFunction<dim>>(10.0); // Flux is exactly 10.0 on face 1
+            neumann_boundaries[2] = std::make_shared<ConstantRealFunction<dim>>(0.0);
+            neumann_boundaries[3] = std::make_shared<ConstantRealFunction<dim>>(0.0);
+            neumann_boundaries[4] = std::make_shared<ConstantRealFunction<dim>>(0.0);
+            neumann_boundaries[5] = std::make_shared<ConstantRealFunction<dim>>(0.0);
+
+            ProblemData<dim, fe_degree> data{
+                .mesh_filename = "input.msh", .num_levels = 5, .num_quadrature_points = fe_degree + 1,
+                .lv0_smoothing_range = 1.e-3, .lvgt0_smoothing_range = 15, .lvgt0_smoothing_degree = 5, .lvgt0_smoothing_eigenvalue_max_iterations = 10,
+                .solver_max_iterations = 100, .solver_tolerance_factor = 1e-12,
+                
+                // IMPORTANT: We set mu = 5.0 to trigger the bug.
+                .mu = std::make_shared<ConstantRealFunction<dim>>(5.0),
+                .beta = std::make_shared<ConstantVectorFunctionWithGradient<dim>>(0.0),
+                .gamma = std::make_shared<ConstantRealFunction<dim>>(0.0),
+                .forcing_term = std::make_shared<ConstantRealFunction<dim>>(0.0),
+                .dirichlet_boundaries = dirichlet_boundaries,
+                .neumann_boundaries = neumann_boundaries,
+            };
+            return data;
+        }
+
+        static ProblemData<dim, fe_degree> test_case_parabolic()
+        {
+            MFSolver::DirichletBoundaries<dim> dirichlet_boundaries;
+            dirichlet_boundaries[0] = std::make_shared<ConstantRealFunction<dim>>(0.0); // Side 0: 0.0
+            dirichlet_boundaries[1] = std::make_shared<ConstantRealFunction<dim>>(0.0); // Side 1: 0.0
+
+            MFSolver::NeumannBoundaries<dim> neumann_boundaries;
+            neumann_boundaries[2] = std::make_shared<ConstantRealFunction<dim>>(0.0);
+            neumann_boundaries[3] = std::make_shared<ConstantRealFunction<dim>>(0.0);
+            neumann_boundaries[4] = std::make_shared<ConstantRealFunction<dim>>(0.0);
+            neumann_boundaries[5] = std::make_shared<ConstantRealFunction<dim>>(0.0);
+
+            ProblemData<dim, fe_degree> data{
+                .mesh_filename = "input.msh", .num_levels = 5, .num_quadrature_points = fe_degree + 1,
+                .lv0_smoothing_range = 1.e-3, .lvgt0_smoothing_range = 15, .lvgt0_smoothing_degree = 5, .lvgt0_smoothing_eigenvalue_max_iterations = 10,
+                .solver_max_iterations = 100, .solver_tolerance_factor = 1e-12,
+                
+                .mu = std::make_shared<ConstantRealFunction<dim>>(1.0),
+                .beta = std::make_shared<ConstantVectorFunctionWithGradient<dim>>(0.0),
+                .gamma = std::make_shared<ConstantRealFunction<dim>>(0.0),
+                
+                // We heat the whole domain up uniformly with a forcing term of 6.0
+                .forcing_term = std::make_shared<ConstantRealFunction<dim>>(6.0),
+                .dirichlet_boundaries = dirichlet_boundaries,
+                .neumann_boundaries = neumann_boundaries,
+            };
             return data;
         }
     };

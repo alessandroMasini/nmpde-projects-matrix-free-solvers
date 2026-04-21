@@ -5,8 +5,11 @@ int main(int argc, char **argv)
 {
     dealii::Utilities::MPI::MPI_InitFinalize mpi_initialization(argc, argv, 1);
     
-    // Using advanced_test_case to test Dirichlet + Neumann logic
-    ADR::ProblemData<3, 2> data = ADR::ProblemData<3, 2>::advanced_test_case();
+    // Available Test Cases (3D)
+    // ADR::ProblemData<3, 2> data = ADR::ProblemData<3, 2>::standard_test_case();
+    // ADR::ProblemData<3, 2> data = ADR::ProblemData<3, 2>::advanced_test_case();
+    // ADR::ProblemData<3, 2> data = ADR::ProblemData<3, 2>::test_case_neumann_fix();
+     ADR::ProblemData<3, 2> data = ADR::ProblemData<3, 2>::test_case_parabolic();
 
     MFSolver::MatrixFreeADRSolver<3, 2> solver(data);
 
