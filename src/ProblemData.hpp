@@ -183,6 +183,38 @@ namespace ADR
         }
     };
 
+    template <int dim>
+    class Lab03Mu : public MFSolver::RealFunction<dim>
+    {
+    public:
+        Lab03Mu() : MFSolver::RealFunction<dim>() {}
+
+        virtual double value(const dealii::Point<dim> &p, const unsigned int component = 0) const override
+        {
+            return (p[0] < 0.5 ? 100.0 : 1.0);
+        }
+
+        virtual dealii::VectorizedArray<float> value(const dealii::Point<dim, dealii::VectorizedArray<float>> &p, const unsigned int component = 0) const override
+        {
+            dealii::VectorizedArray<float> result;
+            for (unsigned int i = 0; i < dealii::VectorizedArray<float>::size(); ++i)
+            {
+                result[i] = (p[0][i] < 0.5f ? 100.0f : 1.0f);
+            }
+            return result;
+        }
+
+        virtual dealii::VectorizedArray<double> value(const dealii::Point<dim, dealii::VectorizedArray<double>> &p, const unsigned int component = 0) const override
+        {
+            dealii::VectorizedArray<double> result;
+            for (unsigned int i = 0; i < dealii::VectorizedArray<double>::size(); ++i)
+            {
+                result[i] = (p[0][i] < 0.5 ? 100.0 : 1.0);
+            }
+            return result;
+        }
+    };
+
     /**
      * @brief A common structure to hold the algebraic and analytical data
      * required defining the Advection-Diffusion-Reaction (ADR) problem.
@@ -300,6 +332,44 @@ namespace ADR
                 .gamma = std::make_shared<ConstantRealFunction<dim>>(0.0),
 
                 .forcing_term = std::make_shared<ConstantRealFunction<dim>>(-5.0),
+
+                .dirichlet_boundaries = dirichlet_boundaries,
+                .neumann_boundaries = neumann_boundaries,
+            };
+
+            return data;
+        }
+
+        static ProblemData<dim, fe_degree> lab_03_dr_eq()
+        {
+            MFSolver::DirichletBoundaries<dim> dirichlet_boundaries;
+            for (size_t i = 0; i < 6; ++i)
+            {
+                dirichlet_boundaries[i] = std::make_shared<ConstantRealFunction<dim>>(0.0);
+            }
+
+            MFSolver::NeumannBoundaries<dim> neumann_boundaries;
+
+            ProblemData<dim, fe_degree> data{
+                .mesh_filename = "input.msh",
+                .num_levels = 5,
+
+                .num_quadrature_points = fe_degree + 1,
+
+                .lv0_smoothing_range = 1.e-3,
+
+                .lvgt0_smoothing_range = 15,
+                .lvgt0_smoothing_degree = 5,
+                .lvgt0_smoothing_eigenvalue_max_iterations = 10,
+
+                .solver_max_iterations = 100,
+                .solver_tolerance_factor = 1e-12,
+
+                .mu = std::make_shared<Lab03Mu<dim>>(),
+                .beta = std::make_shared<ConstantVectorFunctionWithGradient<dim>>(0.0),
+                .gamma = std::make_shared<ConstantRealFunction<dim>>(1.0),
+
+                .forcing_term = std::make_shared<ConstantRealFunction<dim>>(1.0),
 
                 .dirichlet_boundaries = dirichlet_boundaries,
                 .neumann_boundaries = neumann_boundaries,
