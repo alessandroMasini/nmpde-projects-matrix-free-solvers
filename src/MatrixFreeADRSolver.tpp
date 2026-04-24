@@ -70,6 +70,7 @@ namespace MFSolver
                 typename MatrixFree<dim, double>::AdditionalData additional_data;
                 additional_data.tasks_parallel_scheme = MatrixFree<dim, double>::AdditionalData::TasksParallelScheme::partition_color;
                 additional_data.mapping_update_flags = update_gradients | update_JxW_values | update_quadrature_points | update_values;
+                additional_data.mapping_update_flags_boundary_faces = update_gradients | update_JxW_values | update_quadrature_points | update_values | update_normal_vectors;
 
                 std::shared_ptr<MatrixFree<dim, double>>
                     system_mf_storage(new MatrixFree<dim, double>());
@@ -177,9 +178,8 @@ namespace MFSolver
                 {
                     Point<dim, VectorizedArray<double>> quadrature_point = face_phi.quadrature_point(q);
                     VectorizedArray<double> neumann_value = neumann->value(quadrature_point);
-                    VectorizedArray<double> mu = this->problem.mu->value(quadrature_point);
 
-                    face_phi.submit_value(neumann_value * mu, q);
+                    face_phi.submit_value(neumann_value, q);
                 }
             }
 
@@ -187,6 +187,7 @@ namespace MFSolver
             face_phi.distribute_local_to_global(system_rhs);
         }
 
+        std::cout << "Boundary face batches: " << system_matrix.get_matrix_free()->n_boundary_face_batches() << "\n";
         system_rhs.compress(VectorOperation::add);
 
         setup_time += timer.wall_time();
@@ -306,7 +307,7 @@ namespace MFSolver
               << std::endl
               << std::endl;
 
-        GridGenerator::hyper_cube(triangulation, 0., 1.);
+        GridGenerator::hyper_cube(triangulation, 0., 1., true); // `true` colorizes the boundaries: 0=left, 1=right, 2=bottom, 3=top, 4=back, 5=front
         triangulation.refine_global(4 - dim);
 
         for (unsigned int cycle = 0; cycle < 3; ++cycle) // let's do 3 cycles for the test
