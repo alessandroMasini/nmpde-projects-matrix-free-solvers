@@ -148,10 +148,26 @@ namespace MFSolver
 
         system_rhs = 0;
 
-        FEEvaluation<dim, fe_degree> phi(*system_matrix.get_matrix_free());
-        FEFaceEvaluation<dim, fe_degree, fe_degree + 1, 1, double> face_phi(*system_matrix.get_matrix_free());
+        AffineConstraints<double> no_constraints;
+        no_constraints.close();
 
-        for (unsigned int cell = 0; cell < system_matrix.get_matrix_free()->n_cell_batches(); ++cell)
+        ADROperator<dim, fe_degree, double> inhomogeneous_operator;
+
+        typename MatrixFree<dim, double>::AdditionalData additional_data;
+        additional_data.mapping_update_flags = update_gradients | update_JxW_values | update_quadrature_points;
+        std::shared_ptr<MatrixFree<dim, double>> inhomogeneous_mf_storage(new MatrixFree<dim, double>());
+        inhomogeneous_mf_storage->reinit(mapping, dof_handler, no_constraints, QGaussLobatto<1>(fe.degree + 1), additional_data);
+        inhomogeneous_operator.initialize(inhomogeneous_mf_storage);
+
+        solution = 0;
+        constraints.distribute(solution);
+        inhomogeneous_operator.evaluate_coefficients(*(this->problem.mu), *(this->problem.beta), *(this->problem.gamma));
+        inhomogeneous_operator.vmult(system_rhs, solution);
+        system_rhs *= -1.0;
+
+        FEEvaluation<dim, fe_degree> phi(*inhomogeneous_operator.get_matrix_free());
+
+        for (unsigned int cell = 0; cell < inhomogeneous_operator.get_matrix_free()->n_cell_batches(); ++cell)
         {
             phi.reinit(cell);
             for (const unsigned int q : phi.quadrature_point_indices())
@@ -164,14 +180,18 @@ namespace MFSolver
             phi.distribute_local_to_global(system_rhs);
         }
 
+        system_rhs.compress(VectorOperation::add);
+
+        FEFaceEvaluation<dim, fe_degree, fe_degree + 1, 1, double> face_phi(*system_matrix.get_matrix_free());
+
         for (unsigned int face = 0; face < system_matrix.get_matrix_free()->n_boundary_face_batches(); ++face)
         {
-            face_phi.reinit(face);
-
             const unsigned int boundary_id = system_matrix.get_matrix_free()->get_boundary_id(face);
 
             if (this->problem.neumann_boundaries.find(boundary_id) != this->problem.neumann_boundaries.end())
             {
+                face_phi.reinit(face);
+
                 const auto &neumann = this->problem.neumann_boundaries.at(boundary_id);
 
                 for (const unsigned int q : face_phi.quadrature_point_indices())
@@ -179,16 +199,20 @@ namespace MFSolver
                     Point<dim, VectorizedArray<double>> quadrature_point = face_phi.quadrature_point(q);
                     VectorizedArray<double> neumann_value = neumann->value(quadrature_point);
 
-                    face_phi.submit_value(neumann_value, q);
+                    face_phi.submit_value(neumann_value, q); // TODO: we need to check whether here we need mu again or not. See proof on miro
                 }
-            }
 
-            face_phi.integrate(EvaluationFlags::values);
-            face_phi.distribute_local_to_global(system_rhs);
+                face_phi.integrate(EvaluationFlags::values);
+                face_phi.distribute_local_to_global(system_rhs);
+            }
         }
+
+        constraints.distribute(system_rhs);
 
         std::cout << "Boundary face batches: " << system_matrix.get_matrix_free()->n_boundary_face_batches() << "\n";
         system_rhs.compress(VectorOperation::add);
+
+        constraints.set_zero(system_rhs);
 
         setup_time += timer.wall_time();
         time_details << "Assemble right hand side   (CPU/wall) " << timer.cpu_time()

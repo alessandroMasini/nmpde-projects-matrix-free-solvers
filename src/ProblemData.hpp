@@ -137,6 +137,84 @@ namespace ADR
         }
     };
 
+    template <int dim>
+    class SumReductionFunction : public MFSolver::DirichletBoundary<dim>
+    {
+    public:
+        SumReductionFunction() : MFSolver::DirichletBoundary<dim>() {}
+
+        virtual double value(const dealii::Point<dim> &p, const unsigned int = 0) const override
+        {
+            double sum = 0.0;
+            for (unsigned int d = 0; d < dim; ++d)
+                sum += p[d];
+            return sum;
+        }
+    };
+
+    template <int dim>
+    class NthCoordFunction : public MFSolver::NeumannBoundary<dim>
+    {
+    private:
+        size_t n;
+
+    public:
+        NthCoordFunction(size_t _n) : MFSolver::NeumannBoundary<dim>(), n(_n) {}
+
+        virtual double value(const dealii::Point<dim> &p, const unsigned int = 0) const override
+        {
+            return do_compute_value<double>(p);
+        }
+
+        virtual dealii::VectorizedArray<float> value(const dealii::Point<dim, dealii::VectorizedArray<float>> &p, const unsigned int = 0) const override
+        {
+            return do_compute_value<dealii::VectorizedArray<float>>(p);
+        }
+
+        virtual dealii::VectorizedArray<double> value(const dealii::Point<dim, dealii::VectorizedArray<double>> &p, const unsigned int = 0) const override
+        {
+            return do_compute_value<dealii::VectorizedArray<double>>(p);
+        }
+
+        template <typename Number>
+        Number do_compute_value(const dealii::Point<dim, Number> &p) const
+        {
+            return p[n];
+        }
+    };
+
+    template <int dim>
+    class Lab03Mu : public MFSolver::RealFunction<dim>
+    {
+    public:
+        Lab03Mu() : MFSolver::RealFunction<dim>() {}
+
+        virtual double value(const dealii::Point<dim> &p, const unsigned int component = 0) const override
+        {
+            return (p[0] < 0.5 ? 100.0 : 1.0);
+        }
+
+        virtual dealii::VectorizedArray<float> value(const dealii::Point<dim, dealii::VectorizedArray<float>> &p, const unsigned int component = 0) const override
+        {
+            dealii::VectorizedArray<float> result;
+            for (unsigned int i = 0; i < dealii::VectorizedArray<float>::size(); ++i)
+            {
+                result[i] = (p[0][i] < 0.5f ? 100.0f : 1.0f);
+            }
+            return result;
+        }
+
+        virtual dealii::VectorizedArray<double> value(const dealii::Point<dim, dealii::VectorizedArray<double>> &p, const unsigned int component = 0) const override
+        {
+            dealii::VectorizedArray<double> result;
+            for (unsigned int i = 0; i < dealii::VectorizedArray<double>::size(); ++i)
+            {
+                result[i] = (p[0][i] < 0.5 ? 100.0 : 1.0);
+            }
+            return result;
+        }
+    };
+
     /**
      * @brief A common structure to hold the algebraic and analytical data
      * required defining the Advection-Diffusion-Reaction (ADR) problem.
@@ -274,10 +352,16 @@ namespace ADR
             neumann_boundaries[5] = std::make_shared<ConstantRealFunction<dim>>(0.0);
 
             ProblemData<dim, fe_degree> data{
-                .mesh_filename = "input.msh", .num_levels = 5, .num_quadrature_points = fe_degree + 1,
-                .lv0_smoothing_range = 1.e-3, .lvgt0_smoothing_range = 15, .lvgt0_smoothing_degree = 5, .lvgt0_smoothing_eigenvalue_max_iterations = 10,
-                .solver_max_iterations = 100, .solver_tolerance_factor = 1e-12,
-                
+                .mesh_filename = "input.msh",
+                .num_levels = 5,
+                .num_quadrature_points = fe_degree + 1,
+                .lv0_smoothing_range = 1.e-3,
+                .lvgt0_smoothing_range = 15,
+                .lvgt0_smoothing_degree = 5,
+                .lvgt0_smoothing_eigenvalue_max_iterations = 10,
+                .solver_max_iterations = 100,
+                .solver_tolerance_factor = 1e-12,
+
                 // IMPORTANT: We set mu = 5.0 to trigger the bug.
                 .mu = std::make_shared<ConstantRealFunction<dim>>(5.0),
                 .beta = std::make_shared<ConstantVectorFunctionWithGradient<dim>>(0.0),
@@ -302,19 +386,101 @@ namespace ADR
             neumann_boundaries[5] = std::make_shared<ConstantRealFunction<dim>>(0.0);
 
             ProblemData<dim, fe_degree> data{
-                .mesh_filename = "input.msh", .num_levels = 5, .num_quadrature_points = fe_degree + 1,
-                .lv0_smoothing_range = 1.e-3, .lvgt0_smoothing_range = 15, .lvgt0_smoothing_degree = 5, .lvgt0_smoothing_eigenvalue_max_iterations = 10,
-                .solver_max_iterations = 100, .solver_tolerance_factor = 1e-12,
-                
+                .mesh_filename = "input.msh",
+                .num_levels = 5,
+                .num_quadrature_points = fe_degree + 1,
+                .lv0_smoothing_range = 1.e-3,
+                .lvgt0_smoothing_range = 15,
+                .lvgt0_smoothing_degree = 5,
+                .lvgt0_smoothing_eigenvalue_max_iterations = 10,
+                .solver_max_iterations = 100,
+                .solver_tolerance_factor = 1e-12,
+
                 .mu = std::make_shared<ConstantRealFunction<dim>>(1.0),
                 .beta = std::make_shared<ConstantVectorFunctionWithGradient<dim>>(0.0),
                 .gamma = std::make_shared<ConstantRealFunction<dim>>(0.0),
-                
+
                 // We heat the whole domain up uniformly with a forcing term of 6.0
                 .forcing_term = std::make_shared<ConstantRealFunction<dim>>(6.0),
                 .dirichlet_boundaries = dirichlet_boundaries,
                 .neumann_boundaries = neumann_boundaries,
             };
+            return data;
+        }
+
+        static ProblemData<dim, fe_degree> lab_02_poisson()
+        {
+            MFSolver::DirichletBoundaries<dim> dirichlet_boundaries;
+            dirichlet_boundaries[0] = std::make_shared<SumReductionFunction<dim>>();
+            dirichlet_boundaries[1] = std::make_shared<SumReductionFunction<dim>>();
+
+            MFSolver::NeumannBoundaries<dim> neumann_boundaries;
+            neumann_boundaries[2] = std::make_shared<NthCoordFunction<dim>>(1);
+            neumann_boundaries[3] = std::make_shared<NthCoordFunction<dim>>(1);
+
+            ProblemData<dim, fe_degree> data{
+                .mesh_filename = "input.msh",
+                .num_levels = 5,
+
+                .num_quadrature_points = fe_degree + 1,
+
+                .lv0_smoothing_range = 1.e-3,
+
+                .lvgt0_smoothing_range = 15,
+                .lvgt0_smoothing_degree = 5,
+                .lvgt0_smoothing_eigenvalue_max_iterations = 10,
+
+                .solver_max_iterations = 100,
+                .solver_tolerance_factor = 1e-12,
+
+                .mu = std::make_shared<ConstantRealFunction<dim>>(1.0),
+                .beta = std::make_shared<ConstantVectorFunctionWithGradient<dim>>(0.0),
+                .gamma = std::make_shared<ConstantRealFunction<dim>>(0.0),
+
+                .forcing_term = std::make_shared<ConstantRealFunction<dim>>(-5.0),
+
+                .dirichlet_boundaries = dirichlet_boundaries,
+                .neumann_boundaries = neumann_boundaries,
+            };
+
+            return data;
+        }
+
+        static ProblemData<dim, fe_degree> lab_03_dr_eq()
+        {
+            MFSolver::DirichletBoundaries<dim> dirichlet_boundaries;
+            for (size_t i = 0; i < 6; ++i)
+            {
+                dirichlet_boundaries[i] = std::make_shared<ConstantRealFunction<dim>>(0.0);
+            }
+
+            MFSolver::NeumannBoundaries<dim> neumann_boundaries;
+
+            ProblemData<dim, fe_degree> data{
+                .mesh_filename = "input.msh",
+                .num_levels = 5,
+
+                .num_quadrature_points = fe_degree + 1,
+
+                .lv0_smoothing_range = 1.e-3,
+
+                .lvgt0_smoothing_range = 15,
+                .lvgt0_smoothing_degree = 5,
+                .lvgt0_smoothing_eigenvalue_max_iterations = 10,
+
+                .solver_max_iterations = 100,
+                .solver_tolerance_factor = 1e-12,
+
+                .mu = std::make_shared<Lab03Mu<dim>>(),
+                .beta = std::make_shared<ConstantVectorFunctionWithGradient<dim>>(0.0),
+                .gamma = std::make_shared<ConstantRealFunction<dim>>(1.0),
+
+                .forcing_term = std::make_shared<ConstantRealFunction<dim>>(1.0),
+
+                .dirichlet_boundaries = dirichlet_boundaries,
+                .neumann_boundaries = neumann_boundaries,
+            };
+
             return data;
         }
     };
