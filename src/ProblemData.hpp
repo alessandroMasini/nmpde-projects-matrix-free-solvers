@@ -109,7 +109,7 @@ namespace ADR
         double solver_tolerance_factor;     /**< Factor to multiply to the l2 norm of the rhs of the algebraic system in order to get the absolute tolerance. */
 
         // TODO: where is this used???
-        unsigned int refinement_coefficient_per_level = 4; /**< Mesh refinement level (if generating a hyper_cube/hyper_ball) */
+        unsigned int refinement_coefficient_per_level = 1; /**< Mesh refinement level (if generating a hyper_cube/hyper_ball) */
 
         // Number of elements in each direction (if using a subdivision)
         // unsigned int elements_per_direction = 10;

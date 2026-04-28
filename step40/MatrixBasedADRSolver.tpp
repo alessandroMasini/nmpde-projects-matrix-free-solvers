@@ -5,10 +5,10 @@ namespace MFSolver{
   void MatrixBasedADRSolver<dim, fe_degree>::setup_system () {
     TimerOutput::Scope t(computing_timer, "setup");
 
-    // TODO: use actual grid
-    GridGenerator::hyper_cube(triangulation);
-    triangulation.refine_global(5);
- 
+    // idk if needed
+    system_matrix.clear();
+    system_rhs.clear();
+    
     dof_handler.distribute_dofs(fe);
  
     pcout << "   Number of active cells:       "
@@ -130,11 +130,8 @@ namespace MFSolver{
                                                  system_rhs);
         }
 
-    pcout<<"After for loop I'm still alive :)"<<std::endl;
  
     system_matrix.compress(VectorOperation::add);
-
-    pcout<<"After matrix is compressed"<<std::endl;
     system_rhs.compress(VectorOperation::add);
 
 
@@ -207,16 +204,29 @@ namespace MFSolver{
           << " on " << Utilities::MPI::n_mpi_processes(mpi_communicator)
           << " MPI rank(s)..." << std::endl;
 
-    setup_system ();
-    pcout<<"Finished setup"<<std::endl;
-    assemble ();
-    pcout<<"Finished assemble"<<std::endl;
-    solve ();
-    pcout<<"Finished solve"<<std::endl;
-    output_results ();
+    // setting up the grid
+    GridGenerator::hyper_cube(triangulation);
+    triangulation.refine_global(4-dim);
 
-    computing_timer.print_summary();
-    computing_timer.reset();
+
+    for(unsigned int cycle = 0; cycle < this->problem.num_levels; ++cycle){ // 3 cycles for the test
+      pcout<<"Cycle "<<cycle<<std::endl;
+      if (cycle > 0){
+        pcout<<"Refinement coefficient = "<<this->problem.refinement_coefficient_per_level<<std::endl;
+        triangulation.refine_global(this->problem.refinement_coefficient_per_level);
+      }
+
+      setup_system ();
+      pcout<<"Finished setup"<<std::endl;
+      assemble ();
+      pcout<<"Finished assemble"<<std::endl;
+      solve ();
+      pcout<<"Finished solve"<<std::endl;
+      output_results ();
+
+      computing_timer.print_summary();
+      computing_timer.reset();
+    }
 
     pcout << std::endl;
   }

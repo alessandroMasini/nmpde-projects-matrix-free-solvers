@@ -57,7 +57,7 @@ main (int argc, char* argv [ ]) {
     data.lvgt0_smoothing_range = 15;
     data.lvgt0_smoothing_degree = 5;
     data.lvgt0_smoothing_eigenvalue_max_iterations = 10;
-    data.refinement_coefficient_per_level = 4;
+    data.refinement_coefficient_per_level = 1;
 
     MatrixBasedADRSolver<2, 1> solver(data);
     solver.run();
