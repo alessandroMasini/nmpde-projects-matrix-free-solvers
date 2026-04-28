@@ -204,8 +204,7 @@ namespace MFSolver
 
             for (unsigned int i = 0; i < inverse_diagonal.locally_owned_size(); ++i)
             {
-                Assert(inverse_diagonal.local_element(i) > 0., ExcMessage("Error: non-positive entry found. Operator must be positive definite."));
-
+                Assert(inverse_diagonal.local_element(i) > 0., ExcMessage(std::format("Error: non-positive entry found. Operator must be positive definite. ({} = {})", i, inverse_diagonal.local_element(i))));
                 inverse_diagonal.local_element(i) = 1. / inverse_diagonal.local_element(i);
             }
         }

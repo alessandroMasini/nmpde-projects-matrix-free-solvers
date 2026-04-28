@@ -215,6 +215,128 @@ namespace ADR
         }
     };
 
+    template <int dim>
+    class beta_term_of_miro_problem : public MFSolver::VectorFunctionWithGradient<dim>
+    {
+    public:
+        beta_term_of_miro_problem() : MFSolver::VectorFunctionWithGradient<dim>() {}
+
+        virtual typename MFSolver::VectorFunctionWithGradient<dim>::template value_type<double> value(const dealii::Point<dim> &p) const override
+        {
+            dealii::Tensor<1, dim> b;
+            b[0] = p[0];
+            b[1] = p[1];
+            return b;
+        }
+
+        virtual typename MFSolver::VectorFunctionWithGradient<dim>::template value_type<dealii::VectorizedArray<float>> value(const dealii::Point<dim, dealii::VectorizedArray<float>> &p) const override
+        {
+            dealii::Tensor<1, dim, dealii::VectorizedArray<float>> b;
+            for (unsigned int d = 0; d < dim; ++d)
+                for (unsigned int i = 0; i < dealii::VectorizedArray<float>::size(); ++i)
+                    b[d][i] = p[d][i];
+            return b;
+        }
+
+        virtual typename MFSolver::VectorFunctionWithGradient<dim>::template value_type<dealii::VectorizedArray<double>> value(const dealii::Point<dim, dealii::VectorizedArray<double>> &p) const override
+        {
+            dealii::Tensor<1, dim, dealii::VectorizedArray<double>> b;
+            for (unsigned int d = 0; d < dim; ++d)
+                for (unsigned int i = 0; i < dealii::VectorizedArray<double>::size(); ++i)
+                    b[d][i] = p[d][i];
+            return b;
+        }
+
+        virtual double divergence(const dealii::Point<dim> &p) const override
+        {
+            return trace(gradient(p));
+        }
+
+        virtual dealii::VectorizedArray<float> divergence(const dealii::Point<dim, dealii::VectorizedArray<float>> &p) const override
+        {
+            dealii::VectorizedArray<float> result;
+            for (unsigned int i = 0; i < dealii::VectorizedArray<float>::size(); ++i)
+            {
+                dealii::Point<dim> point_i;
+                for (unsigned int d = 0; d < dim; ++d)
+                    point_i[d] = p[d][i];
+                result[i] = trace(gradient(point_i));
+            }
+            return result;
+        }
+
+        virtual dealii::VectorizedArray<double> divergence(const dealii::Point<dim, dealii::VectorizedArray<double>> &p) const override
+        {
+            dealii::VectorizedArray<double> result;
+            for (unsigned int i = 0; i < dealii::VectorizedArray<double>::size(); ++i)
+            {
+                dealii::Point<dim> point_i;
+                for (unsigned int d = 0; d < dim; ++d)
+                    point_i[d] = p[d][i];
+                result[i] = trace(gradient(point_i));
+            }
+            return result;
+        }
+
+        virtual typename MFSolver::VectorFunctionWithGradient<dim>::template gradient_type<double> gradient(const dealii::Point<dim> &p) const override
+        {
+            dealii::Tensor<2, dim> grad;
+            grad[0][0] = 1.0;
+            grad[1][1] = 1.0;
+            return grad;
+        }
+
+        virtual typename MFSolver::VectorFunctionWithGradient<dim>::template gradient_type<dealii::VectorizedArray<float>> gradient(const dealii::Point<dim, dealii::VectorizedArray<float>> &p) const override
+        {
+            dealii::Tensor<2, dim, dealii::VectorizedArray<float>> grad;
+            for (unsigned int d = 0; d < dim; ++d)
+                for (unsigned int i = 0; i < dealii::VectorizedArray<float>::size(); ++i)
+                    grad[d][d][i] = 1.0f;
+            return grad;
+        }
+
+        virtual typename MFSolver::VectorFunctionWithGradient<dim>::template gradient_type<dealii::VectorizedArray<double>> gradient(const dealii::Point<dim, dealii::VectorizedArray<double>> &p) const override
+        {
+            dealii::Tensor<2, dim, dealii::VectorizedArray<double>> grad;
+            for (unsigned int d = 0; d < dim; ++d)
+                for (unsigned int i = 0; i < dealii::VectorizedArray<double>::size(); ++i)
+                    grad[d][d][i] = 1.0;
+            return grad;
+        }
+    };
+
+    template <int dim>
+    class forcing_term_of_miro_problem : public MFSolver::RealFunction<dim>
+    {
+    public:
+        forcing_term_of_miro_problem() : MFSolver::RealFunction<dim>() {}
+
+        virtual double value(const dealii::Point<dim> &p, const unsigned int component = 0) const override
+        {
+            return p[0] + 2 * p[1] + p[0] * p[0] + 3 * p[0] * p[1] + 2 * p[1] * p[1];
+        }
+
+        virtual dealii::VectorizedArray<float> value(const dealii::Point<dim, dealii::VectorizedArray<float>> &p, const unsigned int component = 0) const override
+        {
+            dealii::VectorizedArray<float> result;
+            for (unsigned int i = 0; i < dealii::VectorizedArray<float>::size(); ++i)
+            {
+                result[i] = p[0][i] + 2 * p[1][i] + p[0][i] * p[0][i] + 3 * p[0][i] * p[1][i] + 2 * p[1][i] * p[1][i];
+            }
+            return result;
+        }
+
+        virtual dealii::VectorizedArray<double> value(const dealii::Point<dim, dealii::VectorizedArray<double>> &p, const unsigned int component = 0) const override
+        {
+            dealii::VectorizedArray<double> result;
+            for (unsigned int i = 0; i < dealii::VectorizedArray<double>::size(); ++i)
+            {
+                result[i] = p[0][i] + 2 * p[1][i] + p[0][i] * p[0][i] + 3 * p[0][i] * p[1][i] + 2 * p[1][i] * p[1][i];
+            }
+            return result;
+        }
+    };
+
     /**
      * @brief A common structure to hold the algebraic and analytical data
      * required defining the Advection-Diffusion-Reaction (ADR) problem.
@@ -476,6 +598,44 @@ namespace ADR
                 .gamma = std::make_shared<ConstantRealFunction<dim>>(1.0),
 
                 .forcing_term = std::make_shared<ConstantRealFunction<dim>>(1.0),
+
+                .dirichlet_boundaries = dirichlet_boundaries,
+                .neumann_boundaries = neumann_boundaries,
+            };
+
+            return data;
+        }
+
+        static ProblemData<dim, fe_degree> see_miro_for_problem_definition_andrea_knows()
+        {
+            MFSolver::DirichletBoundaries<dim> dirichlet_boundaries;
+            for (size_t i = 0; i < 4; ++i)
+            {
+                dirichlet_boundaries[i] = std::make_shared<ConstantRealFunction<dim>>(0.0);
+            }
+
+            MFSolver::NeumannBoundaries<dim> neumann_boundaries;
+
+            ProblemData<dim, fe_degree> data{
+                .mesh_filename = "input.msh",
+                .num_levels = 5,
+
+                .num_quadrature_points = fe_degree + 1,
+
+                .lv0_smoothing_range = 1.e-3,
+
+                .lvgt0_smoothing_range = 15,
+                .lvgt0_smoothing_degree = 5,
+                .lvgt0_smoothing_eigenvalue_max_iterations = 10,
+
+                .solver_max_iterations = 100,
+                .solver_tolerance_factor = 1e-12,
+
+                .mu = std::make_shared<ConstantRealFunction<dim>>(0.0),
+                .beta = std::make_shared<beta_term_of_miro_problem<dim>>(),
+                .gamma = std::make_shared<ConstantRealFunction<dim>>(0.0),
+
+                .forcing_term = std::make_shared<forcing_term_of_miro_problem<dim>>(),
 
                 .dirichlet_boundaries = dirichlet_boundaries,
                 .neumann_boundaries = neumann_boundaries,

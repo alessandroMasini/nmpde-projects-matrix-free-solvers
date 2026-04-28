@@ -12,8 +12,10 @@ int main(int argc, char **argv)
     //  ADR::ProblemData<3, 2> data = ADR::ProblemData<3, 2>::test_case_parabolic();
 
     // ADR::ProblemData<2, 2> data = ADR::ProblemData<2, 2>::lab_02_poisson();
-    ADR::ProblemData<3, 2> data = ADR::ProblemData<3, 2>::lab_03_dr_eq();
-    MFSolver::MatrixFreeADRSolver<3, 2> solver(data);
+    // ADR::ProblemData<3, 2> data = ADR::ProblemData<3, 2>::lab_03_dr_eq();
+
+    ADR::ProblemData<2, 2> data = ADR::ProblemData<2, 2>::see_miro_for_problem_definition_andrea_knows();
+    MFSolver::MatrixFreeADRSolver<2, 2> solver(data);
 
     solver.run();
 
