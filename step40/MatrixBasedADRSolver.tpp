@@ -33,7 +33,7 @@ namespace MFSolver{
     // TODO: use actual boundary values
     VectorTools::interpolate_boundary_values(dof_handler,
                                              0,
-                                             Functions::ZeroFunction<dim>(),
+                                             *(this->problem.dirichlet_boundary_value),
                                              constraints);
     constraints.close();
  
@@ -187,7 +187,7 @@ namespace MFSolver{
  
     data_out.build_patches();
     
-    // TODO: inquire this hardwired numbers
+    // TODO: inquire these hardwired numbers
     data_out.write_vtu_with_pvtu_record(
       "./", "solution", cycle, mpi_communicator, 2, 8);
 
