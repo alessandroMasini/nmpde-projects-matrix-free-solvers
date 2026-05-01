@@ -173,6 +173,7 @@ namespace MFSolver{
 
   template <int dim, int fe_degree>
   void MatrixBasedADRSolver<dim, fe_degree>::output_results () {
+    static unsigned int cycle = 0;
     TimerOutput::Scope t(computing_timer, "output");
  
     DataOut<dim> data_out;
@@ -188,7 +189,9 @@ namespace MFSolver{
     
     // TODO: inquire this hardwired numbers
     data_out.write_vtu_with_pvtu_record(
-      "./", "solution", 0, mpi_communicator, 2, 8);
+      "./", "solution", cycle, mpi_communicator, 2, 8);
+
+    cycle++;
   }
 
   
