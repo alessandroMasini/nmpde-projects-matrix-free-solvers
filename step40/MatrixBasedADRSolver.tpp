@@ -2,86 +2,20 @@
 
 namespace MFSolver{
   template <int dim, int fe_degree>
-  void MatrixBasedADRSolver<dim, fe_degree>::create_test_grid () {
-    // This is only a temporary function to generate a test grid.
-    // TODO: remove this and generate grid with proper software.
-    Triangulation<dim> triangulation_serial;
-    GridGenerator::hyper_cube(triangulation_serial);
-    
-    GridOutFlags::Vtu vtu_flags(true);  // this is necessary for re-reading it afterwards
-    GridOut grid_out;
-    grid_out.set_flags(vtu_flags);
-    std::ofstream file_out("./test_grid.vtu");
-    grid_out.write_vtu(triangulation_serial, file_out);
-  }
-
-  template <int dim, int fe_degree>
   void MatrixBasedADRSolver<dim, fe_degree>::setup_system () {
     TimerOutput::Scope t(computing_timer, "setup");
 
-    // TODO: use actual grid
-    //GridGenerator::hyper_cube(triangulation);
+    // idk if needed
+    system_matrix.clear();
+    system_rhs.clear();
     
-    // Create the mesh.
-    {
-      pcout << "Initializing the mesh" << std::endl;
-
-      // First, we read the mesh from file into a serial (i.e. not parallel)
-      // triangulation.
-      Triangulation<dim> triangulation_serial;
-
-      {
-        GridIn<dim> grid_in;
-        grid_in.attach_triangulation(triangulation_serial);
-
-        std::ifstream mesh_file(this->problem.mesh_filename);
-        grid_in.read_msh(mesh_file);
-      }
-
-      // Then, we copy the serial mesh into the parallel one.
-      {
-        int mpi_size = Utilities::MPI::n_mpi_processes(mpi_communicator);
-        GridTools::partition_triangulation(mpi_size, triangulation_serial);
-
-        const auto construction_data = TriangulationDescription::Utilities::
-          create_description_from_triangulation(triangulation_serial, MPI_COMM_WORLD);
-        triangulation.create_triangulation(construction_data);
-      }
-
-      // Notice that here we write the number of *global* active cells (across all
-      // processes).
-      pcout << "  Number of elements = " << triangulation.n_global_active_cells()
-            << std::endl;
-    }
-
-    /*
-    GridIn<dim> grid_in;
-    grid_in.attach_triangulation(triangulation);
-    std::ifstream input_file(this->problem.mesh_filename);
-    
-    pcout << "Created grid_in objected" << std::endl;
-    grid_in.read_msh(input_file);
-    pcout << "Read mesh" << std::endl;
-    // grid_in.read_ucd(input_file);
-    
-    const FlatManifold<dim> boundary;
-    triangulation.set_all_manifold_ids_on_boundary(0);
-    triangulation.set_manifold(0, boundary);
-
-    */
-    
-    pcout << "Triangulation created" << std::endl;
-    triangulation.refine_global(10);
-    pcout << "Triangulation refined" << std::endl;
-    dof_handler.reinit(triangulation);
     dof_handler.distribute_dofs(fe);
-    
-    
+ 
     pcout << "   Number of active cells:       "
           << triangulation.n_global_active_cells() << std::endl
           << "   Number of degrees of freedom: " << dof_handler.n_dofs()
           << std::endl;
-    
+ 
  
     locally_owned_dofs = dof_handler.locally_owned_dofs();
     locally_relevant_dofs =
@@ -115,107 +49,92 @@ namespace MFSolver{
                          locally_owned_dofs,
                          dsp,
                          mpi_communicator);
-
-  }
-
-  template <int dim, int fe_degree>
-  void MatrixBasedADRSolver<dim, fe_degree>::assemble_on_one_cell (
-    const typename DoFHandler<dim>::active_cell_iterator &cell,
-    ScratchData<dim> &scratch,
-    PerTaskData<dim> &data) {
-    const unsigned int dofs_per_cell = fe.n_dofs_per_cell();
-    const unsigned int n_q_points    = scratch.fe_values.n_quadrature_points;
- 
-    double mu_loc;
-    Tensor<1, dim, double> b_loc;
-    double b_div;
-    double k_loc;
-    double f_loc;
-    
-    // TODO: is this check useful?
-    if (cell->is_locally_owned())
-      {
-        scratch.fe_values.reinit(cell);
-
-        data.cell_matrix = 0.;
-        data.cell_rhs    = 0.;
-    
-        for (unsigned int q = 0; q < n_q_points; ++q) {
-          mu_loc = this->problem.mu->value (scratch.fe_values.quadrature_point (q));
-          b_loc = this->problem.beta->value (scratch.fe_values.quadrature_point (q));
-          b_div = this->problem.beta->divergence(scratch.fe_values.quadrature_point (q));
-          k_loc = this->problem.gamma->value (scratch.fe_values.quadrature_point (q));
-          f_loc = this->problem.forcing_term->value (scratch.fe_values.quadrature_point (q));
-
-          for (unsigned int i = 0; i < dofs_per_cell; ++i) {
-            for (unsigned int j = 0; j < dofs_per_cell; ++j) {
-              // Diffusion.
-              data.cell_matrix (i, j) +=
-                mu_loc *                             //
-                scratch.fe_values.shape_grad (i, q) *  //
-                scratch.fe_values.shape_grad (j, q) * //
-                scratch.fe_values.JxW (q);
-
-              // Advection
-              data.cell_matrix (i, j) += b_loc *
-                scratch.fe_values.shape_grad (j, q) *
-                scratch.fe_values.shape_value (i, q) *
-                scratch.fe_values.JxW (q);
-
-              // Reaction
-              data.cell_matrix (i, j) += (k_loc + b_div)*
-                scratch.fe_values.shape_value (i, q) *
-                scratch.fe_values.shape_value (j, q) *
-                scratch.fe_values.JxW (q);
-          }
-
-          // Forcing term.
-          data.cell_rhs (i) += f_loc * //
-            scratch.fe_values.shape_value (i, q) *                     //
-            scratch.fe_values.JxW (q);
-        }
-      }
-
-      cell->get_dof_indices(data.dof_indices);
-    }
-  }
-    
-  template <int dim, int fe_degree>
-  void MatrixBasedADRSolver<dim, fe_degree>::copy_local_to_global(const PerTaskData<dim> &data)
-    {     
-      constraints.distribute_local_to_global(data.cell_matrix,
-                                              data.cell_rhs,
-                                              data.dof_indices,
-                                              system_matrix,
-                                              system_rhs);
   }
 
   template <int dim, int fe_degree>
   void MatrixBasedADRSolver<dim, fe_degree>::assemble () {
     TimerOutput::Scope t(computing_timer, "assembly");
-
-    PerTaskData per_task_data(fe);
-
+ 
     const QGauss<dim> quadrature_formula(this->problem.num_quadrature_points);
-    ScratchData scratch_data(fe,
-                             quadrature_formula,
-                             update_values | update_gradients |
-                               update_quadrature_points | update_JxW_values);
+ 
+    FEValues<dim> fe_values(fe,
+                            quadrature_formula,
+                            update_values | update_gradients |
+                              update_quadrature_points | update_JxW_values);
+ 
+    const unsigned int dofs_per_cell = fe.n_dofs_per_cell();
+    const unsigned int n_q_points    = quadrature_formula.size();
+ 
+    FullMatrix<double> cell_matrix(dofs_per_cell, dofs_per_cell);
+    Vector<double>     cell_rhs(dofs_per_cell);
+ 
+    std::vector<types::global_dof_index> local_dof_indices(dofs_per_cell);
 
+    double mu_loc;
+    Tensor<1, dim, double> b_loc;
+    double b_div;
+    double k_loc;
+    double f_loc;
+      
+    // TODO: implement ADR with actual functions
+    for (const auto &cell : dof_handler.active_cell_iterators())
+      if (cell->is_locally_owned())
+        {
+          fe_values.reinit(cell);
+ 
+          cell_matrix = 0.;
+          cell_rhs    = 0.;
+ 
+        for (unsigned int q = 0; q < n_q_points; ++q) {
+          mu_loc = this->problem.mu->value (fe_values.quadrature_point (q));
+          b_loc = this->problem.beta->value (fe_values.quadrature_point (q));
+          b_div = this->problem.beta->divergence(fe_values.quadrature_point (q));
+          k_loc = this->problem.gamma->value (fe_values.quadrature_point (q));
+          f_loc = this->problem.forcing_term->value (fe_values.quadrature_point (q));
 
-    WorkStream::run (dof_handler.begin_active(),
-                 dof_handler.end(),
-                 *this,
-                 &MatrixBasedADRSolver<dim, fe_degree>::assemble_on_one_cell,
-                 &MatrixBasedADRSolver<dim, fe_degree>::copy_local_to_global,
-                 scratch_data,
-                 per_task_data);
+          for (unsigned int i = 0; i < dofs_per_cell; ++i) {
+            for (unsigned int j = 0; j < dofs_per_cell; ++j) {
+              // Diffusion.
+              cell_matrix (i, j) +=
+                mu_loc *                             //
+                fe_values.shape_grad (i, q) *  //
+                fe_values.shape_grad (j, q) * //
+                fe_values.JxW (q);
 
-    pcout<<"After local assembly I'm still alive :)"<<std::endl;
+              // Advection
+              cell_matrix (i, j) += b_loc *
+                fe_values.shape_grad (j, q) *
+                fe_values.shape_value (i, q) *
+                fe_values.JxW (q);
 
-    // TODO: can compression be done in multi-threaded way?
+              // Reaction
+              cell_matrix (i, j) += (k_loc + b_div)*
+                fe_values.shape_value (i, q) *
+                fe_values.shape_value (j, q) *
+                fe_values.JxW (q);
+          }
+
+          // Forcing term.
+          cell_rhs (i) += f_loc * //
+            fe_values.shape_value (i, q) *                     //
+            fe_values.JxW (q);
+        }
+      }
+            
+          // TODO: apply b.c.
+          cell->get_dof_indices(local_dof_indices);
+          constraints.distribute_local_to_global(cell_matrix,
+                                                 cell_rhs,
+                                                 local_dof_indices,
+                                                 system_matrix,
+                                                 system_rhs);
+        }
+
+ 
     system_matrix.compress(VectorOperation::add);
     system_rhs.compress(VectorOperation::add);
+
+
   }
 
   template <int dim, int fe_degree>
