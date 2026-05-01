@@ -34,6 +34,10 @@
 #include "function_types.hpp"
 #include "ProblemData.hpp"
 
+// Needed for multithreading
+#include <deal.II/base/work_stream.h>
+#include <deal.II/base/multithread_info.h>
+
 // Imports from step40
 // TODO: rationalize
 
@@ -64,6 +68,12 @@
 #include <deal.II/lac/sparsity_tools.h>
 #include <deal.II/distributed/tria.h>
 #include <deal.II/distributed/grid_refinement.h>
+
+#include <deal.II/grid/grid_in.h>
+#include <deal.II/grid/grid_out.h>
+#include <deal.II/grid/manifold.h>
+#include <deal.II/grid/grid_tools.h>
+
  
 #include <fstream>
 #include <iostream>
@@ -471,6 +481,40 @@ namespace MFSolver
         ConditionalOStream time_details;
     };
 
+    template <int dim>
+    struct PerTaskData {
+        FullMatrix<double>        cell_matrix;
+        Vector<double>            cell_rhs;
+        std::vector<unsigned int> dof_indices;
+        
+        PerTaskData (const FiniteElement<dim> &fe)
+                    :
+                    cell_matrix (fe.dofs_per_cell, fe.dofs_per_cell),
+                    cell_rhs (fe.dofs_per_cell),
+                    dof_indices (fe.dofs_per_cell)
+            {}
+    };
+
+    template <int dim>
+    struct ScratchData {
+        // TODO: this may need additions (value_list)
+        FEValues<dim>             fe_values;
+        
+        ScratchData (const FiniteElement<dim> &fe,
+                    const Quadrature<dim>    &quadrature,
+                    const UpdateFlags         update_flags)
+                    :
+                    fe_values (fe, quadrature, update_flags)
+            {}
+        
+        ScratchData (const ScratchData &scratch)
+                    :
+                    fe_values (scratch.fe_values.get_fe(),
+                                scratch.fe_values.get_quadrature(),
+                                scratch.fe_values.get_update_flags())
+            {}
+    };
+
     /**
      * \brief Solver class that will solve an ADR problem using matrix-based techniques.
      * \tparam dim The dimensionality of the space the ADR problem is living in.
@@ -482,6 +526,22 @@ namespace MFSolver
     public:
         MatrixBasedADRSolver(const ADR::ProblemData<dim, fe_degree> &_problem) : 
         ADRSolver<dim, fe_degree>(_problem),
+        mpi_communicator(MPI_COMM_WORLD),
+        triangulation(mpi_communicator),
+        fe(fe_degree),
+        dof_handler(triangulation),
+        pcout(std::cout,
+            (Utilities::MPI::this_mpi_process(mpi_communicator) == 0)),
+        computing_timer(mpi_communicator,
+                      pcout,
+                      TimerOutput::never,
+                      TimerOutput::wall_times)
+        {}
+        ~MatrixBasedADRSolver() override {};
+        
+        // Copy constructor
+        MatrixBasedADRSolver(const MatrixBasedADRSolver<dim, fe_degree> &_solver) : 
+        ADRSolver<dim, fe_degree>(_solver.problem),
         mpi_communicator(MPI_COMM_WORLD),
         triangulation(mpi_communicator,
                     typename Triangulation<dim>::MeshSmoothing(
@@ -496,19 +556,24 @@ namespace MFSolver
                       TimerOutput::never,
                       TimerOutput::wall_times)
         {}
-        ~MatrixBasedADRSolver() override {};
-
+        
+        void create_test_grid();
         void run() override;
 
     private:
         void setup_system() override;
+        void assemble_on_one_cell(
+            const typename DoFHandler<dim>::active_cell_iterator &cell,
+            ScratchData<dim> &scratch,
+            PerTaskData<dim> &data);
+        void copy_local_to_global(const PerTaskData<dim> &data);
         void assemble() override;
         void solve() override;
         void output_results() override;
 
         MPI_Comm mpi_communicator;
  
-        parallel::distributed::Triangulation<dim> triangulation;
+        parallel::fullydistributed::Triangulation<dim> triangulation;
     
         const FE_Q<dim> fe;
         DoFHandler<dim> dof_handler;
@@ -527,6 +592,7 @@ namespace MFSolver
         ConditionalOStream pcout;
         TimerOutput        computing_timer;
     };
+
 };
 
 // Including template function implementations

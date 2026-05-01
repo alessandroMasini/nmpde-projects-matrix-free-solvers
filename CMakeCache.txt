@@ -149,7 +149,7 @@ CMAKE_PROJECT_DESCRIPTION:STATIC=
 CMAKE_PROJECT_HOMEPAGE_URL:STATIC=
 
 //Value Computed by CMake
-CMAKE_PROJECT_NAME:STATIC=MatrixBasedSolver
+CMAKE_PROJECT_NAME:STATIC=project_title
 
 //Path to a program.
 CMAKE_RANLIB:FILEPATH=/u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/ranlib
@@ -316,6 +316,15 @@ boost_serialization_DIR:PATH=/u/sw/toolchains/gcc-glibc/11.2.0/pkgs/boost/1.76.0
 
 //The directory containing a CMake configuration file for deal.II.
 deal.II_DIR:PATH=/u/sw/toolchains/gcc-glibc/11.2.0/pkgs/dealii/9.5.1/lib/cmake/deal.II
+
+//Value Computed by CMake
+project_title_BINARY_DIR:STATIC=/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers
+
+//Value Computed by CMake
+project_title_IS_TOP_LEVEL:STATIC=ON
+
+//Value Computed by CMake
+project_title_SOURCE_DIR:STATIC=/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers
 
 
 ########################
