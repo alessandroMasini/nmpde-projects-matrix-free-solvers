@@ -7,7 +7,7 @@ namespace MFSolver{
 
     // TODO: use actual grid
     GridGenerator::hyper_cube(triangulation);
-    triangulation.refine_global(10);
+    triangulation.refine_global(5);
  
     dof_handler.distribute_dofs(fe);
  
