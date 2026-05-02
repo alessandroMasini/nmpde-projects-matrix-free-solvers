@@ -64,7 +64,17 @@
 #include <deal.II/lac/sparsity_tools.h>
 #include <deal.II/distributed/tria.h>
 #include <deal.II/distributed/grid_refinement.h>
- 
+
+#include <deal.II/base/mg_level_object.h>
+#include <deal.II/base/mg_level_object.h>
+#include <deal.II/lac/petsc_solver.h>
+#include <deal.II/lac/solver_gmres.h>
+#include <deal.II/multigrid/mg_transfer.h>
+#include <deal.II/multigrid/multigrid.h>
+#include <deal.II/multigrid/mg_smoother.h>
+#include <deal.II/multigrid/mg_coarse.h>
+#include <deal.II/multigrid/mg_matrix.h>
+
 #include <fstream>
 #include <iostream>
 
@@ -486,7 +496,8 @@ namespace MFSolver
         triangulation(mpi_communicator,
                     typename Triangulation<dim>::MeshSmoothing(
                       Triangulation<dim>::smoothing_on_refinement |
-                      Triangulation<dim>::smoothing_on_coarsening)),
+                      Triangulation<dim>::smoothing_on_coarsening),
+                    parallel::distributed::Triangulation<dim>::construct_multigrid_hierarchy),
         fe(fe_degree),
         dof_handler(triangulation),
         pcout(std::cout,
@@ -523,6 +534,11 @@ namespace MFSolver
         // TODO: use the correct vector type
         LA::MPI::Vector       locally_relevant_solution;
         LA::MPI::Vector       system_rhs;
+
+        // Multigrid
+        MGLevelObject<LA::MPI::SparseMatrix> mg_matrices;
+        MGConstrainedDoFs mg_constrained_dofs;   
+        MGTransferPrebuilt<LA::MPI::Vector> mg_transfer;        
     
         ConditionalOStream pcout;
         TimerOutput        computing_timer;

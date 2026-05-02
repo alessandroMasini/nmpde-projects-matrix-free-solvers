@@ -8,8 +8,13 @@ namespace MFSolver{
     // idk if needed
     system_matrix.clear();
     system_rhs.clear();
+
+    GridGenerator::hyper_cube(triangulation);
+    triangulation.refine_global(5);
     
     dof_handler.distribute_dofs(fe);
+    dof_handler.distribute_mg_dofs();
+
  
     pcout << "   Number of active cells:       "
           << triangulation.n_global_active_cells() << std::endl
@@ -49,6 +54,28 @@ namespace MFSolver{
                          locally_owned_dofs,
                          dsp,
                          mpi_communicator);
+
+    // Multigrid
+    const unsigned int n_levels = triangulation.n_levels();
+
+    mg_matrices.resize(0, n_levels - 1);
+
+    for (unsigned int level = 0; level < n_levels; ++level){
+
+      DynamicSparsityPattern dsp(dof_handler.n_dofs(level));
+
+      MGTools::make_sparsity_pattern(dof_handler, dsp, level);
+
+      mg_matrices[level].reinit(
+          dof_handler.locally_owned_mg_dofs(level),
+          dof_handler.locally_owned_mg_dofs(level),
+          dsp,
+          mpi_communicator);
+    }
+    
+    mg_constrained_dofs.initialize(dof_handler);
+    mg_transfer.initialize_constraints(mg_constrained_dofs);
+    mg_transfer.build(dof_handler);
   }
 
   template <int dim, int fe_degree>
@@ -128,13 +155,19 @@ namespace MFSolver{
                                                  local_dof_indices,
                                                  system_matrix,
                                                  system_rhs);
+
+          constraints.distribute_local_to_global(cell_matrix,
+                                                 local_dof_indices,
+                                                 mg_matrices[cell->level()]);
         }
 
  
     system_matrix.compress(VectorOperation::add);
     system_rhs.compress(VectorOperation::add);
 
-
+    for (unsigned int l = 0; l < triangulation.n_levels(); ++l){
+      mg_matrices[l].compress(VectorOperation::add);
+    }
   }
 
   template <int dim, int fe_degree>
@@ -144,20 +177,39 @@ namespace MFSolver{
     LA::MPI::Vector completely_distributed_solution(locally_owned_dofs,
                                                     mpi_communicator);
  
+    
+    // Smoother
+    MGSmootherPrecondition<LA::MPI::SparseMatrix, PETScWrappers::PreconditionJacobi, LA::MPI::Vector> mg_smoother;
+    mg_smoother.initialize(mg_matrices);
+    mg_smoother.set_steps(2);
+
+    // Coarse grid solver and preconditioner
+    SolverControl coarse_control(1000, 1e-12);
+    PETScWrappers::SolverCG coarse_solver(coarse_control, mpi_communicator);
+
+    PETScWrappers::PreconditionJacobi coarse_prec;
+    coarse_prec.initialize(mg_matrices[0]);
+
+    MGCoarseGridApplySmoother<LA::MPI::Vector> mg_coarse;
+    mg_coarse.initialize(mg_smoother);
+    mg::Matrix<LA::MPI::Vector> mg_matrix(mg_matrices);    
+
+    // Multigrid
+    Multigrid<LA::MPI::Vector> mg(mg_matrix,
+                             mg_coarse,
+                             mg_transfer,
+                             mg_smoother,
+                             mg_smoother);
+
+    PreconditionMG<dim, LA::MPI::Vector, MGTransferPrebuilt<LA::MPI::Vector>>
+      preconditioner(dof_handler, mg, mg_transfer);
+ 
+
+    // Solver and preconditioner
     SolverControl solver_control(this->problem.solver_max_iterations,
                                  this->problem.solver_tolerance_factor * system_rhs.l2_norm());
-    LA::SolverCG  solver(solver_control);
- 
- 
-    LA::MPI::PreconditionAMG::AdditionalData data;
-#ifdef USE_PETSC_LA
-    data.symmetric_operator = true;
-#else
-    /* Trilinos defaults are good */
-#endif
-    LA::MPI::PreconditionAMG preconditioner;
-    preconditioner.initialize(system_matrix, data);
- 
+    SolverGMRES<LA::MPI::Vector> solver(solver_control);
+
     solver.solve(system_matrix,
                  completely_distributed_solution,
                  system_rhs,
@@ -173,7 +225,6 @@ namespace MFSolver{
 
   template <int dim, int fe_degree>
   void MatrixBasedADRSolver<dim, fe_degree>::output_results () {
-    static unsigned int cycle = 0;
     TimerOutput::Scope t(computing_timer, "output");
  
     DataOut<dim> data_out;
@@ -189,9 +240,8 @@ namespace MFSolver{
     
     // TODO: inquire these hardwired numbers
     data_out.write_vtu_with_pvtu_record(
-      "./", "solution", cycle, mpi_communicator, 2, 8);
+      "./", "solution", 0, mpi_communicator, 2, 8);
 
-    cycle++;
   }
 
   
@@ -207,29 +257,18 @@ namespace MFSolver{
           << " on " << Utilities::MPI::n_mpi_processes(mpi_communicator)
           << " MPI rank(s)..." << std::endl;
 
-    // setting up the grid
-    GridGenerator::hyper_cube(triangulation);
-    triangulation.refine_global(4-dim);
 
+    setup_system ();
+    pcout<<"Finished setup"<<std::endl;
+    assemble ();
+    pcout<<"Finished assemble"<<std::endl;
+    solve ();
+    pcout<<"Finished solve"<<std::endl;
+    output_results ();
 
-    for(unsigned int cycle = 0; cycle < this->problem.num_levels; ++cycle){ // 3 cycles for the test
-      pcout<<"Cycle "<<cycle<<std::endl;
-      if (cycle > 0){
-        pcout<<"Refinement coefficient = "<<this->problem.refinement_coefficient_per_level<<std::endl;
-        triangulation.refine_global(this->problem.refinement_coefficient_per_level);
-      }
-
-      setup_system ();
-      pcout<<"Finished setup"<<std::endl;
-      assemble ();
-      pcout<<"Finished assemble"<<std::endl;
-      solve ();
-      pcout<<"Finished solve"<<std::endl;
-      output_results ();
-
-      computing_timer.print_summary();
-      computing_timer.reset();
-    }
+    computing_timer.print_summary();
+    computing_timer.reset();
+    
 
     pcout << std::endl;
   }
