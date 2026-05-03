@@ -9,7 +9,8 @@ namespace MFSolver{
     system_matrix.clear();
     system_rhs.clear();
 
-    GridGenerator::hyper_cube(triangulation);
+    // `true` colorizes the boundaries: 0=left, 1=right, 2=bottom, 3=top, 4=back, 5=front
+    GridGenerator::hyper_cube(triangulation, 0., 1., true);
     triangulation.refine_global(5);
     
     dof_handler.distribute_dofs(fe);
@@ -31,15 +32,20 @@ namespace MFSolver{
                                      mpi_communicator);
     system_rhs.reinit(locally_owned_dofs, mpi_communicator);
  
+    pcout << "  Initialize constraints..." << std::endl;
+    // Handle hanging nodes (created by adaptive h-refinement) to ensure solution continuity
     constraints.clear();
-    constraints.reinit(locally_relevant_dofs);
+    constraints.reinit(DoFTools::extract_locally_relevant_dofs(dof_handler));
     DoFTools::make_hanging_node_constraints(dof_handler, constraints);
 
-    // TODO: use actual boundary values
-    VectorTools::interpolate_boundary_values(dof_handler,
-                                             0,
-                                             *(this->problem.dirichlet_boundary_value),
-                                             constraints);
+    pcout << "  Interpolating boundary values..." << std::endl;
+    // Interpolate the Dirichlet (essential) boundary conditions from our ProblemData map
+    for (const auto &[boundary_id, function] : this->problem.dirichlet_boundaries)
+    {
+        // Interpolates the specific function onto the nodes belonging to boundary_id
+        VectorTools::interpolate_boundary_values(mapping, dof_handler, boundary_id, *function, constraints);
+    }
+
     constraints.close();
  
     DynamicSparsityPattern dsp(locally_relevant_dofs);
@@ -257,6 +263,13 @@ namespace MFSolver{
           << " on " << Utilities::MPI::n_mpi_processes(mpi_communicator)
           << " MPI rank(s)..." << std::endl;
 
+    const unsigned int n_vect_doubles = dealii::VectorizedArray<double>::size();
+    const unsigned int n_vect_bits = 8 * sizeof(double) * n_vect_doubles;
+    pcout << "Vectorization over " << n_vect_doubles
+          << " doubles = " << n_vect_bits << " bits ("
+          << Utilities::System::get_current_vectorization_level() << ')'
+          << std::endl
+          << std::endl;
 
     setup_system ();
     pcout<<"Finished setup"<<std::endl;
