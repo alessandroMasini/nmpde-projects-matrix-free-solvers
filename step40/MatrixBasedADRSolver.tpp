@@ -9,8 +9,7 @@ namespace MFSolver{
     system_matrix.clear();
     system_rhs.clear();
 
-    // `true` colorizes the boundaries: 0=left, 1=right, 2=bottom, 3=top, 4=back, 5=front
-    GridGenerator::hyper_cube(triangulation, 0., 1., true);
+    GridGenerator::hyper_cube(triangulation);
     triangulation.refine_global(5);
     
     dof_handler.distribute_dofs(fe);
@@ -32,20 +31,15 @@ namespace MFSolver{
                                      mpi_communicator);
     system_rhs.reinit(locally_owned_dofs, mpi_communicator);
  
-    pcout << "  Initialize constraints..." << std::endl;
-    // Handle hanging nodes (created by adaptive h-refinement) to ensure solution continuity
     constraints.clear();
-    constraints.reinit(DoFTools::extract_locally_relevant_dofs(dof_handler));
+    constraints.reinit(locally_relevant_dofs);
     DoFTools::make_hanging_node_constraints(dof_handler, constraints);
 
-    pcout << "  Interpolating boundary values..." << std::endl;
-    // Interpolate the Dirichlet (essential) boundary conditions from our ProblemData map
-    for (const auto &[boundary_id, function] : this->problem.dirichlet_boundary_value)
-    {
-        // Interpolates the specific function onto the nodes belonging to boundary_id
-        VectorTools::interpolate_boundary_values(dof_handler, boundary_id, *function, constraints);
-    }
-
+    // TODO: use actual boundary values
+    VectorTools::interpolate_boundary_values(dof_handler,
+                                             0,
+                                             *(this->problem.dirichlet_boundary_value),
+                                             constraints);
     constraints.close();
  
     DynamicSparsityPattern dsp(locally_relevant_dofs);
@@ -66,15 +60,6 @@ namespace MFSolver{
 
     mg_matrices.resize(0, n_levels - 1);
 
-    std::set<types::boundary_id> dirichlet_boundary_ids;
-    for (const auto &[boundary_id, function] : this->problem.dirichlet_boundary_value)
-    {
-        dirichlet_boundary_ids.insert(boundary_id);
-    }
-
-    mg_constrained_dofs.initialize(dof_handler);
-    mg_constrained_dofs.make_zero_boundary_constraints(dof_handler, dirichlet_boundary_ids);
-
     for (unsigned int level = 0; level < n_levels; ++level){
 
       DynamicSparsityPattern dsp(dof_handler.n_dofs(level));
@@ -88,42 +73,9 @@ namespace MFSolver{
           mpi_communicator);
     }
     
-    
+    mg_constrained_dofs.initialize(dof_handler);
     mg_transfer.initialize_constraints(mg_constrained_dofs);
     mg_transfer.build(dof_handler);
-
-    /*
-    {
-        // Now repeat the matrix-free initialization for every single level of the multigrid hierarchy.
-        // We use 'float' instead of 'double' here to save memory bandwidth during the coarse grid iterations.
-        const unsigned int nlevels = triangulation.n_global_levels();
-        mg_matrices.resize(0, nlevels - 1);
-
-        std::set<types::boundary_id> dirichlet_boundary_ids;
-        for (const auto &[boundary_id, function] : this->problem.dirichlet_boundary_value)
-        {
-            dirichlet_boundary_ids.insert(boundary_id);
-        }
-
-        mg_constrained_dofs.initialize(dof_handler);
-        mg_constrained_dofs.make_zero_boundary_constraints(dof_handler, dirichlet_boundary_ids);
-
-        for (unsigned int level = 0; level < nlevels; ++level)
-        {
-            AffineConstraints<double> level_constraints(DoFTools::extract_locally_relevant_level_dofs(dof_handler, level));
-
-            for (const types::global_dof_index dof_index : mg_constrained_dofs.get_boundary_indices(level))
-            {
-                level_constraints.add_line(dof_index);
-            }
-
-            level_constraints.close();
-
-            mg_matrices[level].initialize(mg_mf_storage_level, mg_constrained_dofs, level);
-        }
-    }
-    */
-
   }
 
   template <int dim, int fe_degree>
@@ -305,13 +257,6 @@ namespace MFSolver{
           << " on " << Utilities::MPI::n_mpi_processes(mpi_communicator)
           << " MPI rank(s)..." << std::endl;
 
-    const unsigned int n_vect_doubles = dealii::VectorizedArray<double>::size();
-    const unsigned int n_vect_bits = 8 * sizeof(double) * n_vect_doubles;
-    pcout << "Vectorization over " << n_vect_doubles
-          << " doubles = " << n_vect_bits << " bits ("
-          << Utilities::System::get_current_vectorization_level() << ')'
-          << std::endl
-          << std::endl;
 
     setup_system ();
     pcout<<"Finished setup"<<std::endl;

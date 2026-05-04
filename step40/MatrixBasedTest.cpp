@@ -52,7 +52,7 @@ main (int argc, char* argv [ ]) {
     data.dirichlet_boundary_value = std::make_shared<ADR::ConstantRealFunction<2>>(0.0);
     data.neumann_boundary_value = std::make_shared<ADR::ConstantRealFunction<2>>(0.0);
     data.mesh_filename = "input.msh";
-    data.num_levels = 0;    // TODO: What is this?
+    data.num_levels = 1;    // TODO: What is this?
     data.lv0_smoothing_range = 1.e-3;
     data.lvgt0_smoothing_range = 15;
     data.lvgt0_smoothing_degree = 5;
