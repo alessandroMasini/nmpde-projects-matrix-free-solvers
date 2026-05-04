@@ -40,10 +40,10 @@ namespace MFSolver{
 
     pcout << "  Interpolating boundary values..." << std::endl;
     // Interpolate the Dirichlet (essential) boundary conditions from our ProblemData map
-    for (const auto &[boundary_id, function] : this->problem.dirichlet_boundaries)
+    for (const auto &[boundary_id, function] : this->problem.dirichlet_boundary_value)
     {
         // Interpolates the specific function onto the nodes belonging to boundary_id
-        VectorTools::interpolate_boundary_values(mapping, dof_handler, boundary_id, *function, constraints);
+        VectorTools::interpolate_boundary_values(dof_handler, boundary_id, *function, constraints);
     }
 
     constraints.close();
@@ -66,6 +66,15 @@ namespace MFSolver{
 
     mg_matrices.resize(0, n_levels - 1);
 
+    std::set<types::boundary_id> dirichlet_boundary_ids;
+    for (const auto &[boundary_id, function] : this->problem.dirichlet_boundary_value)
+    {
+        dirichlet_boundary_ids.insert(boundary_id);
+    }
+
+    mg_constrained_dofs.initialize(dof_handler);
+    mg_constrained_dofs.make_zero_boundary_constraints(dof_handler, dirichlet_boundary_ids);
+
     for (unsigned int level = 0; level < n_levels; ++level){
 
       DynamicSparsityPattern dsp(dof_handler.n_dofs(level));
@@ -79,9 +88,42 @@ namespace MFSolver{
           mpi_communicator);
     }
     
-    mg_constrained_dofs.initialize(dof_handler);
+    
     mg_transfer.initialize_constraints(mg_constrained_dofs);
     mg_transfer.build(dof_handler);
+
+    /*
+    {
+        // Now repeat the matrix-free initialization for every single level of the multigrid hierarchy.
+        // We use 'float' instead of 'double' here to save memory bandwidth during the coarse grid iterations.
+        const unsigned int nlevels = triangulation.n_global_levels();
+        mg_matrices.resize(0, nlevels - 1);
+
+        std::set<types::boundary_id> dirichlet_boundary_ids;
+        for (const auto &[boundary_id, function] : this->problem.dirichlet_boundary_value)
+        {
+            dirichlet_boundary_ids.insert(boundary_id);
+        }
+
+        mg_constrained_dofs.initialize(dof_handler);
+        mg_constrained_dofs.make_zero_boundary_constraints(dof_handler, dirichlet_boundary_ids);
+
+        for (unsigned int level = 0; level < nlevels; ++level)
+        {
+            AffineConstraints<double> level_constraints(DoFTools::extract_locally_relevant_level_dofs(dof_handler, level));
+
+            for (const types::global_dof_index dof_index : mg_constrained_dofs.get_boundary_indices(level))
+            {
+                level_constraints.add_line(dof_index);
+            }
+
+            level_constraints.close();
+
+            mg_matrices[level].initialize(mg_mf_storage_level, mg_constrained_dofs, level);
+        }
+    }
+    */
+
   }
 
   template <int dim, int fe_degree>
