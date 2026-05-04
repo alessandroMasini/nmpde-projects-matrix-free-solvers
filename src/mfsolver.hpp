@@ -106,41 +106,6 @@ namespace MFSolver
     using DVector = LinearAlgebra::distributed::Vector<T>;
 
     /**
-     * \brief Represents a function that describes a Dirichlet boundary condition.
-     * \tparam dim The dimensionality of the space the ADR problem is living in.
-     */
-    template <int dim>
-    using DirichletBoundary = RealFunction<dim>;
-
-    /**
-     * \brief Represents a function tht describes a Neumann boundary condition.
-     * \tparam dim The dimensionality of the space the ADR problem is living in.
-     */
-    template <int dim>
-    using NeumannBoundary = RealFunction<dim>;
-
-    /**
-     * \brief Represents a mapping between boundaries (identified by boundary IDs) and the corresponding boundary condition.
-     * \tparam T The type of boundary condition.
-     */
-    template <typename T>
-    using Boundaries = std::unordered_map<types::boundary_id, T>;
-
-    /**
-     * \brief Represents a mapping between boundaries (represented by boundary IDs) and the corresponding Dirichlet boundary condition.
-     * \tparam dim The dimensionality of the space the ADR problem is living in.
-     */
-    template <int dim>
-    using DirichletBoundaries = Boundaries<DirichletBoundary<dim>>;
-
-    /**
-     * \brief Represents a mapping between boundaries (represented by boundary IDs) and the corresponding Neumann boundary condition.
-     * \tparam dim The dimensionality of the space the ADR problem is living in.
-     */
-    template <int dim>
-    using NeumannBoundaries = Boundaries<NeumannBoundary<dim>>;
-
-    /**
      * \brief Represents a range of cells.
      */
     using Range = std::pair<unsigned int, unsigned int>;
@@ -500,6 +465,7 @@ namespace MFSolver
                     parallel::distributed::Triangulation<dim>::construct_multigrid_hierarchy),
         fe(fe_degree),
         dof_handler(triangulation),
+        mapping(),
         pcout(std::cout,
             (Utilities::MPI::this_mpi_process(mpi_communicator) == 0)),
         computing_timer(mpi_communicator,
@@ -523,6 +489,7 @@ namespace MFSolver
     
         const FE_Q<dim> fe;
         DoFHandler<dim> dof_handler;
+        const MappingQ1<dim, dim> mapping;
     
         IndexSet locally_owned_dofs;
         IndexSet locally_relevant_dofs;

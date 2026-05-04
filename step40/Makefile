@@ -57,10 +57,10 @@ RM = /u/sw/toolchains/gcc-glibc/11.2.0/base/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers
+CMAKE_SOURCE_DIR = /home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/step40
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers
+CMAKE_BINARY_DIR = /home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/step40
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -87,9 +87,9 @@ rebuild_cache/fast: rebuild_cache
 
 # The main all target
 all: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/CMakeFiles /home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers//CMakeFiles/progress.marks
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/step40/CMakeFiles /home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/step40//CMakeFiles/progress.marks
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/step40/CMakeFiles 0
 .PHONY : all
 
 # The main clean target
@@ -129,29 +129,29 @@ MatrixBasedTest/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/MatrixBasedTest.dir/build.make CMakeFiles/MatrixBasedTest.dir/build
 .PHONY : MatrixBasedTest/fast
 
-src/MatrixBasedTest.o: src/MatrixBasedTest.cpp.o
-.PHONY : src/MatrixBasedTest.o
+MatrixBasedTest.o: MatrixBasedTest.cpp.o
+.PHONY : MatrixBasedTest.o
 
 # target to build an object file
-src/MatrixBasedTest.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/MatrixBasedTest.dir/build.make CMakeFiles/MatrixBasedTest.dir/src/MatrixBasedTest.cpp.o
-.PHONY : src/MatrixBasedTest.cpp.o
+MatrixBasedTest.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/MatrixBasedTest.dir/build.make CMakeFiles/MatrixBasedTest.dir/MatrixBasedTest.cpp.o
+.PHONY : MatrixBasedTest.cpp.o
 
-src/MatrixBasedTest.i: src/MatrixBasedTest.cpp.i
-.PHONY : src/MatrixBasedTest.i
+MatrixBasedTest.i: MatrixBasedTest.cpp.i
+.PHONY : MatrixBasedTest.i
 
 # target to preprocess a source file
-src/MatrixBasedTest.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/MatrixBasedTest.dir/build.make CMakeFiles/MatrixBasedTest.dir/src/MatrixBasedTest.cpp.i
-.PHONY : src/MatrixBasedTest.cpp.i
+MatrixBasedTest.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/MatrixBasedTest.dir/build.make CMakeFiles/MatrixBasedTest.dir/MatrixBasedTest.cpp.i
+.PHONY : MatrixBasedTest.cpp.i
 
-src/MatrixBasedTest.s: src/MatrixBasedTest.cpp.s
-.PHONY : src/MatrixBasedTest.s
+MatrixBasedTest.s: MatrixBasedTest.cpp.s
+.PHONY : MatrixBasedTest.s
 
 # target to generate assembly for a file
-src/MatrixBasedTest.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/MatrixBasedTest.dir/build.make CMakeFiles/MatrixBasedTest.dir/src/MatrixBasedTest.cpp.s
-.PHONY : src/MatrixBasedTest.cpp.s
+MatrixBasedTest.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/MatrixBasedTest.dir/build.make CMakeFiles/MatrixBasedTest.dir/MatrixBasedTest.cpp.s
+.PHONY : MatrixBasedTest.cpp.s
 
 # Help Target
 help:
@@ -162,9 +162,9 @@ help:
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
 	@echo "... MatrixBasedTest"
-	@echo "... src/MatrixBasedTest.o"
-	@echo "... src/MatrixBasedTest.i"
-	@echo "... src/MatrixBasedTest.s"
+	@echo "... MatrixBasedTest.o"
+	@echo "... MatrixBasedTest.i"
+	@echo "... MatrixBasedTest.s"
 .PHONY : help
 
 

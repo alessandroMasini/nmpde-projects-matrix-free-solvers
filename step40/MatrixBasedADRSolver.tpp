@@ -31,15 +31,20 @@ namespace MFSolver{
                                      mpi_communicator);
     system_rhs.reinit(locally_owned_dofs, mpi_communicator);
  
+    pcout << "  Initialize constraints..." << std::endl;
+    // Handle hanging nodes (created by adaptive h-refinement) to ensure solution continuity
     constraints.clear();
-    constraints.reinit(locally_relevant_dofs);
+    constraints.reinit(DoFTools::extract_locally_relevant_dofs(dof_handler));
     DoFTools::make_hanging_node_constraints(dof_handler, constraints);
 
-    // TODO: use actual boundary values
-    VectorTools::interpolate_boundary_values(dof_handler,
-                                             0,
-                                             *(this->problem.dirichlet_boundary_value),
-                                             constraints);
+    pcout << "  Interpolating boundary values..." << std::endl;
+    // Interpolate the Dirichlet (essential) boundary conditions from our ProblemData map
+    for (const auto &[boundary_id, function] : this->problem.dirichlet_boundaries)
+    {
+        // Interpolates the specific function onto the nodes belonging to boundary_id
+        VectorTools::interpolate_boundary_values(mapping, dof_handler, boundary_id, *function, constraints);
+    }
+
     constraints.close();
  
     DynamicSparsityPattern dsp(locally_relevant_dofs);
