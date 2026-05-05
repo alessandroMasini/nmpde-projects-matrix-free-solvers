@@ -10,6 +10,27 @@ namespace MFSolver{
     system_rhs.clear();
 
     GridGenerator::hyper_cube(triangulation);
+
+    for (auto &cell : triangulation.active_cell_iterators())
+    {
+      for (unsigned int f = 0; f < GeometryInfo<dim>::faces_per_cell; ++f)
+      {
+        if (!cell->face(f)->at_boundary())
+          continue;
+
+        const auto p = cell->face(f)->center();
+
+        if (std::abs(p[0] - 0.0) < 1e-12)
+          cell->face(f)->set_boundary_id(0);
+        else if (std::abs(p[0] - 1.0) < 1e-12)
+          cell->face(f)->set_boundary_id(1);
+        else if (std::abs(p[1] - 0.0) < 1e-12)
+          cell->face(f)->set_boundary_id(2);
+        else if (std::abs(p[1] - 1.0) < 1e-12)
+          cell->face(f)->set_boundary_id(3);
+      }
+    }
+
     triangulation.refine_global(5);
     
     dof_handler.distribute_dofs(fe);
@@ -31,18 +52,16 @@ namespace MFSolver{
                                      mpi_communicator);
     system_rhs.reinit(locally_owned_dofs, mpi_communicator);
  
-    pcout << "  Initialize constraints..." << std::endl;
     // Handle hanging nodes (created by adaptive h-refinement) to ensure solution continuity
     constraints.clear();
     constraints.reinit(DoFTools::extract_locally_relevant_dofs(dof_handler));
     DoFTools::make_hanging_node_constraints(dof_handler, constraints);
 
-    pcout << "  Interpolating boundary values..." << std::endl;
     // Interpolate the Dirichlet (essential) boundary conditions from our ProblemData map
     for (const auto &[boundary_id, function] : this->problem.dirichlet_boundaries)
     {
-        // Interpolates the specific function onto the nodes belonging to boundary_id
-        VectorTools::interpolate_boundary_values(mapping, dof_handler, boundary_id, *function, constraints);
+      // Interpolates the specific function onto the nodes belonging to boundary_id
+      VectorTools::interpolate_boundary_values(mapping, dof_handler, boundary_id, *function, constraints);
     }
 
     constraints.close();

@@ -551,7 +551,7 @@ namespace ADR
         static ProblemData<dim, fe_degree> standard_test_case()
         {
             MFSolver::DirichletBoundaries<dim> dirichlet_boundaries;
-            for (int i = 0; i < 5; i++)
+            for (int i = 0; i < 4; i++)
                 dirichlet_boundaries[i] = std::make_shared<ConstantRealFunction<dim>>(static_cast<double>(i));
 
             MFSolver::NeumannBoundaries<dim> neumann_boundaries;

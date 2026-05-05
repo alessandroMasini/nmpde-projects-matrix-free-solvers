@@ -1,3 +1,0 @@
-/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/step40/CMakeFiles/MatrixBasedTest.dir
-/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/step40/CMakeFiles/edit_cache.dir
-/home/pachy/Desktop/HPCE/nmpde-projects-matrix-free-solvers/step40/CMakeFiles/rebuild_cache.dir
