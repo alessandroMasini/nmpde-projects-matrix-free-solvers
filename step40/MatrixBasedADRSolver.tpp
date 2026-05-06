@@ -20,14 +20,16 @@ namespace MFSolver{
 
         const auto p = cell->face(f)->center();
 
-        if (std::abs(p[0] - 0.0) < 1e-12)
-          cell->face(f)->set_boundary_id(0);
-        else if (std::abs(p[0] - 1.0) < 1e-12)
-          cell->face(f)->set_boundary_id(1);
-        else if (std::abs(p[1] - 0.0) < 1e-12)
-          cell->face(f)->set_boundary_id(2);
-        else if (std::abs(p[1] - 1.0) < 1e-12)
-          cell->face(f)->set_boundary_id(3);
+        for(int i = 0, j = 0; i<dim; ++i, j = j+2){
+          if (std::abs(p[i] - 0.0) < 1e-12){
+            cell->face(f)->set_boundary_id(j);
+            break;
+          }
+          if (std::abs(p[i] - 1.0) < 1e-12){
+            cell->face(f)->set_boundary_id(j+1);
+            break;
+          }
+        }
       }
     }
 
