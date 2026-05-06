@@ -109,11 +109,18 @@ namespace MFSolver{
     TimerOutput::Scope t(computing_timer, "assembly");
  
     const QGauss<dim> quadrature_formula(this->problem.num_quadrature_points);
+    const QGauss<dim-1> quadrature_boundary(this->problem.num_quadrature_points);
  
     FEValues<dim> fe_values(fe,
                             quadrature_formula,
                             update_values | update_gradients |
-                              update_quadrature_points | update_JxW_values);
+                             update_quadrature_points | update_JxW_values);
+    
+    FEFaceValues<dim> fe_values_boundary(fe,
+                                     quadrature_boundary,
+                                     update_values |
+                                      update_quadrature_points | update_JxW_values);
+
  
     const unsigned int dofs_per_cell = fe.n_dofs_per_cell();
     const unsigned int n_q_points    = quadrature_formula.size();
@@ -130,7 +137,7 @@ namespace MFSolver{
     double f_loc;
       
     // TODO: implement ADR with actual functions
-    for (const auto &cell : dof_handler.active_cell_iterators())
+    for (const auto &cell : dof_handler.active_cell_iterators()){
       if (cell->is_locally_owned())
         {
           fe_values.reinit(cell);
@@ -173,19 +180,46 @@ namespace MFSolver{
             fe_values.JxW (q);
         }
       }
-            
-          // TODO: apply b.c.
-          cell->get_dof_indices(local_dof_indices);
-          constraints.distribute_local_to_global(cell_matrix,
-                                                 cell_rhs,
-                                                 local_dof_indices,
-                                                 system_matrix,
-                                                 system_rhs);
 
-          constraints.distribute_local_to_global(cell_matrix,
-                                                 local_dof_indices,
-                                                 mg_matrices[cell->level()]);
+      //Neumann
+      for(unsigned int f = 0; f < GeometryInfo<dim>::faces_per_cell; ++f){
+        if(!cell->face(f)->at_boundary())
+          continue;
+
+        const auto boundary_id = cell->face(f)->boundary_id();
+        auto it = this->problem.neumann_boundaries.find(boundary_id);
+        if(it == this->problem.neumann_boundaries.end())
+          continue;
+
+        const auto &function = it->second;
+
+        fe_values_boundary.reinit(cell, f);
+        
+        for(unsigned int q = 0; q < quadrature_boundary.size(); ++q){
+          const double g = function->value(fe_values_boundary.quadrature_point(q));
+          for(unsigned int i = 0; i < dofs_per_cell; ++i){
+            cell_rhs(i) += g * 
+              fe_values_boundary.shape_value (i, q) *
+              fe_values_boundary.JxW (q);
+          }
         }
+      }
+
+            
+      
+      cell->get_dof_indices(local_dof_indices);
+      constraints.distribute_local_to_global(cell_matrix,
+                                              cell_rhs,
+                                              local_dof_indices,
+                                              system_matrix,
+                                              system_rhs);
+
+      constraints.distribute_local_to_global(cell_matrix,
+                                              local_dof_indices,
+                                              mg_matrices[cell->level()]);
+      }
+    }
+
 
  
     system_matrix.compress(VectorOperation::add);
@@ -210,7 +244,7 @@ namespace MFSolver{
     mg_smoother.set_steps(2);
 
     // Coarse grid solver and preconditioner
-    SolverControl coarse_control(1000, 1e-12);
+    SolverControl coarse_control(1000, 1e-8);
     PETScWrappers::SolverCG coarse_solver(coarse_control, mpi_communicator);
 
     PETScWrappers::PreconditionJacobi coarse_prec;

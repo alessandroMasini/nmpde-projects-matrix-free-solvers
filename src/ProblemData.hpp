@@ -719,8 +719,8 @@ namespace ADR
                 .lvgt0_smoothing_degree = 5,
                 .lvgt0_smoothing_eigenvalue_max_iterations = 10,
 
-                .solver_max_iterations = 100,
-                .solver_tolerance_factor = 1e-12,
+                .solver_max_iterations = 1000,
+                .solver_tolerance_factor = 1e-10,
 
                 .mu = std::make_shared<ConstantRealFunction<dim>>(1.0),
                 .beta = std::make_shared<ConstantVectorFunctionWithGradient<dim>>(0.0),

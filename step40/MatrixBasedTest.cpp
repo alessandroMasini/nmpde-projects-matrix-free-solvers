@@ -77,10 +77,10 @@ int main(int argc, char **argv)
     // ADR::ProblemData<3, 2> data = ADR::ProblemData<3, 2>::test_case_neumann_fix();
     // ADR::ProblemData<3, 2> data = ADR::ProblemData<3, 2>::test_case_parabolic();
 
-    // ADR::ProblemData<2, 2> data = ADR::ProblemData<2, 2>::lab_02_poisson();
+    ADR::ProblemData<2, 2> data = ADR::ProblemData<2, 2>::lab_02_poisson();
     // ADR::ProblemData<3, 2> data = ADR::ProblemData<3, 2>::lab_03_dr_eq();
 
-    ADR::ProblemData<2, 2> data = ADR::ProblemData<2, 2>::standard_test_case();
+    //ADR::ProblemData<2, 2> data = ADR::ProblemData<2, 2>::standard_test_case();
     MFSolver::MatrixBasedADRSolver<2, 2> solver(data);
 
     solver.run();
