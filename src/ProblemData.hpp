@@ -337,6 +337,37 @@ namespace ADR
         }
     };
 
+    template <int dim>
+    class GaussianFunction : public MFSolver::RealFunction<dim>
+    {
+    public:
+        virtual double value(const dealii::Point<dim> &p, const unsigned int component = 0) const override
+        {
+            return do_compute_value<double>(p);
+        }
+
+        virtual dealii::VectorizedArray<float> value(const dealii::Point<dim, dealii::VectorizedArray<float>> &p, const unsigned int component = 0) const override
+        {
+            return do_compute_value<dealii::VectorizedArray<float>>(p);
+        }
+
+        virtual dealii::VectorizedArray<double> value(const dealii::Point<dim, dealii::VectorizedArray<double>> &p, const unsigned int component = 0) const override
+        {
+            return do_compute_value<dealii::VectorizedArray<double>>(p);
+        }
+
+    private:
+        template <typename Number>
+        Number do_compute_value(const dealii::Point<dim, Number> &p) const
+        {
+            Number r2 = (p[0] - 0.2) * (p[0] - 0.2) + (p[1] - 0.2) * (p[1] - 0.2);
+            if constexpr (dim > 2)
+                r2 += (p[2] - 0.2) * (p[2] - 0.2);
+            
+            return std::exp(-75.0 * r2);
+        }
+    };
+
     /**
      * @brief A common structure to hold the algebraic and analytical data
      * required defining the Advection-Diffusion-Reaction (ADR) problem.
@@ -375,7 +406,11 @@ namespace ADR
         std::shared_ptr<MFSolver::RealFunction<dim>> gamma;              /**< Reaction coefficient function: gamma(x) (or k in some notations) */
 
         std::shared_ptr<MFSolver::RealFunction<dim>> forcing_term; /**< Forcing term: f(x) */
-
+        // --- Time Dependency Parameters ---
+        bool is_time_dependent = false; /**< Flag to explicitly mark this problem as unsteady/transient. */
+        double delta_t = 0.0;           /**< The size of the time step. */
+        double end_time = 0.0;          /**< The final simulation time. */
+        std::shared_ptr<MFSolver::RealFunction<dim>> initial_condition; /**< u(x, t=0): The initial state of the domain. */
         MFSolver::DirichletBoundaries<dim> dirichlet_boundaries; /**< Dirichlet boundaries. */
         MFSolver::NeumannBoundaries<dim> neumann_boundaries;     /**< Neumann boundaries. */
 
@@ -524,6 +559,50 @@ namespace ADR
 
                 // We heat the whole domain up uniformly with a forcing term of 6.0
                 .forcing_term = std::make_shared<ConstantRealFunction<dim>>(6.0),
+                .is_time_dependent = true,
+                .delta_t = 0.01,
+                .end_time = 1.0,
+                .initial_condition = std::make_shared<ConstantRealFunction<dim>>(0.0),
+                .dirichlet_boundaries = dirichlet_boundaries,
+                .neumann_boundaries = neumann_boundaries,
+            };
+            return data;
+        }
+
+        static ProblemData<dim, fe_degree> test_case_comprehensive_transient()
+        {
+            // We want to test EVERYTHING: Diffusion, Advection, Reaction, mixed boundaries, and Time.
+            MFSolver::DirichletBoundaries<dim> dirichlet_boundaries;
+            dirichlet_boundaries[0] = std::make_shared<ConstantRealFunction<dim>>(0.0); // Allow it to "fade out" when hitting left boundary
+            dirichlet_boundaries[1] = std::make_shared<ConstantRealFunction<dim>>(0.0); // and right boundary
+            dirichlet_boundaries[2] = std::make_shared<ConstantRealFunction<dim>>(0.0); // bottom boundary
+            dirichlet_boundaries[3] = std::make_shared<ConstantRealFunction<dim>>(0.0); // top boundary
+
+            MFSolver::NeumannBoundaries<dim> neumann_boundaries;
+            neumann_boundaries[4] = std::make_shared<ConstantRealFunction<dim>>(0.0); // Front - zero flux
+            neumann_boundaries[5] = std::make_shared<ConstantRealFunction<dim>>(0.0); // Back - zero flux
+
+            ProblemData<dim, fe_degree> data{
+                .mesh_filename = "input.msh",
+                .num_levels = 5,
+                .num_quadrature_points = fe_degree + 1,
+                .lv0_smoothing_range = 1.e-3,
+                .lvgt0_smoothing_range = 15,
+                .lvgt0_smoothing_degree = 5,
+                .lvgt0_smoothing_eigenvalue_max_iterations = 10,
+                .solver_max_iterations = 100,
+                .solver_tolerance_factor = 1e-12,
+
+                // --- Stress Test the Physics Setup ---
+                .mu = std::make_shared<ConstantRealFunction<dim>>(0.02), // Small diffusion so the initial blob spreads slowly
+                .beta = std::make_shared<ConstantVectorFunctionWithGradient<dim>>(0.8), // Advection pushes the blob diagonally! (0.8, 0.8, 0.8)
+                .gamma = std::make_shared<ConstantRealFunction<dim>>(0.5), // Reaction decays the solution gradually over time
+                
+                .forcing_term = std::make_shared<ConstantRealFunction<dim>>(0.0), // No external source, just the drifting blob
+                .is_time_dependent = true,
+                .delta_t = 0.005,
+                .end_time = 0.5,
+                .initial_condition = std::make_shared<GaussianFunction<dim>>(), // Initial state: A hot sphere at corner (0.2, 0.2, 0.2)
                 .dirichlet_boundaries = dirichlet_boundaries,
                 .neumann_boundaries = neumann_boundaries,
             };
