@@ -81,6 +81,7 @@ namespace MFSolver
             }
 
             system_matrix.initialize_dof_vector(solution);
+            system_matrix.initialize_dof_vector(old_solution);
             system_matrix.initialize_dof_vector(system_rhs);
         }
 
@@ -136,12 +137,14 @@ namespace MFSolver
     {
         Timer timer;
 
+        system_matrix.set_time_step(this->problem.is_time_dependent ? this->problem.delta_t : 0.0);
         system_matrix.evaluate_coefficients(*(this->problem.mu), *(this->problem.beta), *(this->problem.gamma));
         system_matrix.compute_diagonal();
 
         const unsigned int nlevels = triangulation.n_global_levels();
         for (unsigned int level = 0; level < nlevels; ++level)
         {
+            mg_matrices[level].set_time_step(this->problem.is_time_dependent ? this->problem.delta_t : 0.0);
             mg_matrices[level].evaluate_coefficients(*(this->problem.mu), *(this->problem.beta), *(this->problem.gamma));
             mg_matrices[level].compute_diagonal();
         }
@@ -170,10 +173,23 @@ namespace MFSolver
         for (unsigned int cell = 0; cell < inhomogeneous_operator.get_matrix_free()->n_cell_batches(); ++cell)
         {
             phi.reinit(cell);
+            
+            if (this->problem.is_time_dependent && this->problem.delta_t > 0.0)
+            {
+                phi.read_dof_values(old_solution);
+                phi.evaluate(EvaluationFlags::values);
+            }
+
             for (const unsigned int q : phi.quadrature_point_indices())
             {
                 Point<dim, VectorizedArray<double>> quadrature_point = phi.quadrature_point(q);
                 VectorizedArray<double> value_of_f = this->problem.forcing_term->value(quadrature_point);
+
+                if (this->problem.is_time_dependent && this->problem.delta_t > 0.0)
+                {
+                    value_of_f += phi.get_value(q) / this->problem.delta_t;
+                }
+
                 phi.submit_value(value_of_f, q);
             }
             phi.integrate(EvaluationFlags::values);
@@ -334,24 +350,58 @@ namespace MFSolver
         GridGenerator::hyper_cube(triangulation, 0., 1., true); // `true` colorizes the boundaries: 0=left, 1=right, 2=bottom, 3=top, 4=back, 5=front
         triangulation.refine_global(4 - dim);
 
-        for (unsigned int cycle = 0; cycle < 3; ++cycle) // let's do 3 cycles for the test
+        if (this->problem.is_time_dependent)
         {
-            pcout << "Cycle " << cycle << std::endl;
-            if (cycle > 0)
-                triangulation.refine_global(1);
-
+            pcout << "--- Time-Dependent Simulation ---" << std::endl;
+            triangulation.refine_global(2); // refine it a bit for the simulation
             setup_system();
 
-            pcout << "   Assembling..." << std::endl;
-            assemble();
+            if (this->problem.initial_condition != nullptr) {
+                VectorTools::interpolate(dof_handler, *(this->problem.initial_condition), old_solution);
+            } else {
+                old_solution = 0;
+            }
+            solution = old_solution;
 
-            pcout << "   Solving..." << std::endl;
-            solve();
+            unsigned int timestep_number = 0;
+            for (double time = 0.0; time <= this->problem.end_time; time += this->problem.delta_t, ++timestep_number)
+            {
+                pcout << "\nTime step " << timestep_number << " at t = " << time << std::endl;
 
-            pcout << "   Outputting results..." << std::endl;
-            output_results();
+                pcout << "   Assembling..." << std::endl;
+                assemble();
 
+                pcout << "   Solving..." << std::endl;
+                solve();
+
+                pcout << "   Outputting results..." << std::endl;
+                output_results();
+
+                old_solution = solution;
+            }
             pcout << "===========================================" << std::endl;
+        }
+        else
+        {
+            for (unsigned int cycle = 0; cycle < 3; ++cycle) // let's do 3 cycles for the test
+            {
+                pcout << "Cycle " << cycle << std::endl;
+                if (cycle > 0)
+                    triangulation.refine_global(1);
+
+                setup_system();
+
+                pcout << "   Assembling..." << std::endl;
+                assemble();
+
+                pcout << "   Solving..." << std::endl;
+                solve();
+
+                pcout << "   Outputting results..." << std::endl;
+                output_results();
+
+                pcout << "===========================================" << std::endl;
+            }
         }
     }
 }

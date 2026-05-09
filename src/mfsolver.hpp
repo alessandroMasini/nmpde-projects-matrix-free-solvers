@@ -128,8 +128,16 @@ namespace MFSolver
         /**
          * \brief Constructs a new instance of ADROperator.
          */
-        ADROperator() : Super()
+        ADROperator() : Super(), delta_t(0.0)
         {
+        }
+
+        /**
+         * \brief Sets the time step size for transient problems.
+         */
+        void set_time_step(double dt)
+        {
+            delta_t = dt;
         }
 
         /**
@@ -243,8 +251,10 @@ namespace MFSolver
                 VectorizedArray<Number> div_beta = div_beta_coeff(cell, q);
                 VectorizedArray<Number> gamma = gamma_coeff(cell, q);
 
+                VectorizedArray<Number> mass_term_coeff = make_vectorized_array<Number>(delta_t > 0.0 ? 1.0 / delta_t : 0.0);
+
                 phi.submit_gradient(mu * gradient_of_u, q);
-                phi.submit_value(scalar_product(gradient_of_u, beta) + (div_beta + gamma) * value_of_u, q);
+                phi.submit_value(scalar_product(gradient_of_u, beta) + (div_beta + gamma + mass_term_coeff) * value_of_u, q);
             }
 
             phi.integrate(EvaluationFlags::values | EvaluationFlags::gradients);
@@ -302,6 +312,11 @@ namespace MFSolver
         {
             this->data->cell_loop(&ADROperator::local_apply, this, dst, src);
         }
+
+        /**
+         * \brief The time step size. If > 0, the operator shifts from steady-state to time-dependent (adds Mass Matrix component).
+         */
+        double delta_t;
 
         /**
          * \brief Cache used to store precomputed values for the diffusion coefficient.
@@ -387,6 +402,7 @@ namespace MFSolver
         MGLevelObject<LevelMatrixType> mg_matrices;
 
         DVector<double> solution;
+        DVector<double> old_solution;
         DVector<double> system_rhs;
 
         double setup_time;
