@@ -1,169 +1,3 @@
-// 
-// #ifndef PROBLEMDATA_HPP
-// #define PROBLEMDATA_HPP
-
-// // #include <memory>
-
-// // #include <deal.II/base/tensor_function.h>
-// // #include <deal.II/base/function.h>
-
-// #include "function_types.hpp"
-
-// namespace ADR
-// {
-
-//     template <int dim>
-//     class ConstantRealFunction : public MFSolver::RealFunction<dim>
-//     {
-//     private:
-//         double val;
-
-//     public:
-//         ConstantRealFunction(double v) : val(v) {}
-
-//         virtual double value(const dealii::Point<dim> &p, const unsigned int component = 0) const override
-//         {
-//             return value<double>(p, component);
-//         }
-
-//         template <typename Number>
-//         Number value(const dealii::Point<dim, Number> & /*p*/, const unsigned int /*component*/ = 0) const
-//         {
-//             return Number(val);
-//         }
-//     };
-
-//     template <int dim>
-//     class ConstantVectorFunctionWithGradient : public MFSolver::VectorFunctionWithGradient<dim>
-//     {
-//     private:
-//         double val;
-
-//     public:
-//         using Super = typename MFSolver::VectorFunctionWithGradient<dim>;
-
-//         ConstantVectorFunctionWithGradient(double v) : val(v) {}
-
-//         virtual typename Super::template value_type<double> value(const dealii::Point<dim> &p) const override
-//         {
-//             return value<double>(p);
-//         }
-
-//         template <typename Number>
-//         typename Super::template value_type<Number> value(const dealii::Point<dim, Number> & /*p*/) const
-//         {
-//             dealii::Tensor<1, dim, Number> b;
-//             for (unsigned int d = 0; d < dim; ++d)
-//                 b[d] = Number(val);
-//             return b;
-//         }
-
-//         virtual double divergence(const dealii::Point<dim> &p) const override
-//         {
-//             return divergence<double>(p);
-//         }
-
-//         template <typename Number>
-//         Number divergence(const dealii::Point<dim, Number> & /*p*/) const
-//         {
-//             return Number(0.0);
-//         }
-
-//         virtual typename Super::template gradient_type<double> gradient(const dealii::Point<dim> &p) const override
-//         {
-//             return gradient<double>(p);
-//         }
-
-//         template <typename Number>
-//         typename Super::template gradient_type<Number> gradient(const dealii::Point<dim, Number> & /*p*/) const
-//         {
-//             return typename Super::template gradient_type<Number>();
-//         }
-//     };
-
-//     /**
-//      * @brief A common structure to hold the algebraic and analytical data
-//      * required defining the Advection-Diffusion-Reaction (ADR) problem.
-//      *
-//      * This ensures that both the Matrix-Based and Matrix-Free solvers
-//      * solve the exact same mathematical problem.
-//      */
-//     template <int dim, int fe_degree>
-//     struct ProblemData
-//     {
-//         std::string mesh_filename; /**< Filename from which to load the mesh. */
-
-//         unsigned int num_levels; /**< Number of multigrid levels in the V-cycle. */
-
-//         // TODO: is this actually used?
-//         unsigned int num_quadrature_points; /**< Number of quadrature points. */
-
-//         double lv0_smoothing_range; /**< The range between the largest and the smaller eigenvalue for the lower level of the multigrid V-Cycle. */
-//         // double lv0_smoothing_degree; // Unset as we use invalid int to make this a solver instead of a preconditioner. See PreconditionChebyshev documentation
-//         // double lv0_smoothing_eigenvalue_max_iterations; // Unset as we use the number of rows of the lowest level matrix in muligrid V-Cycle
-
-//         double lvgt0_smoothing_range;                     /**< The range between the largest and the smaller eigenvalue for all but the lower level of the multigrid V-Cycle. */
-//         double lvgt0_smoothing_degree;                    /**< The number of smoothing iterations for all but the lower level of the multigrid V-Cycle. */
-//         double lvgt0_smoothing_eigenvalue_max_iterations; /**< The maximum number of iterations used to find the maximum eigenvalue forall but the lower level of the multigrid V-Cycle. */
-
-//         unsigned int solver_max_iterations; /**< Maximum number of iterations when solving the algebraic system. */
-//         double solver_tolerance_factor;     /**< Factor to multiply to the l2 norm of the rhs of the algebraic system in order to get the absolute tolerance. */
-
-//         // TODO: where is this used???
-//         unsigned int refinement_coefficient_per_level = 1; /**< Mesh refinement level (if generating a hyper_cube/hyper_ball) */
-
-//         // Number of elements in each direction (if using a subdivision)
-//         // unsigned int elements_per_direction = 10;
-
-//         // --- PDE Coefficients ---
-
-//         std::shared_ptr<MFSolver::RealFunction<dim>> mu;                 /**< Diffusion coefficient function: mu(x) */
-//         std::shared_ptr<MFSolver::VectorFunctionWithGradient<dim>> beta; /**< Advection coefficient function: beta(x) (velocity field) */
-//         std::shared_ptr<MFSolver::RealFunction<dim>> gamma;              /**< Reaction coefficient function: gamma(x) (or k in some notations) */
-
-//         std::shared_ptr<MFSolver::RealFunction<dim>> forcing_term; /**< Forcing term: f(x) */
-
-//         std::shared_ptr<MFSolver::RealFunction<dim>> dirichlet_boundary_value; /**< Dirichlet boundary condition: g(x) for the general lifting */
-//         std::shared_ptr<MFSolver::RealFunction<dim>> neumann_boundary_value;   /**< Neumann boundary conditions: h(g) */
-
-//         /**
-//          * @brief Helper to initialize with some default test-case values
-//          */
-//         static ProblemData<dim, fe_degree> standard_test_case()
-//         {
-//             ProblemData<dim, fe_degree> data;
-
-//             // data.fe_degree = 1;
-//             // data.refinement_level = 5;
-
-//             data.mu = std::make_shared<ConstantRealFunction<dim>>(1.0);
-//             data.beta = std::make_shared<ConstantVectorFunctionWithGradient<dim>>(1.0);
-//             data.gamma = std::make_shared<ConstantRealFunction<dim>>(0.0);
-//             data.forcing_term = std::make_shared<ConstantRealFunction<dim>>(1.0);
-//             data.dirichlet_boundary_value = std::make_shared<ConstantRealFunction<dim>>(0.0);
-
-//             data.mesh_filename = "input.msh";
-//             data.num_levels = 5;
-//             data.num_quadrature_points = 3;
-
-//             data.lv0_smoothing_range = 1.e-3;
-
-//             data.lvgt0_smoothing_range = 15;
-//             data.lvgt0_smoothing_degree = 5;
-//             data.lvgt0_smoothing_eigenvalue_max_iterations = 10;
-
-//             data.solver_max_iterations = 100;
-//             data.solver_tolerance_factor = 1e-12;
-
-//             return data;
-//         }
-//     };
-
-// } // namespace ADR
-
-// #endif // PROBLEMDATA_HPP
-
-
 #ifndef PROBLEMDATA_HPP
 #define PROBLEMDATA_HPP
 
@@ -503,6 +337,37 @@ namespace ADR
         }
     };
 
+    template <int dim>
+    class GaussianFunction : public MFSolver::RealFunction<dim>
+    {
+    public:
+        virtual double value(const dealii::Point<dim> &p, const unsigned int component = 0) const override
+        {
+            return do_compute_value<double>(p);
+        }
+
+        virtual dealii::VectorizedArray<float> value(const dealii::Point<dim, dealii::VectorizedArray<float>> &p, const unsigned int component = 0) const override
+        {
+            return do_compute_value<dealii::VectorizedArray<float>>(p);
+        }
+
+        virtual dealii::VectorizedArray<double> value(const dealii::Point<dim, dealii::VectorizedArray<double>> &p, const unsigned int component = 0) const override
+        {
+            return do_compute_value<dealii::VectorizedArray<double>>(p);
+        }
+
+    private:
+        template <typename Number>
+        Number do_compute_value(const dealii::Point<dim, Number> &p) const
+        {
+            Number r2 = (p[0] - 0.2) * (p[0] - 0.2) + (p[1] - 0.2) * (p[1] - 0.2);
+            if constexpr (dim > 2)
+                r2 += (p[2] - 0.2) * (p[2] - 0.2);
+            
+            return std::exp(-75.0 * r2);
+        }
+    };
+
     /**
      * @brief A common structure to hold the algebraic and analytical data
      * required defining the Advection-Diffusion-Reaction (ADR) problem.
@@ -541,7 +406,11 @@ namespace ADR
         std::shared_ptr<MFSolver::RealFunction<dim>> gamma;              /**< Reaction coefficient function: gamma(x) (or k in some notations) */
 
         std::shared_ptr<MFSolver::RealFunction<dim>> forcing_term; /**< Forcing term: f(x) */
-
+        // --- Time Dependency Parameters ---
+        bool is_time_dependent = false; /**< Flag to explicitly mark this problem as unsteady/transient. */
+        double delta_t = 0.0;           /**< The size of the time step. */
+        double end_time = 0.0;          /**< The final simulation time. */
+        std::shared_ptr<MFSolver::RealFunction<dim>> initial_condition; /**< u(x, t=0): The initial state of the domain. */
         MFSolver::DirichletBoundaries<dim> dirichlet_boundaries; /**< Dirichlet boundaries. */
         MFSolver::NeumannBoundaries<dim> neumann_boundaries;     /**< Neumann boundaries. */
 
@@ -551,7 +420,7 @@ namespace ADR
         static ProblemData<dim, fe_degree> standard_test_case()
         {
             MFSolver::DirichletBoundaries<dim> dirichlet_boundaries;
-            for (int i = 0; i < 2 * dim; i++)
+            for (int i = 0; i < 5; i++)
                 dirichlet_boundaries[i] = std::make_shared<ConstantRealFunction<dim>>(static_cast<double>(i));
 
             MFSolver::NeumannBoundaries<dim> neumann_boundaries;
@@ -559,8 +428,7 @@ namespace ADR
 
             ProblemData<dim, fe_degree> data{
                 .mesh_filename = "input.msh",
-                // TODO: reset this to 5
-                .num_levels = 0,
+                .num_levels = 5,
 
                 .num_quadrature_points = fe_degree + 1,
 
@@ -570,7 +438,7 @@ namespace ADR
                 .lvgt0_smoothing_degree = 5,
                 .lvgt0_smoothing_eigenvalue_max_iterations = 10,
 
-                .solver_max_iterations = 1000,
+                .solver_max_iterations = 100,
                 .solver_tolerance_factor = 1e-12,
 
                 .mu = std::make_shared<ConstantRealFunction<dim>>(2.0),
@@ -691,6 +559,50 @@ namespace ADR
 
                 // We heat the whole domain up uniformly with a forcing term of 6.0
                 .forcing_term = std::make_shared<ConstantRealFunction<dim>>(6.0),
+                .is_time_dependent = true,
+                .delta_t = 0.01,
+                .end_time = 1.0,
+                .initial_condition = std::make_shared<ConstantRealFunction<dim>>(0.0),
+                .dirichlet_boundaries = dirichlet_boundaries,
+                .neumann_boundaries = neumann_boundaries,
+            };
+            return data;
+        }
+
+        static ProblemData<dim, fe_degree> test_case_comprehensive_transient()
+        {
+            // We want to test EVERYTHING: Diffusion, Advection, Reaction, mixed boundaries, and Time.
+            MFSolver::DirichletBoundaries<dim> dirichlet_boundaries;
+            dirichlet_boundaries[0] = std::make_shared<ConstantRealFunction<dim>>(0.0); // Allow it to "fade out" when hitting left boundary
+            dirichlet_boundaries[1] = std::make_shared<ConstantRealFunction<dim>>(0.0); // and right boundary
+            dirichlet_boundaries[2] = std::make_shared<ConstantRealFunction<dim>>(0.0); // bottom boundary
+            dirichlet_boundaries[3] = std::make_shared<ConstantRealFunction<dim>>(0.0); // top boundary
+
+            MFSolver::NeumannBoundaries<dim> neumann_boundaries;
+            neumann_boundaries[4] = std::make_shared<ConstantRealFunction<dim>>(0.0); // Front - zero flux
+            neumann_boundaries[5] = std::make_shared<ConstantRealFunction<dim>>(0.0); // Back - zero flux
+
+            ProblemData<dim, fe_degree> data{
+                .mesh_filename = "input.msh",
+                .num_levels = 5,
+                .num_quadrature_points = fe_degree + 1,
+                .lv0_smoothing_range = 1.e-3,
+                .lvgt0_smoothing_range = 15,
+                .lvgt0_smoothing_degree = 5,
+                .lvgt0_smoothing_eigenvalue_max_iterations = 10,
+                .solver_max_iterations = 100,
+                .solver_tolerance_factor = 1e-12,
+
+                // --- Stress Test the Physics Setup ---
+                .mu = std::make_shared<ConstantRealFunction<dim>>(0.02), // Small diffusion so the initial blob spreads slowly
+                .beta = std::make_shared<ConstantVectorFunctionWithGradient<dim>>(0.8), // Advection pushes the blob diagonally! (0.8, 0.8, 0.8)
+                .gamma = std::make_shared<ConstantRealFunction<dim>>(0.5), // Reaction decays the solution gradually over time
+                
+                .forcing_term = std::make_shared<ConstantRealFunction<dim>>(0.0), // No external source, just the drifting blob
+                .is_time_dependent = true,
+                .delta_t = 0.005,
+                .end_time = 0.5,
+                .initial_condition = std::make_shared<GaussianFunction<dim>>(), // Initial state: A hot sphere at corner (0.2, 0.2, 0.2)
                 .dirichlet_boundaries = dirichlet_boundaries,
                 .neumann_boundaries = neumann_boundaries,
             };
@@ -719,8 +631,8 @@ namespace ADR
                 .lvgt0_smoothing_degree = 5,
                 .lvgt0_smoothing_eigenvalue_max_iterations = 10,
 
-                .solver_max_iterations = 1000,
-                .solver_tolerance_factor = 1e-10,
+                .solver_max_iterations = 100,
+                .solver_tolerance_factor = 1e-12,
 
                 .mu = std::make_shared<ConstantRealFunction<dim>>(1.0),
                 .beta = std::make_shared<ConstantVectorFunctionWithGradient<dim>>(0.0),
