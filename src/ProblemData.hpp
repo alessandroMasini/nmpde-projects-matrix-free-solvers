@@ -420,7 +420,7 @@ namespace ADR
         static ProblemData<dim, fe_degree> standard_test_case()
         {
             MFSolver::DirichletBoundaries<dim> dirichlet_boundaries;
-            for (int i = 0; i < 5; i++)
+            for (int i = 0; i < 2*dim; i++)
                 dirichlet_boundaries[i] = std::make_shared<ConstantRealFunction<dim>>(static_cast<double>(i));
 
             MFSolver::NeumannBoundaries<dim> neumann_boundaries;
@@ -438,8 +438,8 @@ namespace ADR
                 .lvgt0_smoothing_degree = 5,
                 .lvgt0_smoothing_eigenvalue_max_iterations = 10,
 
-                .solver_max_iterations = 100,
-                .solver_tolerance_factor = 1e-12,
+                .solver_max_iterations = 1000,
+                .solver_tolerance_factor = 1e-10,
 
                 .mu = std::make_shared<ConstantRealFunction<dim>>(2.0),
                 .beta = std::make_shared<ConstantVectorFunctionWithGradient<dim>>(0.0),
@@ -550,8 +550,8 @@ namespace ADR
                 .lvgt0_smoothing_range = 15,
                 .lvgt0_smoothing_degree = 5,
                 .lvgt0_smoothing_eigenvalue_max_iterations = 10,
-                .solver_max_iterations = 100,
-                .solver_tolerance_factor = 1e-12,
+                .solver_max_iterations = 1000,
+                .solver_tolerance_factor = 1e-10,
 
                 .mu = std::make_shared<ConstantRealFunction<dim>>(1.0),
                 .beta = std::make_shared<ConstantVectorFunctionWithGradient<dim>>(0.0),
@@ -560,7 +560,7 @@ namespace ADR
                 // We heat the whole domain up uniformly with a forcing term of 6.0
                 .forcing_term = std::make_shared<ConstantRealFunction<dim>>(6.0),
                 .is_time_dependent = true,
-                .delta_t = 0.01,
+                .delta_t = 0.1,
                 .end_time = 1.0,
                 .initial_condition = std::make_shared<ConstantRealFunction<dim>>(0.0),
                 .dirichlet_boundaries = dirichlet_boundaries,

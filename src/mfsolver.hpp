@@ -499,8 +499,10 @@ namespace MFSolver
         LA::MPI::SparseMatrix system_matrix;
 
         // TODO: use the correct vector type
+        LA::MPI::Vector       completely_distributed_solution;
         LA::MPI::Vector       locally_relevant_solution;
         LA::MPI::Vector       system_rhs;
+        LA::MPI::Vector       old_solution;
 
         // Multigrid
         MGLevelObject<LA::MPI::SparseMatrix> mg_matrices;
@@ -509,6 +511,11 @@ namespace MFSolver
     
         ConditionalOStream pcout;
         TimerOutput        computing_timer;
+
+        double time = 0.0;
+        unsigned int timestep_number = 0;
+        // const double theta = 1.0;
+        
     };
 };
 

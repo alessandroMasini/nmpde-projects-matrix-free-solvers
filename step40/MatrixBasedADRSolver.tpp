@@ -33,7 +33,7 @@ namespace MFSolver{
       }
     }
 
-    triangulation.refine_global(5);
+    triangulation.refine_global(3);
     
     dof_handler.distribute_dofs(fe);
     dof_handler.distribute_mg_dofs();
@@ -53,6 +53,7 @@ namespace MFSolver{
                                      locally_relevant_dofs,
                                      mpi_communicator);
     system_rhs.reinit(locally_owned_dofs, mpi_communicator);
+    old_solution.reinit(locally_owned_dofs, mpi_communicator);
  
     // Handle hanging nodes (created by adaptive h-refinement) to ensure solution continuity
     constraints.clear();
@@ -135,6 +136,13 @@ namespace MFSolver{
     double b_div;
     double k_loc;
     double f_loc;
+
+    std::vector<double> old_solution_values (n_q_points);
+
+    system_matrix = 0;
+    system_rhs = 0;
+    for (unsigned int l = 0; l < triangulation.n_levels(); ++l)
+      mg_matrices[l] = 0;
       
     // TODO: implement ADR with actual functions
     for (const auto &cell : dof_handler.active_cell_iterators()){
@@ -144,6 +152,8 @@ namespace MFSolver{
  
           cell_matrix = 0.;
           cell_rhs    = 0.;
+
+          fe_values.get_function_values(old_solution, old_solution_values);
  
         for (unsigned int q = 0; q < n_q_points; ++q) {
           mu_loc = this->problem.mu->value (fe_values.quadrature_point (q));
@@ -154,26 +164,45 @@ namespace MFSolver{
 
           for (unsigned int i = 0; i < dofs_per_cell; ++i) {
             for (unsigned int j = 0; j < dofs_per_cell; ++j) {
+              if(this->problem.is_time_dependent){
+                cell_matrix (i, j) += (1.0 / this->problem.delta_t) *
+                  fe_values.shape_value (i, q) * 
+                  fe_values.shape_value (j, q) *
+                  fe_values.JxW (q);
+              }
+              
+
               // Diffusion.
               cell_matrix (i, j) +=
+                // (this->problem.is_time_dependent ? theta : 1.0) * assuming theta = 1.0
                 mu_loc *                             //
                 fe_values.shape_grad (i, q) *  //
                 fe_values.shape_grad (j, q) * //
                 fe_values.JxW (q);
 
               // Advection
-              cell_matrix (i, j) += b_loc *
+              cell_matrix (i, j) += 
+                // (this->problem.is_time_dependent ? theta : 1.0) * assuming theta = 1.0
+                b_loc *
                 fe_values.shape_grad (j, q) *
                 fe_values.shape_value (i, q) *
                 fe_values.JxW (q);
 
               // Reaction
-              cell_matrix (i, j) += (k_loc + b_div)*
+              cell_matrix (i, j) += 
+                // (this->problem.is_time_dependent ? theta : 1.0) * assuming theta = 1.0
+                (k_loc + b_div)*
                 fe_values.shape_value (i, q) *
                 fe_values.shape_value (j, q) *
                 fe_values.JxW (q);
           }
-
+          
+          if(this->problem.is_time_dependent){
+            cell_rhs (i) += (1.0 / this->problem.delta_t) *             //
+              fe_values.shape_value (i, q) * //
+              old_solution_values[q] *      //
+              fe_values.JxW (q);
+          }
           // Forcing term.
           cell_rhs (i) += f_loc * //
             fe_values.shape_value (i, q) *                     //
@@ -234,8 +263,7 @@ namespace MFSolver{
   void MatrixBasedADRSolver<dim, fe_degree>::solve () {
     TimerOutput::Scope t(computing_timer, "solve");
  
-    LA::MPI::Vector completely_distributed_solution(locally_owned_dofs,
-                                                    mpi_communicator);
+    completely_distributed_solution.reinit(locally_owned_dofs, mpi_communicator);
  
     
     // Smoother
@@ -274,6 +302,7 @@ namespace MFSolver{
                  completely_distributed_solution,
                  system_rhs,
                  preconditioner);
+
  
     pcout << "   Solved in " << solver_control.last_step() << " iterations."
           << std::endl;
@@ -300,7 +329,7 @@ namespace MFSolver{
     
     // TODO: inquire these hardwired numbers
     data_out.write_vtu_with_pvtu_record(
-      "./", "solution", 0, mpi_communicator, 2, 8);
+      "./", "solution", timestep_number, mpi_communicator, 2, 8);
 
   }
 
@@ -317,19 +346,47 @@ namespace MFSolver{
           << " on " << Utilities::MPI::n_mpi_processes(mpi_communicator)
           << " MPI rank(s)..." << std::endl;
 
+    if(!this->problem.is_time_dependent){
+      pcout << "Solving a time independent problem" << std::endl;
 
-    setup_system ();
-    pcout<<"Finished setup"<<std::endl;
-    assemble ();
-    pcout<<"Finished assemble"<<std::endl;
-    solve ();
-    pcout<<"Finished solve"<<std::endl;
-    output_results ();
+      setup_system ();
+      pcout<<"Finished setup"<<std::endl;
+      assemble ();
+      pcout<<"Finished assemble"<<std::endl;
+      solve ();
+      pcout<<"Finished solve"<<std::endl;
+      output_results ();
+    }
+    else{
+      pcout << "Solving a time dependent problem" << std::endl;
+      setup_system();
+
+      VectorTools::interpolate(dof_handler, *(this->problem.initial_condition), old_solution);
+      locally_relevant_solution = old_solution;
+      completely_distributed_solution = old_solution;
+
+      output_results();
+
+      while(time < this->problem.end_time - 0.5 * this->problem.delta_t){
+        time += this->problem.delta_t;
+        ++timestep_number;
+
+        pcout << "TIMESTEP " << timestep_number << std::endl;
+        assemble();
+        pcout<<"   Finished assemble"<<std::endl;
+        solve();
+        pcout<<"   Finished solve"<<std::endl;
+
+        old_solution = completely_distributed_solution;
+        locally_relevant_solution = completely_distributed_solution;        
+
+        output_results();
+      }
+    }
 
     computing_timer.print_summary();
     computing_timer.reset();
-    
-
+ 
     pcout << std::endl;
   }
 
