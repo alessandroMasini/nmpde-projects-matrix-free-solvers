@@ -390,4 +390,37 @@ namespace MFSolver{
     pcout << std::endl;
   }
 
+  template <int dim, int fe_degree>
+  void MatrixBasedADRSolver<dim, fe_degree>::output_to_file () {
+    /*
+    // Creating and open a text file (and folders, if needed)
+    std::filesystem::path save_dir =
+        std::filesystem::path("tests") /
+        algorithm_name /
+        function_name /
+        std::to_string(x_best.size()) /
+        std::to_string(n_points) /
+        std::to_string(n_cores);
+        
+    std::filesystem::create_directories(save_dir);
+
+    int file_n = get_max_test_number(save_dir) + 1;     // the files are named test_0, test_1, test_2 and so ons
+    std::string filename = "test_" + std::to_string(file_n) + ".txt";
+    ofstream MyFile(save_dir / filename);
+
+    // Write to the file
+    MyFile << "max_iter tol it_n delta_x final_t\n";
+
+    for (size_t i = 0; i < conv_history.size(); i++){
+        MyFile << stopcriterion.get_max_iter() << " "
+        << stopcriterion.get_tolerance() << " "
+        << i << " "
+        << conv_history[i] << " "
+        << execution_time << "\n";
+    }
+
+    // Close the file
+    MyFile.close();
+  */
+  }
 }

@@ -20,6 +20,7 @@ int main(int argc, char **argv)
     MFSolver::MatrixBasedADRSolver<3, 2> solver(data);
 
     solver.run();
+    solver.output_to_file();
 
     return 0;
 }

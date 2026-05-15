@@ -77,6 +77,7 @@
 
 #include <fstream>
 #include <iostream>
+#include <filesystem>
 
 /**
  * \brief Namespace containing all the methods and type definitions used in the project.
@@ -138,6 +139,11 @@ namespace MFSolver
          */
         virtual void run() = 0;
 
+        /**
+         * \brief writes the result of the computation in a structured manner on file.
+         */
+        virtual void output_to_file() = 0;
+
     protected:
         /**
          * \brief Sets up the algebraic system corresponding to the problem.
@@ -155,7 +161,7 @@ namespace MFSolver
         virtual void solve() = 0;
 
         /**
-         * \brief writes the result of the computation.
+         * \brief writes the result of the computation on terminal.
          */
         virtual void output_results() = 0;
 
@@ -476,6 +482,7 @@ namespace MFSolver
         ~MatrixBasedADRSolver() override {};
 
         void run() override;
+        void output_to_file() override;
 
     private:
         void setup_system() override;
