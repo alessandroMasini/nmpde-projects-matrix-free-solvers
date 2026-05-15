@@ -60,6 +60,7 @@
  
 #include <deal.II/base/utilities.h>
 #include <deal.II/base/conditional_ostream.h>
+#include <deal.II/base/multithread_info.h>
 #include <deal.II/base/index_set.h>
 #include <deal.II/lac/sparsity_tools.h>
 #include <deal.II/distributed/tria.h>
@@ -521,6 +522,7 @@ namespace MFSolver
 
         double time = 0.0;
         unsigned int timestep_number = 0;
+        std::vector<double> conv_history;
         // const double theta = 1.0;
         
     };

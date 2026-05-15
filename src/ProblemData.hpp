@@ -10,6 +10,8 @@
 
 #include <memory>
 
+// TODO: insert correct problem names and grid refinement level for all problems
+
 namespace ADR
 {
 
@@ -379,6 +381,7 @@ namespace ADR
     struct ProblemData
     {
         std::string mesh_filename; /**< Filename from which to load the mesh. */
+        std::string problem_name; /**< Name that the problem solution will saved with. */
 
         unsigned int num_levels; /**< Number of multigrid levels in the V-cycle. */
 
@@ -396,6 +399,7 @@ namespace ADR
         unsigned int solver_max_iterations; /**< Maximum number of iterations when solving the algebraic system. */
         double solver_tolerance_factor;     /**< Factor to multiply to the l2 norm of the rhs of the algebraic system in order to get the absolute tolerance. */
 
+        unsigned int refinement_level = 3; /**< Number of times the grid is refined. This should be changed for problem to problem. */
         // TODO: where is this used???
         unsigned int refinement_coefficient_per_level = 4; /**< Mesh refinement level (if generating a hyper_cube/hyper_ball) */
 
@@ -418,7 +422,8 @@ namespace ADR
          * @brief Helper to initialize with some default test-case values
          */
         static ProblemData<dim, fe_degree> standard_test_case()
-        {
+        {   
+
             MFSolver::DirichletBoundaries<dim> dirichlet_boundaries;
             for (int i = 0; i < 2*dim; i++)
                 dirichlet_boundaries[i] = std::make_shared<ConstantRealFunction<dim>>(static_cast<double>(i));
@@ -428,6 +433,7 @@ namespace ADR
 
             ProblemData<dim, fe_degree> data{
                 .mesh_filename = "input.msh",
+                .problem_name = "standard",
                 .num_levels = 5,
 
                 .num_quadrature_points = fe_degree + 1,

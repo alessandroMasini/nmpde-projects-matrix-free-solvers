@@ -1,6 +1,36 @@
 // TODO: employ SIMD vectorization
 
 namespace MFSolver{
+  int get_max_test_number(const std::filesystem::path& dir) {
+    int max_num = -1;
+    const std::string prefix = "test_";
+    const std::string suffix = ".txt";
+
+    for (const auto& entry : std::filesystem::directory_iterator(dir)) {
+        if (!entry.is_regular_file()) continue;
+
+        auto name = entry.path().filename().string();
+
+        // Must start with "test_" and end with ".txt"
+        if (name.size() <= prefix.size() + suffix.size()) continue;
+        if (name.rfind(prefix, 0) != 0) continue;                               // does not start with prefix
+        if (name.compare(name.size() - suffix.size(), suffix.size(), suffix) != 0)
+            continue;                                                          // does not end with suffix
+
+        // Extract numeric part
+        std::string num_str = name.substr(prefix.size(),
+                                          name.size() - prefix.size() - suffix.size());
+        try {
+            int n = std::stoi(num_str);
+            if (n > max_num) max_num = n;
+        } catch (...) {
+            // Ignore malformed numbers
+        }
+    }
+
+    return max_num;
+}
+
   template <int dim, int fe_degree>
   void MatrixBasedADRSolver<dim, fe_degree>::setup_system () {
     TimerOutput::Scope t(computing_timer, "setup");
@@ -33,7 +63,9 @@ namespace MFSolver{
       }
     }
 
-    triangulation.refine_global(3);
+    // This is a property of the solver.
+    // It should be set according to the level of refinement desired.
+    triangulation.refine_global(this->problem.refinement_level);
     
     dof_handler.distribute_dofs(fe);
     dof_handler.distribute_mg_dofs();
@@ -296,6 +328,7 @@ namespace MFSolver{
     // Solver and preconditioner
     SolverControl solver_control(this->problem.solver_max_iterations,
                                  this->problem.solver_tolerance_factor * system_rhs.l2_norm());
+    solver_control.enable_history_data();
     SolverGMRES<LA::MPI::Vector> solver(solver_control);
 
     solver.solve(system_matrix,
@@ -303,7 +336,7 @@ namespace MFSolver{
                  system_rhs,
                  preconditioner);
 
- 
+    conv_history = solver_control.get_history_data();
     pcout << "   Solved in " << solver_control.last_step() << " iterations."
           << std::endl;
  
@@ -392,35 +425,36 @@ namespace MFSolver{
 
   template <int dim, int fe_degree>
   void MatrixBasedADRSolver<dim, fe_degree>::output_to_file () {
-    /*
+    // TODO: adapt this method for time-dependent problems
     // Creating and open a text file (and folders, if needed)
     std::filesystem::path save_dir =
-        std::filesystem::path("tests") /
-        algorithm_name /
-        function_name /
-        std::to_string(x_best.size()) /
-        std::to_string(n_points) /
-        std::to_string(n_cores);
+        std::filesystem::path("../tests") /
+        "matrix_based" / 
+        this->problem.problem_name /
+        std::to_string(this->problem.refinement_level) /
+        std::to_string(MultithreadInfo::n_cores()) /
+        std::to_string(MultithreadInfo::n_threads()) /
+        "0"; // SIMD;
         
     std::filesystem::create_directories(save_dir);
 
     int file_n = get_max_test_number(save_dir) + 1;     // the files are named test_0, test_1, test_2 and so ons
     std::string filename = "test_" + std::to_string(file_n) + ".txt";
-    ofstream MyFile(save_dir / filename);
+    std::ofstream MyFile(save_dir / filename);
 
     // Write to the file
     MyFile << "max_iter tol it_n delta_x final_t\n";
 
     for (size_t i = 0; i < conv_history.size(); i++){
-        MyFile << stopcriterion.get_max_iter() << " "
-        << stopcriterion.get_tolerance() << " "
+        MyFile << this->problem.solver_max_iterations << " "
+        << this->problem.solver_tolerance_factor << " "
         << i << " "
         << conv_history[i] << " "
-        << execution_time << "\n";
+        << 5 << "\n"; // TODO: insert correct timing
     }
 
     // Close the file
     MyFile.close();
-  */
   }
 }
+
