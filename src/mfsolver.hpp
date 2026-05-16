@@ -80,6 +80,13 @@
 #include <iostream>
 #include <filesystem>
 
+// These are needed for statistical computation
+#include <algorithm>
+#include <boost/accumulators/accumulators.hpp>
+#include <boost/accumulators/statistics/stats.hpp>
+#include <boost/accumulators/statistics/mean.hpp>
+#include <boost/accumulators/statistics/variance.hpp>
+
 /**
  * \brief Namespace containing all the methods and type definitions used in the project.
  */
@@ -516,13 +523,17 @@ namespace MFSolver
         MGLevelObject<LA::MPI::SparseMatrix> mg_matrices;
         MGConstrainedDoFs mg_constrained_dofs;   
         MGTransferPrebuilt<LA::MPI::Vector> mg_transfer;        
-    
+        
+        // Output and timing information
         ConditionalOStream pcout;
         TimerOutput        computing_timer;
-
+        double start_time;
+        double end_time;
+        
+        // Time-dependent attributes
         double time = 0.0;
         unsigned int timestep_number = 0;
-        std::vector<double> conv_history;
+        std::vector<std::vector<double>> conv_history;
         // const double theta = 1.0;
         
     };

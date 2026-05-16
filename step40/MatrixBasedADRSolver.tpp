@@ -31,6 +31,42 @@ namespace MFSolver{
     return max_num;
 }
 
+  // TODO: the mean and std calculation requires this transpose
+  // look up on Boost if it can be done more efficiently and easily
+  std::vector<std::vector<double> > transpose(const std::vector<std::vector<double>> &data) {
+      // this assumes that all inner vectors have the same size and
+      // allocates space for the complete result in advance
+      std::vector<std::vector<double> > result(data[0].size(),
+                                            std::vector<double>(data.size()));
+      for (std::vector<double>::size_type i = 0; i < data[0].size(); i++) 
+          for (std::vector<double>::size_type j = 0; j < data.size(); j++) {
+              result[i][j] = data[j][i];
+          }
+      return result;
+  }
+
+
+  void calculate_mean_std(std::vector<std::vector<double>> &conv_history) {
+    std::vector<std::vector<double>> data(transpose(conv_history));
+    double sum;
+    double mean;
+    double sq_sum;
+    double stdev;
+    std::vector<double> diff(data[0].size());
+
+    for (int i = 0; i < conv_history[0].size(); i++){
+      sum = std::accumulate(data[i].begin(), data[i].end(), 0.0);
+      mean = sum / data[i].size();
+
+      std::fill(diff.begin(), diff.end(), 0.);
+      std::transform(data[i].begin(), data[i].end(), diff.begin(),
+                    std::bind2nd(std::minus<double>(), mean));
+      sq_sum = std::inner_product(diff.begin(), diff.end(), diff.begin(), 0.0);
+      stdev = std::sqrt(sq_sum / data[i].size());
+
+    }
+  }
+
   template <int dim, int fe_degree>
   void MatrixBasedADRSolver<dim, fe_degree>::setup_system () {
     TimerOutput::Scope t(computing_timer, "setup");
@@ -336,7 +372,7 @@ namespace MFSolver{
                  system_rhs,
                  preconditioner);
 
-    conv_history = solver_control.get_history_data();
+    conv_history.emplace_back(solver_control.get_history_data());
     pcout << "   Solved in " << solver_control.last_step() << " iterations."
           << std::endl;
  
@@ -381,7 +417,8 @@ namespace MFSolver{
 
     if(!this->problem.is_time_dependent){
       pcout << "Solving a time independent problem" << std::endl;
-
+      
+      start_time = MPI_Wtime();
       setup_system ();
       pcout<<"Finished setup"<<std::endl;
       assemble ();
@@ -417,6 +454,7 @@ namespace MFSolver{
       }
     }
 
+    end_time = MPI_Wtime();
     computing_timer.print_summary();
     computing_timer.reset();
  
@@ -443,14 +481,14 @@ namespace MFSolver{
     std::ofstream MyFile(save_dir / filename);
 
     // Write to the file
-    MyFile << "max_iter tol it_n delta_x final_t\n";
+    MyFile << "max_iter tol it_n err std_err final_t\n";
 
-    for (size_t i = 0; i < conv_history.size(); i++){
+    for (size_t i = 0; i < conv_history[0].size(); i++){
         MyFile << this->problem.solver_max_iterations << " "
         << this->problem.solver_tolerance_factor << " "
         << i << " "
-        << conv_history[i] << " "
-        << 5 << "\n"; // TODO: insert correct timing
+        << conv_history[0][i] << " "
+        << end_time - start_time << "\n"; // TODO: insert correct timing
     }
 
     // Close the file
