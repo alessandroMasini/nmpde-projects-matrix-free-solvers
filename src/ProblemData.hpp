@@ -550,6 +550,7 @@ namespace ADR
 
             ProblemData<dim, fe_degree> data{
                 .mesh_filename = "input.msh",
+                .problem_name = "parabolic",
                 .num_levels = 5,
                 .num_quadrature_points = fe_degree + 1,
                 .lv0_smoothing_range = 1.e-3,

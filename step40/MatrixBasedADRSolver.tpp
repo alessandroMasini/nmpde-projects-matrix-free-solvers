@@ -31,42 +31,6 @@ namespace MFSolver{
     return max_num;
 }
 
-  // TODO: the mean and std calculation requires this transpose
-  // look up on Boost if it can be done more efficiently and easily
-  std::vector<std::vector<double> > transpose(const std::vector<std::vector<double>> &data) {
-      // this assumes that all inner vectors have the same size and
-      // allocates space for the complete result in advance
-      std::vector<std::vector<double> > result(data[0].size(),
-                                            std::vector<double>(data.size()));
-      for (std::vector<double>::size_type i = 0; i < data[0].size(); i++) 
-          for (std::vector<double>::size_type j = 0; j < data.size(); j++) {
-              result[i][j] = data[j][i];
-          }
-      return result;
-  }
-
-
-  void calculate_mean_std(std::vector<std::vector<double>> &conv_history) {
-    std::vector<std::vector<double>> data(transpose(conv_history));
-    double sum;
-    double mean;
-    double sq_sum;
-    double stdev;
-    std::vector<double> diff(data[0].size());
-
-    for (int i = 0; i < conv_history[0].size(); i++){
-      sum = std::accumulate(data[i].begin(), data[i].end(), 0.0);
-      mean = sum / data[i].size();
-
-      std::fill(diff.begin(), diff.end(), 0.);
-      std::transform(data[i].begin(), data[i].end(), diff.begin(),
-                    std::bind2nd(std::minus<double>(), mean));
-      sq_sum = std::inner_product(diff.begin(), diff.end(), diff.begin(), 0.0);
-      stdev = std::sqrt(sq_sum / data[i].size());
-
-    }
-  }
-
   template <int dim, int fe_degree>
   void MatrixBasedADRSolver<dim, fe_degree>::setup_system () {
     TimerOutput::Scope t(computing_timer, "setup");
@@ -362,6 +326,8 @@ namespace MFSolver{
  
 
     // Solver and preconditioner
+    // TODO: should we actually multiply by the norm of the RHS?
+    // why is that?
     SolverControl solver_control(this->problem.solver_max_iterations,
                                  this->problem.solver_tolerance_factor * system_rhs.l2_norm());
     solver_control.enable_history_data();
@@ -470,8 +436,8 @@ namespace MFSolver{
         "matrix_based" / 
         this->problem.problem_name /
         std::to_string(this->problem.refinement_level) /
-        std::to_string(MultithreadInfo::n_cores()) /
-        std::to_string(MultithreadInfo::n_threads()) /
+        std::to_string(Utilities::MPI::n_mpi_processes(mpi_communicator)) /
+        "1" / // TODO: restore actual multithreading
         "0"; // SIMD;
         
     std::filesystem::create_directories(save_dir);
@@ -480,15 +446,42 @@ namespace MFSolver{
     std::string filename = "test_" + std::to_string(file_n) + ".txt";
     std::ofstream MyFile(save_dir / filename);
 
-    // Write to the file
-    MyFile << "max_iter tol it_n err std_err final_t\n";
+    // Write to the file: first, mid and last timestep for TD
+    // first only for TI
+    // NOTE: total_t is for all timesteps
+    MyFile << "max_iter tol t_step it_n err total_t\n";
 
     for (size_t i = 0; i < conv_history[0].size(); i++){
         MyFile << this->problem.solver_max_iterations << " "
         << this->problem.solver_tolerance_factor << " "
+        << 0 << " "
         << i << " "
         << conv_history[0][i] << " "
-        << end_time - start_time << "\n"; // TODO: insert correct timing
+        << end_time - start_time << "\n";
+    }
+
+    if (conv_history.size() > 1){
+      size_t mid_step = conv_history.size()/2;
+      for (size_t i = 0; i < conv_history[mid_step].size(); i++){
+        MyFile << this->problem.solver_max_iterations << " "
+        << this->problem.solver_tolerance_factor << " "
+        << "T//2" << " "
+        << i << " "
+        << conv_history[mid_step][i] << " "
+        << end_time - start_time << "\n";
+      }
+    }
+
+    if (conv_history.size() > 2){
+      size_t last_step = conv_history.size() - 1;
+      for (size_t i = 0; i < conv_history[last_step].size(); i++){
+        MyFile << this->problem.solver_max_iterations << " "
+        << this->problem.solver_tolerance_factor << " "
+        << "T" << " "
+        << i << " "
+        << conv_history[last_step][i] << " "
+        << end_time - start_time << "\n";
+      }
     }
 
     // Close the file

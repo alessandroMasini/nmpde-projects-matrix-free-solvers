@@ -529,11 +529,13 @@ namespace MFSolver
         TimerOutput        computing_timer;
         double start_time;
         double end_time;
+
+        // Convergence information
+        std::vector<std::vector<double>> conv_history;
         
         // Time-dependent attributes
         double time = 0.0;
         unsigned int timestep_number = 0;
-        std::vector<std::vector<double>> conv_history;
         // const double theta = 1.0;
         
     };
