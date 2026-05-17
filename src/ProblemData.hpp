@@ -10,7 +10,7 @@
 
 #include <memory>
 
-// TODO: insert correct problem names and grid refinement level for all problems
+// TODO: insert grid refinement level for all problems
 
 namespace ADR
 {
@@ -475,6 +475,7 @@ namespace ADR
 
             ProblemData<dim, fe_degree> data{
                 .mesh_filename = "input.msh",
+                .problem_name = "advanced",
                 .num_levels = 5,
 
                 .num_quadrature_points = fe_degree + 1,
@@ -516,6 +517,7 @@ namespace ADR
 
             ProblemData<dim, fe_degree> data{
                 .mesh_filename = "input.msh",
+                .problem_name = "neumann",
                 .num_levels = 5,
                 .num_quadrature_points = fe_degree + 1,
                 .lv0_smoothing_range = 1.e-3,
@@ -591,6 +593,7 @@ namespace ADR
 
             ProblemData<dim, fe_degree> data{
                 .mesh_filename = "input.msh",
+                .problem_name = "transient",
                 .num_levels = 5,
                 .num_quadrature_points = fe_degree + 1,
                 .lv0_smoothing_range = 1.e-3,
@@ -628,6 +631,7 @@ namespace ADR
 
             ProblemData<dim, fe_degree> data{
                 .mesh_filename = "input.msh",
+                .problem_name = "lab_02",
                 .num_levels = 5,
 
                 .num_quadrature_points = fe_degree + 1,
@@ -666,6 +670,7 @@ namespace ADR
 
             ProblemData<dim, fe_degree> data{
                 .mesh_filename = "input.msh",
+                .problem_name = "lab_03",
                 .num_levels = 5,
 
                 .num_quadrature_points = fe_degree + 1,
@@ -704,6 +709,7 @@ namespace ADR
 
             ProblemData<dim, fe_degree> data{
                 .mesh_filename = "input.msh",
+                .problem_name = "andrea",
                 .num_levels = 5,
 
                 .num_quadrature_points = fe_degree + 1,
