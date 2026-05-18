@@ -3,7 +3,7 @@
 // Standard Library imports
 // #include <exception>
 // #include <functional>
-// #include <stdexcept>
+#include <stdexcept>
 // #include <string>
 // #include <unordered_map>
 #include <memory>
