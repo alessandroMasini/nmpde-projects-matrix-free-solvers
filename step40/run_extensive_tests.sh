@@ -4,7 +4,7 @@
 # run_extensive_tests.sh
 # -----------------------------------------------------------------------------
 #
-# This script performs extensive testing over problems.
+# This script performs extensive testing over the various problems.
 #
 # Usage:
 #   ./run_extensive_tests.sh [options]
@@ -68,21 +68,6 @@ while [[ $# -gt 0 ]]; do
             show_help;; 
     esac
 done
-
-# if [ -z "$FUNCTIONS" ]; then
-#     FUNCTIONS="all"
-# fi
-
-# if [ -z "$ALGORITHMS" ]; then
-#     ALGORITHMS="all"
-# fi
-
-# Resolve algorithms
-# if [[ "$ALGORITHMS" == "all" ]]; then
-#     algos_to_run="pso cmaes de rcga"
-# else
-#     algos_to_run=$ALGORITHMS
-# fi
 
 # Run tests
 echo "=== Running tests ==="
