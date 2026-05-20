@@ -173,7 +173,7 @@ namespace MFSolver
         for (unsigned int cell = 0; cell < inhomogeneous_operator.get_matrix_free()->n_cell_batches(); ++cell)
         {
             phi.reinit(cell);
-            
+
             if (this->problem.is_time_dependent && this->problem.delta_t > 0.0)
             {
                 phi.read_dof_values(old_solution);
@@ -356,9 +356,12 @@ namespace MFSolver
             triangulation.refine_global(2); // refine it a bit for the simulation
             setup_system();
 
-            if (this->problem.initial_condition != nullptr) {
+            if (this->problem.initial_condition != nullptr)
+            {
                 VectorTools::interpolate(dof_handler, *(this->problem.initial_condition), old_solution);
-            } else {
+            }
+            else
+            {
                 old_solution = 0;
             }
             solution = old_solution;
@@ -404,4 +407,9 @@ namespace MFSolver
             }
         }
     }
+
+    // template <int dim, int fe_degree>
+    // void MatrixFreeADRSolver<dim, fe_degree>::output_to_file()
+    // {
+    // }
 }

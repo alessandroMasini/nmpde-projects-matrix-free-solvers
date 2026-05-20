@@ -1,5 +1,4 @@
-#ifndef PROBLEMDATA_HPP
-#define PROBLEMDATA_HPP
+#pragma once
 
 #include <deal.II/base/point.h>
 #include <deal.II/base/tensor_function.h>
@@ -9,6 +8,8 @@
 #include "boundaries.hpp"
 
 #include <memory>
+
+// TODO: insert grid refinement level for all problems
 
 namespace ADR
 {
@@ -379,6 +380,7 @@ namespace ADR
     struct ProblemData
     {
         std::string mesh_filename; /**< Filename from which to load the mesh. */
+        std::string problem_name;  /**< Name that the problem solution will saved with. */
 
         unsigned int num_levels; /**< Number of multigrid levels in the V-cycle. */
 
@@ -396,6 +398,7 @@ namespace ADR
         unsigned int solver_max_iterations; /**< Maximum number of iterations when solving the algebraic system. */
         double solver_tolerance_factor;     /**< Factor to multiply to the l2 norm of the rhs of the algebraic system in order to get the absolute tolerance. */
 
+        unsigned int refinement_level = 3; /**< Number of times the grid is refined. This should be changed for problem to problem. */
         // TODO: where is this used???
         unsigned int refinement_coefficient_per_level = 4; /**< Mesh refinement level (if generating a hyper_cube/hyper_ball) */
 
@@ -428,6 +431,7 @@ namespace ADR
 
             ProblemData<dim, fe_degree> data{
                 .mesh_filename = "input.msh",
+                .problem_name = "standard",
                 .num_levels = 5,
 
                 .num_quadrature_points = fe_degree + 1,
@@ -438,8 +442,8 @@ namespace ADR
                 .lvgt0_smoothing_degree = 5,
                 .lvgt0_smoothing_eigenvalue_max_iterations = 10,
 
-                .solver_max_iterations = 100,
-                .solver_tolerance_factor = 1e-12,
+                .solver_max_iterations = 1000,
+                .solver_tolerance_factor = 1e-10,
 
                 .mu = std::make_shared<ConstantRealFunction<dim>>(2.0),
                 .beta = std::make_shared<ConstantVectorFunctionWithGradient<dim>>(0.0),
@@ -469,6 +473,7 @@ namespace ADR
 
             ProblemData<dim, fe_degree> data{
                 .mesh_filename = "input.msh",
+                .problem_name = "advanced",
                 .num_levels = 5,
 
                 .num_quadrature_points = fe_degree + 1,
@@ -510,6 +515,7 @@ namespace ADR
 
             ProblemData<dim, fe_degree> data{
                 .mesh_filename = "input.msh",
+                .problem_name = "neumann",
                 .num_levels = 5,
                 .num_quadrature_points = fe_degree + 1,
                 .lv0_smoothing_range = 1.e-3,
@@ -544,14 +550,15 @@ namespace ADR
 
             ProblemData<dim, fe_degree> data{
                 .mesh_filename = "input.msh",
+                .problem_name = "parabolic",
                 .num_levels = 5,
                 .num_quadrature_points = fe_degree + 1,
                 .lv0_smoothing_range = 1.e-3,
                 .lvgt0_smoothing_range = 15,
                 .lvgt0_smoothing_degree = 5,
                 .lvgt0_smoothing_eigenvalue_max_iterations = 10,
-                .solver_max_iterations = 100,
-                .solver_tolerance_factor = 1e-12,
+                .solver_max_iterations = 1000,
+                .solver_tolerance_factor = 1e-10,
 
                 .mu = std::make_shared<ConstantRealFunction<dim>>(1.0),
                 .beta = std::make_shared<ConstantVectorFunctionWithGradient<dim>>(0.0),
@@ -560,7 +567,7 @@ namespace ADR
                 // We heat the whole domain up uniformly with a forcing term of 6.0
                 .forcing_term = std::make_shared<ConstantRealFunction<dim>>(6.0),
                 .is_time_dependent = true,
-                .delta_t = 0.01,
+                .delta_t = 0.1,
                 .end_time = 1.0,
                 .initial_condition = std::make_shared<ConstantRealFunction<dim>>(0.0),
                 .dirichlet_boundaries = dirichlet_boundaries,
@@ -584,6 +591,7 @@ namespace ADR
 
             ProblemData<dim, fe_degree> data{
                 .mesh_filename = "input.msh",
+                .problem_name = "transient",
                 .num_levels = 5,
                 .num_quadrature_points = fe_degree + 1,
                 .lv0_smoothing_range = 1.e-3,
@@ -623,6 +631,7 @@ namespace ADR
 
             ProblemData<dim, fe_degree> data{
                 .mesh_filename = "input.msh",
+                .problem_name = "heated_wall",
                 .num_levels = 5,
                 .num_quadrature_points = fe_degree + 1,
                 .lv0_smoothing_range = 1.e-3,
@@ -660,6 +669,7 @@ namespace ADR
 
             ProblemData<dim, fe_degree> data{
                 .mesh_filename = "input.msh",
+                .problem_name = "lab_02",
                 .num_levels = 5,
 
                 .num_quadrature_points = fe_degree + 1,
@@ -698,6 +708,7 @@ namespace ADR
 
             ProblemData<dim, fe_degree> data{
                 .mesh_filename = "input.msh",
+                .problem_name = "lab_03",
                 .num_levels = 5,
 
                 .num_quadrature_points = fe_degree + 1,
@@ -736,6 +747,7 @@ namespace ADR
 
             ProblemData<dim, fe_degree> data{
                 .mesh_filename = "input.msh",
+                .problem_name = "andrea",
                 .num_levels = 5,
 
                 .num_quadrature_points = fe_degree + 1,
@@ -764,5 +776,3 @@ namespace ADR
     };
 
 } // namespace ADR
-
-#endif // PROBLEMDATA_HPP

@@ -1,122 +1,78 @@
 #include <exception>
 #include <stdexcept>
 #include <functional>
-#include <string>
-
-#include <deal.II/base/conditional_ostream.h>
-#include <deal.II/base/function.h>
-#include <deal.II/base/point.h>
-#include <deal.II/base/tensor_function.h>
-#include <deal.II/base/tensor.h>
-#include <deal.II/base/types.h>
-
-#include <deal.II/lac/la_parallel_vector.h>
-
-#include <deal.II/matrix_free/fe_evaluation.h>
-#include <deal.II/matrix_free/operators.h>
-
-// TODO: deal.II libraries: did we actually need these?
-#include <deal.II/fe/fe_q.h>
-#include <deal.II/fe/mapping_q1.h>
-#include <deal.II/lac/affine_constraints.h>
-#include <deal.II/matrix_free/operators.h>
-#include <deal.II/multigrid/mg_constrained_dofs.h>
-#include <deal.II/base/mg_level_object.h>
-#include <deal.II/base/conditional_ostream.h>
-
-#include <deal.II/lac/trilinos_precondition.h>
-#include <deal.II/lac/trilinos_sparse_matrix.h>
-#include <deal.II/distributed/tria.h>
-#include <deal.II/distributed/fully_distributed_tria.h>
-
-#include <deal.II/lac/trilinos_sparse_matrix.h>
-#include <deal.II/lac/trilinos_vector.h>
-
-#include "function_types.hpp"
-#include "ProblemData.hpp"
-
-#include <stdexcept>
-// #include <string>
-// #include <unordered_map>
 #include <memory>
-
-// // deal.II imports
-#include <deal.II/base/conditional_ostream.h>
-#include <deal.II/base/mg_level_object.h>
-// #include <deal.II/base/tensor.h>
-// #include <deal.II/base/types.h>
-
-#include <deal.II/distributed/fully_distributed_tria.h>
-// #include <deal.II/distributed/tria.h>
-
-#include <deal.II/fe/fe_q.h>
-#include <deal.II/fe/mapping_q1.h>
-
-#include <deal.II/lac/affine_constraints.h>
-#include <deal.II/lac/la_parallel_vector.h>
-#include <deal.II/lac/trilinos_sparse_matrix.h>
-#include <deal.II/lac/solver_cg.h>
-
-// #include <deal.II/matrix_free/fe_evaluation.h>
-#include <deal.II/matrix_free/operators.h>
-
-#include <deal.II/multigrid/mg_constrained_dofs.h>
-
-// Homemade imports
-#include "function_types.hpp"
-#include "ProblemData.hpp"
-
-// Imports from step40
-// TODO: rationalize
-
-#include <deal.II/base/quadrature_lib.h>
-#include <deal.II/base/function.h>
-#include <deal.II/base/timer.h>
-
-#include <deal.II/lac/generic_linear_algebra.h>
-#include <deal.II/lac/vector.h>
-#include <deal.II/lac/full_matrix.h>
-#include <deal.II/lac/solver_cg.h>
-#include <deal.II/lac/affine_constraints.h>
-#include <deal.II/lac/dynamic_sparsity_pattern.h>
-
-#include <deal.II/grid/grid_generator.h>
-#include <deal.II/dofs/dof_handler.h>
-#include <deal.II/dofs/dof_tools.h>
-#include <deal.II/fe/fe_values.h>
-#include <deal.II/fe/fe_q.h>
-#include <deal.II/numerics/vector_tools.h>
-#include <deal.II/numerics/data_out.h>
-#include <deal.II/numerics/error_estimator.h>
-
-#include <deal.II/base/utilities.h>
-#include <deal.II/base/conditional_ostream.h>
-#include <deal.II/base/multithread_info.h>
-#include <deal.II/base/index_set.h>
-#include <deal.II/lac/sparsity_tools.h>
-#include <deal.II/distributed/tria.h>
-#include <deal.II/distributed/grid_refinement.h>
-
-#include <deal.II/base/mg_level_object.h>
-#include <deal.II/base/mg_level_object.h>
-#include <deal.II/lac/petsc_solver.h>
-#include <deal.II/lac/solver_gmres.h>
-#include <deal.II/multigrid/mg_transfer.h>
-#include <deal.II/multigrid/multigrid.h>
-#include <deal.II/multigrid/mg_smoother.h>
-#include <deal.II/multigrid/mg_coarse.h>
-#include <deal.II/multigrid/mg_matrix.h>
-
+#include <string>
 #include <fstream>
 #include <iostream>
 #include <filesystem>
 
-// These are needed for statistical computation
 #include <algorithm>
 #include <boost/accumulators/accumulators.hpp>
 #include <boost/accumulators/statistics/stats.hpp>
 #include <boost/accumulators/statistics/mean.hpp>
 #include <boost/accumulators/statistics/variance.hpp>
+
+#include <deal.II/base/conditional_ostream.h>
+#include <deal.II/base/function.h>
+#include <deal.II/base/index_set.h>
+#include <deal.II/base/mg_level_object.h>
+#include <deal.II/base/multithread_info.h>
+#include <deal.II/base/point.h>
+#include <deal.II/base/quadrature_lib.h>
+#include <deal.II/base/tensor.h>
+#include <deal.II/base/tensor_function.h>
+#include <deal.II/base/timer.h>
+#include <deal.II/base/types.h>
+#include <deal.II/base/utilities.h>
+
+#include <deal.II/dofs/dof_handler.h>
+#include <deal.II/dofs/dof_tools.h>
+
+#include <deal.II/lac/affine_constraints.h>
+#include <deal.II/lac/dynamic_sparsity_pattern.h>
+#include <deal.II/lac/full_matrix.h>
+#include <deal.II/lac/generic_linear_algebra.h>
+#include <deal.II/lac/la_parallel_vector.h>
+#include <deal.II/lac/petsc_precondition.h>
+#include <deal.II/lac/petsc_solver.h>
+#include <deal.II/lac/solver_cg.h>
+#include <deal.II/lac/solver_gmres.h>
+#include <deal.II/lac/sparsity_tools.h>
+#include <deal.II/lac/trilinos_precondition.h>
+#include <deal.II/lac/trilinos_sparse_matrix.h>
+#include <deal.II/lac/trilinos_vector.h>
+#include <deal.II/lac/vector.h>
+
+#include <deal.II/matrix_free/fe_evaluation.h>
+#include <deal.II/matrix_free/operators.h>
+
+#include <deal.II/fe/fe_q.h>
+#include <deal.II/fe/fe_values.h>
+#include <deal.II/fe/mapping_q1.h>
+
+#include <deal.II/grid/grid_generator.h>
+
+#include <deal.II/matrix_free/operators.h>
+
+#include <deal.II/multigrid/mg_constrained_dofs.h>
+#include <deal.II/multigrid/mg_transfer.h>
+#include <deal.II/multigrid/multigrid.h>
+#include <deal.II/multigrid/mg_smoother.h>
+#include <deal.II/multigrid/mg_coarse.h>
+#include <deal.II/multigrid/mg_matrix.h>
+#include <deal.II/multigrid/mg_tools.h>
+
+#include <deal.II/numerics/data_out.h>
+#include <deal.II/numerics/error_estimator.h>
+#include <deal.II/numerics/vector_tools.h>
+
+#include <deal.II/distributed/fully_distributed_tria.h>
+#include <deal.II/distributed/grid_refinement.h>
+#include <deal.II/distributed/tria.h>
+
+#include "function_types.hpp"
+#include "ProblemData.hpp"
 
 /**
  * \brief Namespace containing all the methods and type definitions used in the project.
@@ -164,7 +120,6 @@ namespace MFSolver
          * \param _problem The problem this solver will solve.
          */
         ADRSolver(const ADR::ProblemData<dim, fe_degree> &_problem)
-            ADRSolver(const ADR::ProblemData<dim, fe_degree> &_problem)
             : problem(_problem)
         {
         }
@@ -179,10 +134,10 @@ namespace MFSolver
          */
         virtual void run() = 0;
 
-        /**
-         * \brief writes the result of the computation in a structured manner on file.
-         */
-        virtual void output_to_file() = 0;
+        // /**
+        //  * \brief writes the result of the computation in a structured manner on file.
+        //  */
+        // virtual void output_to_file() = 0;
 
     protected:
         /**
@@ -472,6 +427,8 @@ namespace MFSolver
         void solve() override;
         void output_results() override;
 
+        // void output_to_file() override;
+
 #ifdef DEAL_II_WITH_P4EST
         //         // The second "dim" is needed in case the spatial dimension
         //         // is different than the FE dimension
@@ -517,17 +474,30 @@ namespace MFSolver
     class MatrixBasedADRSolver : public ADRSolver<dim, fe_degree>
     {
     public:
-        MatrixBasedADRSolver(const ADRProblem<dim> &_problem) : ADRSolver<dim, fe_degree>(_problem),
-                                                                mpi_size(Utilities::MPI::n_mpi_processes(MPI_COMM_WORLD)),
-                                                                mpi_rank(Utilities::MPI::this_mpi_process(MPI_COMM_WORLD)),
-                                                                mesh(MPI_COMM_WORLD),
-                                                                pcout(std::cout, mpi_rank == 0)
+        MatrixBasedADRSolver(const ADR::ProblemData<dim, fe_degree> &_problem)
+            : ADRSolver<dim, fe_degree>(_problem),
+              mpi_communicator(MPI_COMM_WORLD),
+              triangulation(mpi_communicator,
+                            typename Triangulation<dim>::MeshSmoothing(
+                                Triangulation<dim>::smoothing_on_refinement |
+                                Triangulation<dim>::smoothing_on_coarsening),
+                            parallel::distributed::Triangulation<dim>::construct_multigrid_hierarchy),
+              fe(fe_degree),
+              dof_handler(triangulation),
+              mapping(),
+              pcout(std::cout,
+                    (Utilities::MPI::this_mpi_process(mpi_communicator) == 0)),
+              computing_timer(mpi_communicator,
+                              pcout,
+                              TimerOutput::never,
+                              TimerOutput::wall_times)
         {
         }
         ~MatrixBasedADRSolver() override {};
 
         void run() override;
-        void output_to_file() override;
+
+        void output_to_file() /* override */;
 
     private:
         void setup_system() override;
@@ -535,29 +505,11 @@ namespace MFSolver
         void solve() override;
         void output_results() override;
 
-        // Number of MPI processes.
-        const unsigned int mpi_size;
+        MPI_Comm mpi_communicator;
 
-        // Rank of the current MPI process.
-        const unsigned int mpi_rank;
+        parallel::distributed::Triangulation<dim> triangulation;
 
-        // Triangulation.
-        // TODO: clarify difference with MatrixFreeADRSolver mesh types
-        parallel::fullydistributed::Triangulation<dim, dim> mesh;
-
-        // Finite element space.
-        // TODO: clarify difference with MatrixFreeADRSolver fe non-pointer
-        std::unique_ptr<FiniteElement<dim>> fe;
-
-        // TODO: should we add
-        // - mapping
-        // - affine constraints
-        // here?
-
-        // Quadrature formula.
-        std::unique_ptr<Quadrature<dim>> quadrature;
-
-        // DoF handler.
+        const FE_Q<dim> fe;
         DoFHandler<dim> dof_handler;
         const MappingQ1<dim, dim> mapping;
 
@@ -579,19 +531,17 @@ namespace MFSolver
         MGConstrainedDoFs mg_constrained_dofs;
         MGTransferPrebuilt<LA::MPI::Vector> mg_transfer;
 
-        // Output and timing information
         ConditionalOStream pcout;
         TimerOutput computing_timer;
-        double start_time;
-        double end_time;
 
-        // Convergence information
-        std::vector<std::vector<double>> conv_history;
-
-        // Time-dependent attributes
         double time = 0.0;
         unsigned int timestep_number = 0;
         // const double theta = 1.0;
+
+        double start_time = 0;
+        double end_time = 0;
+
+        std::vector<std::vector<double>> conv_history;
     };
 };
 
