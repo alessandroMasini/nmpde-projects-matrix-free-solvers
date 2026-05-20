@@ -10,8 +10,6 @@
 
 #include <memory>
 
-// TODO: insert grid refinement level for all problems
-
 namespace ADR
 {
 
@@ -365,7 +363,7 @@ namespace ADR
             Number r2 = (p[0] - 0.2) * (p[0] - 0.2) + (p[1] - 0.2) * (p[1] - 0.2);
             if constexpr (dim > 2)
                 r2 += (p[2] - 0.2) * (p[2] - 0.2);
-            
+
             return std::exp(-75.0 * r2);
         }
     };
@@ -381,7 +379,6 @@ namespace ADR
     struct ProblemData
     {
         std::string mesh_filename; /**< Filename from which to load the mesh. */
-        std::string problem_name; /**< Name that the problem solution will saved with. */
 
         unsigned int num_levels; /**< Number of multigrid levels in the V-cycle. */
 
@@ -399,7 +396,6 @@ namespace ADR
         unsigned int solver_max_iterations; /**< Maximum number of iterations when solving the algebraic system. */
         double solver_tolerance_factor;     /**< Factor to multiply to the l2 norm of the rhs of the algebraic system in order to get the absolute tolerance. */
 
-        unsigned int refinement_level = 3; /**< Number of times the grid is refined. This should be changed for problem to problem. */
         // TODO: where is this used???
         unsigned int refinement_coefficient_per_level = 4; /**< Mesh refinement level (if generating a hyper_cube/hyper_ball) */
 
@@ -411,21 +407,20 @@ namespace ADR
 
         std::shared_ptr<MFSolver::RealFunction<dim>> forcing_term; /**< Forcing term: f(x) */
         // --- Time Dependency Parameters ---
-        bool is_time_dependent = false; /**< Flag to explicitly mark this problem as unsteady/transient. */
-        double delta_t = 0.0;           /**< The size of the time step. */
-        double end_time = 0.0;          /**< The final simulation time. */
+        bool is_time_dependent = false;                                 /**< Flag to explicitly mark this problem as unsteady/transient. */
+        double delta_t = 0.0;                                           /**< The size of the time step. */
+        double end_time = 0.0;                                          /**< The final simulation time. */
         std::shared_ptr<MFSolver::RealFunction<dim>> initial_condition; /**< u(x, t=0): The initial state of the domain. */
-        MFSolver::DirichletBoundaries<dim> dirichlet_boundaries; /**< Dirichlet boundaries. */
-        MFSolver::NeumannBoundaries<dim> neumann_boundaries;     /**< Neumann boundaries. */
+        MFSolver::DirichletBoundaries<dim> dirichlet_boundaries;        /**< Dirichlet boundaries. */
+        MFSolver::NeumannBoundaries<dim> neumann_boundaries;            /**< Neumann boundaries. */
 
         /**
          * @brief Helper to initialize with some default test-case values
          */
         static ProblemData<dim, fe_degree> standard_test_case()
-        {   
-
+        {
             MFSolver::DirichletBoundaries<dim> dirichlet_boundaries;
-            for (int i = 0; i < 2*dim; i++)
+            for (int i = 0; i < 5; i++)
                 dirichlet_boundaries[i] = std::make_shared<ConstantRealFunction<dim>>(static_cast<double>(i));
 
             MFSolver::NeumannBoundaries<dim> neumann_boundaries;
@@ -433,7 +428,6 @@ namespace ADR
 
             ProblemData<dim, fe_degree> data{
                 .mesh_filename = "input.msh",
-                .problem_name = "standard",
                 .num_levels = 5,
 
                 .num_quadrature_points = fe_degree + 1,
@@ -444,8 +438,8 @@ namespace ADR
                 .lvgt0_smoothing_degree = 5,
                 .lvgt0_smoothing_eigenvalue_max_iterations = 10,
 
-                .solver_max_iterations = 1000,
-                .solver_tolerance_factor = 1e-10,
+                .solver_max_iterations = 100,
+                .solver_tolerance_factor = 1e-12,
 
                 .mu = std::make_shared<ConstantRealFunction<dim>>(2.0),
                 .beta = std::make_shared<ConstantVectorFunctionWithGradient<dim>>(0.0),
@@ -475,7 +469,6 @@ namespace ADR
 
             ProblemData<dim, fe_degree> data{
                 .mesh_filename = "input.msh",
-                .problem_name = "advanced",
                 .num_levels = 5,
 
                 .num_quadrature_points = fe_degree + 1,
@@ -517,7 +510,6 @@ namespace ADR
 
             ProblemData<dim, fe_degree> data{
                 .mesh_filename = "input.msh",
-                .problem_name = "neumann",
                 .num_levels = 5,
                 .num_quadrature_points = fe_degree + 1,
                 .lv0_smoothing_range = 1.e-3,
@@ -552,15 +544,14 @@ namespace ADR
 
             ProblemData<dim, fe_degree> data{
                 .mesh_filename = "input.msh",
-                .problem_name = "parabolic",
                 .num_levels = 5,
                 .num_quadrature_points = fe_degree + 1,
                 .lv0_smoothing_range = 1.e-3,
                 .lvgt0_smoothing_range = 15,
                 .lvgt0_smoothing_degree = 5,
                 .lvgt0_smoothing_eigenvalue_max_iterations = 10,
-                .solver_max_iterations = 1000,
-                .solver_tolerance_factor = 1e-10,
+                .solver_max_iterations = 100,
+                .solver_tolerance_factor = 1e-12,
 
                 .mu = std::make_shared<ConstantRealFunction<dim>>(1.0),
                 .beta = std::make_shared<ConstantVectorFunctionWithGradient<dim>>(0.0),
@@ -569,7 +560,7 @@ namespace ADR
                 // We heat the whole domain up uniformly with a forcing term of 6.0
                 .forcing_term = std::make_shared<ConstantRealFunction<dim>>(6.0),
                 .is_time_dependent = true,
-                .delta_t = 0.1,
+                .delta_t = 0.01,
                 .end_time = 1.0,
                 .initial_condition = std::make_shared<ConstantRealFunction<dim>>(0.0),
                 .dirichlet_boundaries = dirichlet_boundaries,
@@ -593,7 +584,6 @@ namespace ADR
 
             ProblemData<dim, fe_degree> data{
                 .mesh_filename = "input.msh",
-                .problem_name = "transient",
                 .num_levels = 5,
                 .num_quadrature_points = fe_degree + 1,
                 .lv0_smoothing_range = 1.e-3,
@@ -604,15 +594,54 @@ namespace ADR
                 .solver_tolerance_factor = 1e-12,
 
                 // --- Stress Test the Physics Setup ---
-                .mu = std::make_shared<ConstantRealFunction<dim>>(0.02), // Small diffusion so the initial blob spreads slowly
+                .mu = std::make_shared<ConstantRealFunction<dim>>(0.02),                // Small diffusion so the initial blob spreads slowly
                 .beta = std::make_shared<ConstantVectorFunctionWithGradient<dim>>(0.8), // Advection pushes the blob diagonally! (0.8, 0.8, 0.8)
-                .gamma = std::make_shared<ConstantRealFunction<dim>>(0.5), // Reaction decays the solution gradually over time
-                
+                .gamma = std::make_shared<ConstantRealFunction<dim>>(0.5),              // Reaction decays the solution gradually over time
+
                 .forcing_term = std::make_shared<ConstantRealFunction<dim>>(0.0), // No external source, just the drifting blob
                 .is_time_dependent = true,
                 .delta_t = 0.005,
                 .end_time = 0.5,
                 .initial_condition = std::make_shared<GaussianFunction<dim>>(), // Initial state: A hot sphere at corner (0.2, 0.2, 0.2)
+                .dirichlet_boundaries = dirichlet_boundaries,
+                .neumann_boundaries = neumann_boundaries,
+            };
+            return data;
+        }
+
+        static ProblemData<dim, fe_degree> test_case_heated_wall()
+        {
+            MFSolver::DirichletBoundaries<dim> dirichlet_boundaries;
+            dirichlet_boundaries[0] = std::make_shared<ConstantRealFunction<dim>>(50.0);
+            dirichlet_boundaries[1] = std::make_shared<ConstantRealFunction<dim>>(20.0);
+
+            MFSolver::NeumannBoundaries<dim> neumann_boundaries;
+            neumann_boundaries[2] = std::make_shared<ConstantRealFunction<dim>>(10.0);
+            neumann_boundaries[3] = std::make_shared<ConstantRealFunction<dim>>(-10.0);
+            neumann_boundaries[4] = std::make_shared<ConstantRealFunction<dim>>(0.0);
+            neumann_boundaries[5] = std::make_shared<ConstantRealFunction<dim>>(0.0);
+
+            ProblemData<dim, fe_degree> data{
+                .mesh_filename = "input.msh",
+                .num_levels = 5,
+                .num_quadrature_points = fe_degree + 1,
+                .lv0_smoothing_range = 1.e-3,
+                .lvgt0_smoothing_range = 15,
+                .lvgt0_smoothing_degree = 5,
+                .lvgt0_smoothing_eigenvalue_max_iterations = 10,
+                .solver_max_iterations = 100,
+                .solver_tolerance_factor = 1e-12,
+
+                // --- Stress Test the Physics Setup ---
+                .mu = std::make_shared<ConstantRealFunction<dim>>(0.02),
+                .beta = std::make_shared<ConstantVectorFunctionWithGradient<dim>>(0.8),
+                .gamma = std::make_shared<ConstantRealFunction<dim>>(0),
+
+                .forcing_term = std::make_shared<ConstantRealFunction<dim>>(1.0),
+                .is_time_dependent = true,
+                .delta_t = 0.005,
+                .end_time = 0.5,
+                .initial_condition = std::make_shared<GaussianFunction<dim>>(),
                 .dirichlet_boundaries = dirichlet_boundaries,
                 .neumann_boundaries = neumann_boundaries,
             };
@@ -631,7 +660,6 @@ namespace ADR
 
             ProblemData<dim, fe_degree> data{
                 .mesh_filename = "input.msh",
-                .problem_name = "lab_02",
                 .num_levels = 5,
 
                 .num_quadrature_points = fe_degree + 1,
@@ -670,7 +698,6 @@ namespace ADR
 
             ProblemData<dim, fe_degree> data{
                 .mesh_filename = "input.msh",
-                .problem_name = "lab_03",
                 .num_levels = 5,
 
                 .num_quadrature_points = fe_degree + 1,
@@ -709,7 +736,6 @@ namespace ADR
 
             ProblemData<dim, fe_degree> data{
                 .mesh_filename = "input.msh",
-                .problem_name = "andrea",
                 .num_levels = 5,
 
                 .num_quadrature_points = fe_degree + 1,

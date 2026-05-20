@@ -1,8 +1,40 @@
-#pragma once
+#include <exception>
+#include <stdexcept>
+#include <functional>
+#include <string>
 
-// Standard Library imports
-// #include <exception>
-// #include <functional>
+#include <deal.II/base/conditional_ostream.h>
+#include <deal.II/base/function.h>
+#include <deal.II/base/point.h>
+#include <deal.II/base/tensor_function.h>
+#include <deal.II/base/tensor.h>
+#include <deal.II/base/types.h>
+
+#include <deal.II/lac/la_parallel_vector.h>
+
+#include <deal.II/matrix_free/fe_evaluation.h>
+#include <deal.II/matrix_free/operators.h>
+
+// TODO: deal.II libraries: did we actually need these?
+#include <deal.II/fe/fe_q.h>
+#include <deal.II/fe/mapping_q1.h>
+#include <deal.II/lac/affine_constraints.h>
+#include <deal.II/matrix_free/operators.h>
+#include <deal.II/multigrid/mg_constrained_dofs.h>
+#include <deal.II/base/mg_level_object.h>
+#include <deal.II/base/conditional_ostream.h>
+
+#include <deal.II/lac/trilinos_precondition.h>
+#include <deal.II/lac/trilinos_sparse_matrix.h>
+#include <deal.II/distributed/tria.h>
+#include <deal.II/distributed/fully_distributed_tria.h>
+
+#include <deal.II/lac/trilinos_sparse_matrix.h>
+#include <deal.II/lac/trilinos_vector.h>
+
+#include "function_types.hpp"
+#include "ProblemData.hpp"
+
 #include <stdexcept>
 // #include <string>
 // #include <unordered_map>
@@ -37,18 +69,17 @@
 // Imports from step40
 // TODO: rationalize
 
-
 #include <deal.II/base/quadrature_lib.h>
 #include <deal.II/base/function.h>
 #include <deal.II/base/timer.h>
- 
+
 #include <deal.II/lac/generic_linear_algebra.h>
 #include <deal.II/lac/vector.h>
 #include <deal.II/lac/full_matrix.h>
 #include <deal.II/lac/solver_cg.h>
 #include <deal.II/lac/affine_constraints.h>
 #include <deal.II/lac/dynamic_sparsity_pattern.h>
- 
+
 #include <deal.II/grid/grid_generator.h>
 #include <deal.II/dofs/dof_handler.h>
 #include <deal.II/dofs/dof_tools.h>
@@ -57,7 +88,7 @@
 #include <deal.II/numerics/vector_tools.h>
 #include <deal.II/numerics/data_out.h>
 #include <deal.II/numerics/error_estimator.h>
- 
+
 #include <deal.II/base/utilities.h>
 #include <deal.II/base/conditional_ostream.h>
 #include <deal.II/base/multithread_info.h>
@@ -96,15 +127,15 @@ namespace MFSolver
 
     namespace LA
     {
-        #if defined(DEAL_II_WITH_PETSC) && !defined(DEAL_II_PETSC_WITH_COMPLEX) && \
-        !(defined(DEAL_II_WITH_TRILINOS) && defined(FORCE_USE_OF_TRILINOS))
+#if defined(DEAL_II_WITH_PETSC) && !defined(DEAL_II_PETSC_WITH_COMPLEX) && \
+    !(defined(DEAL_II_WITH_TRILINOS) && defined(FORCE_USE_OF_TRILINOS))
         using namespace LinearAlgebraPETSc;
-        #  define USE_PETSC_LA
-        #elif defined(DEAL_II_WITH_TRILINOS)
+#define USE_PETSC_LA
+#elif defined(DEAL_II_WITH_TRILINOS)
         using namespace LinearAlgebraTrilinos;
-        #else
-        #  error DEAL_II_WITH_PETSC or DEAL_II_WITH_TRILINOS required
-        #endif
+#else
+#error DEAL_II_WITH_PETSC or DEAL_II_WITH_TRILINOS required
+#endif
     } // namespace LA
 
     /**
@@ -133,17 +164,18 @@ namespace MFSolver
          * \param _problem The problem this solver will solve.
          */
         ADRSolver(const ADR::ProblemData<dim, fe_degree> &_problem)
+            ADRSolver(const ADR::ProblemData<dim, fe_degree> &_problem)
             : problem(_problem)
         {
         }
 
         /**
-         * \brief Destructor for ADRProblem.
+         * \brief Destructor for the solver.
          */
         virtual ~ADRSolver() {};
 
         /**
-         * \brief Actually solve the ADRProblem.
+         * \brief Actually solve the problem.
          */
         virtual void run() = 0;
 
@@ -188,14 +220,22 @@ namespace MFSolver
      * The ADR operator is built to represent an operator \f( L \f) such that the problem to solve can be expressed as \f[ Lu := -\nabla \cdot (\mu \nabla u) + \nabla \cdot (\beta u) + \gamma u = f \f]
      */
     template <int dim, int fe_degree, typename Number>
-    class ADROperator : MatrixFreeOperators::Base<dim, DVector<Number>>
+    class ADROperator : public MatrixFreeOperators::Base<dim, DVector<Number>>
     {
     public:
         /**
          * \brief Constructs a new instance of ADROperator.
          */
-        ADROperator() : Super()
+        ADROperator() : Super(), delta_t(0.0)
         {
+        }
+
+        /**
+         * \brief Sets the time step size for transient problems.
+         */
+        void set_time_step(double dt)
+        {
+            delta_t = dt;
         }
 
         /**
@@ -270,8 +310,7 @@ namespace MFSolver
 
             for (unsigned int i = 0; i < inverse_diagonal.locally_owned_size(); ++i)
             {
-                Assert(inverse_diagonal.local_element(i) > 0., ExcMessage("Error: non-positive entry found. Operator must be positive definite."));
-
+                Assert(inverse_diagonal.local_element(i) > 0., ExcMessage(std::format("Error: non-positive entry found. Operator must be positive definite. ({} = {})", i, inverse_diagonal.local_element(i))));
                 inverse_diagonal.local_element(i) = 1. / inverse_diagonal.local_element(i);
             }
         }
@@ -310,8 +349,10 @@ namespace MFSolver
                 VectorizedArray<Number> div_beta = div_beta_coeff(cell, q);
                 VectorizedArray<Number> gamma = gamma_coeff(cell, q);
 
+                VectorizedArray<Number> mass_term_coeff = make_vectorized_array<Number>(delta_t > 0.0 ? 1.0 / delta_t : 0.0);
+
                 phi.submit_gradient(mu * gradient_of_u, q);
-                phi.submit_value(scalar_product(gradient_of_u, beta) + (div_beta + gamma) * value_of_u, q);
+                phi.submit_value(scalar_product(gradient_of_u, beta) + (div_beta + gamma + mass_term_coeff) * value_of_u, q);
             }
 
             phi.integrate(EvaluationFlags::values | EvaluationFlags::gradients);
@@ -371,6 +412,11 @@ namespace MFSolver
         }
 
         /**
+         * \brief The time step size. If > 0, the operator shifts from steady-state to time-dependent (adds Mass Matrix component).
+         */
+        double delta_t;
+
+        /**
          * \brief Cache used to store precomputed values for the diffusion coefficient.
          */
         Table<2, VectorizedArray<Number>> mu_coeff;
@@ -415,13 +461,14 @@ namespace MFSolver
               fe(fe_degree), dof_handler(triangulation), mapping(), setup_time(0.0), pcout(std::cout, Utilities::MPI::this_mpi_process(MPI_COMM_WORLD) == 0), time_details(std::cout, false && Utilities::MPI::this_mpi_process(MPI_COMM_WORLD) == 0)
         {
         }
+
         ~MatrixFreeADRSolver() override {};
 
         void run() override;
 
     private:
         void setup_system() override;
-        void assemble() override;
+        void assemble() override; // <-- this one assembles the RHS, the LHS initialization was already performed somewhere else
         void solve() override;
         void output_results() override;
 
@@ -453,6 +500,7 @@ namespace MFSolver
         MGLevelObject<LevelMatrixType> mg_matrices;
 
         DVector<double> solution;
+        DVector<double> old_solution;
         DVector<double> system_rhs;
 
         double setup_time;
@@ -469,24 +517,13 @@ namespace MFSolver
     class MatrixBasedADRSolver : public ADRSolver<dim, fe_degree>
     {
     public:
-        MatrixBasedADRSolver(const ADR::ProblemData<dim, fe_degree> &_problem) : 
-        ADRSolver<dim, fe_degree>(_problem),
-        mpi_communicator(MPI_COMM_WORLD),
-        triangulation(mpi_communicator,
-                    typename Triangulation<dim>::MeshSmoothing(
-                      Triangulation<dim>::smoothing_on_refinement |
-                      Triangulation<dim>::smoothing_on_coarsening),
-                    parallel::distributed::Triangulation<dim>::construct_multigrid_hierarchy),
-        fe(fe_degree),
-        dof_handler(triangulation),
-        mapping(),
-        pcout(std::cout,
-            (Utilities::MPI::this_mpi_process(mpi_communicator) == 0)),
-        computing_timer(mpi_communicator,
-                      pcout,
-                      TimerOutput::never,
-                      TimerOutput::wall_times)
-        {}
+        MatrixBasedADRSolver(const ADRProblem<dim> &_problem) : ADRSolver<dim, fe_degree>(_problem),
+                                                                mpi_size(Utilities::MPI::n_mpi_processes(MPI_COMM_WORLD)),
+                                                                mpi_rank(Utilities::MPI::this_mpi_process(MPI_COMM_WORLD)),
+                                                                mesh(MPI_COMM_WORLD),
+                                                                pcout(std::cout, mpi_rank == 0)
+        {
+        }
         ~MatrixBasedADRSolver() override {};
 
         void run() override;
@@ -498,48 +535,66 @@ namespace MFSolver
         void solve() override;
         void output_results() override;
 
-        MPI_Comm mpi_communicator;
- 
-        parallel::distributed::Triangulation<dim> triangulation;
-    
-        const FE_Q<dim> fe;
+        // Number of MPI processes.
+        const unsigned int mpi_size;
+
+        // Rank of the current MPI process.
+        const unsigned int mpi_rank;
+
+        // Triangulation.
+        // TODO: clarify difference with MatrixFreeADRSolver mesh types
+        parallel::fullydistributed::Triangulation<dim, dim> mesh;
+
+        // Finite element space.
+        // TODO: clarify difference with MatrixFreeADRSolver fe non-pointer
+        std::unique_ptr<FiniteElement<dim>> fe;
+
+        // TODO: should we add
+        // - mapping
+        // - affine constraints
+        // here?
+
+        // Quadrature formula.
+        std::unique_ptr<Quadrature<dim>> quadrature;
+
+        // DoF handler.
         DoFHandler<dim> dof_handler;
         const MappingQ1<dim, dim> mapping;
-    
+
         IndexSet locally_owned_dofs;
         IndexSet locally_relevant_dofs;
-    
+
         AffineConstraints<double> constraints;
-    
+
         LA::MPI::SparseMatrix system_matrix;
 
         // TODO: use the correct vector type
-        LA::MPI::Vector       completely_distributed_solution;
-        LA::MPI::Vector       locally_relevant_solution;
-        LA::MPI::Vector       system_rhs;
-        LA::MPI::Vector       old_solution;
+        LA::MPI::Vector completely_distributed_solution;
+        LA::MPI::Vector locally_relevant_solution;
+        LA::MPI::Vector system_rhs;
+        LA::MPI::Vector old_solution;
 
         // Multigrid
         MGLevelObject<LA::MPI::SparseMatrix> mg_matrices;
-        MGConstrainedDoFs mg_constrained_dofs;   
-        MGTransferPrebuilt<LA::MPI::Vector> mg_transfer;        
-        
+        MGConstrainedDoFs mg_constrained_dofs;
+        MGTransferPrebuilt<LA::MPI::Vector> mg_transfer;
+
         // Output and timing information
         ConditionalOStream pcout;
-        TimerOutput        computing_timer;
+        TimerOutput computing_timer;
         double start_time;
         double end_time;
 
         // Convergence information
         std::vector<std::vector<double>> conv_history;
-        
+
         // Time-dependent attributes
         double time = 0.0;
         unsigned int timestep_number = 0;
         // const double theta = 1.0;
-        
     };
 };
 
 // Including template function implementations
-#include "../step40/MatrixBasedADRSolver.tpp"
+#include "MatrixBasedADRSolver.tpp"
+#include "MatrixFreeADRSolver.tpp"
