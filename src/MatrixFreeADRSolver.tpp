@@ -25,6 +25,45 @@
 namespace MFSolver
 {
     template <int dim, int fe_degree>
+    void create_saving_directory_mf(ADR::ProblemData<dim, fe_degree> &problem, std::string &output_dir){
+        // Creating a saving folder
+        std::filesystem::path save_dir =
+            std::filesystem::path("tests") /
+            "matrix_free" /
+            problem.problem_name /
+            std::to_string(problem.refinement_level) /
+            std::to_string(Utilities::MPI::n_mpi_processes(MPI_COMM_WORLD)) /
+            "1" / // TODO: restore actual multithreading
+            "0";// TODO: insert SIMD;
+
+        std::filesystem::create_directories(save_dir);
+        int file_n = get_max_test_number(save_dir) + 1; // the folders are named test_0, test_1, test_2 and so on
+        save_dir += "/test_" + std::to_string(file_n);
+
+        std::filesystem::create_directories(save_dir);
+    
+        output_dir = save_dir;
+    }
+
+    template <int dim, int fe_degree>
+    void retrieve_saving_directory_mf(ADR::ProblemData<dim, fe_degree> &problem, std::string &output_dir){
+        // Creating and opening a saving folder (if not existent)
+        std::filesystem::path save_dir =
+            std::filesystem::path("tests") /
+            "matrix_free" /
+            problem.problem_name /
+            std::to_string(problem.refinement_level) /
+            std::to_string(Utilities::MPI::n_mpi_processes(MPI_COMM_WORLD)) /
+            "1" / // TODO: restore actual multithreading
+            "0"; // TODO: SIMD;
+
+        int file_n = get_max_test_number(save_dir); // the folders are named test_0, test_1, test_2 and so on
+        save_dir += "/test_" + std::to_string(file_n);
+    
+        output_dir = save_dir;
+    }
+
+    template <int dim, int fe_degree>
     void MatrixFreeADRSolver<dim, fe_degree>::setup_system()
     {
         dealii::Timer timer;
@@ -328,10 +367,18 @@ namespace MFSolver
         flags.compression_level = dealii::DataOutBase::CompressionLevel::best_speed;
         data_out.set_flags(flags);
 
-        data_out.write_vtu_with_pvtu_record(
-            "./", "solution", cycle, MPI_COMM_WORLD, 3);
+        std::string output_dir;
 
-        cycle++;
+        if (this->timestep_number == 0){
+        create_saving_directory_mf<dim, fe_degree>(this->problem, output_dir);
+        } else if (this->timestep_number > 0){
+        retrieve_saving_directory_mf<dim, fe_degree>(this->problem, output_dir);
+        }
+        
+        data_out.write_vtu_with_pvtu_record(
+            output_dir, "/solution", this->timestep_number, MPI_COMM_WORLD);
+
+            cycle++;
     }
 
     template <int dim, int fe_degree>
@@ -371,10 +418,10 @@ namespace MFSolver
             }
             solution = old_solution;
 
-            unsigned int timestep_number = 0;
-            for (double time = 0.0; time <= this->problem.end_time; time += this->problem.delta_t, ++timestep_number)
+            this->timestep_number = 0;
+            for (double time = 0.0; time <= this->problem.end_time; time += this->problem.delta_t, ++this->timestep_number)
             {
-                pcout << "\nTime step " << timestep_number << " at t = " << time << std::endl;
+                pcout << "\nTime step " << this->timestep_number << " at t = " << time << std::endl;
 
                 pcout << "   Assembling..." << std::endl;
                 assemble();
@@ -418,21 +465,9 @@ namespace MFSolver
     template <int dim, int fe_degree>
     void MatrixFreeADRSolver<dim, fe_degree>::output_to_file()
     {
-        // Creating and open a text file (and folders, if needed)
-        std::filesystem::path save_dir =
-            std::filesystem::path("tests") /
-            "matrix_free" /
-            this->problem.problem_name /
-            std::to_string(this->problem.refinement_level) /
-            std::to_string(Utilities::MPI::n_mpi_processes(MPI_COMM_WORLD)) /
-            "1" / // TODO: read actual multithreading
-            "0";  // TODO: set simd;
-
-        std::filesystem::create_directories(save_dir);
-
-        int file_n = get_max_test_number(save_dir) + 1; // the files are named test_0, test_1, test_2 and so ons
-        std::string filename = "test_" + std::to_string(file_n) + ".txt";
-        std::ofstream MyFile(save_dir / filename);
+        std::string save_dir;
+        retrieve_saving_directory_mf<dim, fe_degree>(this->problem, save_dir);
+        std::ofstream MyFile(save_dir + "/log.txt");
 
         // Write to the file: first, mid and last timestep for TD
         // first only for TI
@@ -479,6 +514,5 @@ namespace MFSolver
 
         // Close the file
         MyFile.close();
-    }
-    
+    }   
 }

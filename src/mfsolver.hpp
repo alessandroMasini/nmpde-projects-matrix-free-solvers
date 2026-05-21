@@ -165,6 +165,8 @@ namespace MFSolver
          */
         ADR::ProblemData<dim, fe_degree> problem;
 
+        unsigned int timestep_number = 0;
+
         /**
          * Attributes needed for logging info.
          */
@@ -504,7 +506,7 @@ namespace MFSolver
 
         void run() override;
 
-        void output_to_file() /* override */;
+        void output_to_file() override;
 
     private:
         void setup_system() override;
@@ -542,7 +544,6 @@ namespace MFSolver
         TimerOutput computing_timer;
 
         double time = 0.0;
-        unsigned int timestep_number = 0;
         // const double theta = 1.0;
 
     };

@@ -1,42 +1,60 @@
 namespace MFSolver
 {
+  /**
+   * It returns the number of directories -1 in a directory.
+   */
   int get_max_test_number(const std::filesystem::path &dir)
   {
-    int max_num = -1;
-    const std::string prefix = "test_";
-    const std::string suffix = ".txt";
+    int counter = -1;
 
     for (const auto &entry : std::filesystem::directory_iterator(dir))
     {
-      if (!entry.is_regular_file())
+      if (!entry.is_directory())
         continue;
 
-      auto name = entry.path().filename().string();
-
-      // Must start with "test_" and end with ".txt"
-      if (name.size() <= prefix.size() + suffix.size())
-        continue;
-      if (name.rfind(prefix, 0) != 0)
-        continue; // does not start with prefix
-      if (name.compare(name.size() - suffix.size(), suffix.size(), suffix) != 0)
-        continue; // does not end with suffix
-
-      // Extract numeric part
-      std::string num_str = name.substr(prefix.size(),
-                                        name.size() - prefix.size() - suffix.size());
-      try
-      {
-        int n = std::stoi(num_str);
-        if (n > max_num)
-          max_num = n;
-      }
-      catch (...)
-      {
-        // Ignore malformed numbers
-      }
+      counter++;
     }
 
-    return max_num;
+    return counter;
+  }
+
+  template <int dim, int fe_degree>
+  void create_saving_directory_mb(ADR::ProblemData<dim, fe_degree> &problem, MPI_Comm &mpi_communicator, std::string &output_dir){
+    // Creating a saving folder
+    std::filesystem::path save_dir =
+        std::filesystem::path("tests") /
+        "matrix_based" /
+        problem.problem_name /
+        std::to_string(problem.refinement_level) /
+        std::to_string(Utilities::MPI::n_mpi_processes(mpi_communicator)) /
+        "1" / // TODO: restore actual multithreading
+        "0";// SIMD;
+
+    std::filesystem::create_directories(save_dir);
+    int file_n = get_max_test_number(save_dir) + 1; // the folders are named test_0, test_1, test_2 and so on
+    save_dir += "/test_" + std::to_string(file_n);
+
+    std::filesystem::create_directories(save_dir);
+  
+    output_dir = save_dir;
+  }
+
+  template <int dim, int fe_degree>
+  void retrieve_saving_directory_mb(ADR::ProblemData<dim, fe_degree> &problem, MPI_Comm &mpi_communicator, std::string &output_dir){
+    // Creating and opening a saving folder (if not existent)
+    std::filesystem::path save_dir =
+        std::filesystem::path("tests") /
+        "matrix_based" /
+        problem.problem_name /
+        std::to_string(problem.refinement_level) /
+        std::to_string(Utilities::MPI::n_mpi_processes(mpi_communicator)) /
+        "1" / // TODO: restore actual multithreading
+        "0";// SIMD;
+
+    int file_n = get_max_test_number(save_dir); // the folders are named test_0, test_1, test_2 and so on
+    save_dir += "/test_" + std::to_string(file_n);
+  
+    output_dir = save_dir;
   }
 
   template <int dim, int fe_degree>
@@ -378,9 +396,16 @@ namespace MFSolver
 
     data_out.build_patches();
 
-    // TODO: inquire these hardwired numbers
+    std::string output_dir;
+
+    if (this->timestep_number == 0){
+      create_saving_directory_mb<dim, fe_degree>(this->problem, this->mpi_communicator, output_dir);
+    } else if (this->timestep_number > 0){
+      retrieve_saving_directory_mb<dim, fe_degree>(this->problem, this->mpi_communicator, output_dir);
+    }
+    
     data_out.write_vtu_with_pvtu_record(
-        "./", "solution", timestep_number, mpi_communicator, 2, 8);
+        output_dir, "/solution", this->timestep_number, mpi_communicator);
   }
 
   template <int dim, int fe_degree>
@@ -422,9 +447,9 @@ namespace MFSolver
       while (time < this->problem.end_time - 0.5 * this->problem.delta_t)
       {
         time += this->problem.delta_t;
-        ++timestep_number;
+        ++this->timestep_number;
 
-        pcout << "TIMESTEP " << timestep_number << std::endl;
+        pcout << "TIMESTEP " << this->timestep_number << std::endl;
         assemble();
         pcout << "   Finished assemble" << std::endl;
         solve();
@@ -447,21 +472,9 @@ namespace MFSolver
   template <int dim, int fe_degree>
   void MatrixBasedADRSolver<dim, fe_degree>::output_to_file()
   {
-    // Creating and open a text file (and folders, if needed)
-    std::filesystem::path save_dir =
-        std::filesystem::path("tests") /
-        "matrix_based" /
-        this->problem.problem_name /
-        std::to_string(this->problem.refinement_level) /
-        std::to_string(Utilities::MPI::n_mpi_processes(mpi_communicator)) /
-        "1" / // TODO: restore actual multithreading
-        "0";  // SIMD;
-
-    std::filesystem::create_directories(save_dir);
-
-    int file_n = get_max_test_number(save_dir) + 1; // the files are named test_0, test_1, test_2 and so ons
-    std::string filename = "test_" + std::to_string(file_n) + ".txt";
-    std::ofstream MyFile(save_dir / filename);
+    std::string save_dir;
+    retrieve_saving_directory_mb<dim, fe_degree>(this->problem, this->mpi_communicator, save_dir);
+    std::ofstream MyFile(save_dir + "/log.txt");
 
     // Write to the file: first, mid and last timestep for TD
     // first only for TI
