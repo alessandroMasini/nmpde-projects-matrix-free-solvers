@@ -353,7 +353,7 @@ namespace MFSolver
                  system_rhs,
                  preconditioner);
 
-    conv_history.emplace_back(solver_control.get_history_data());
+    this->conv_history.emplace_back(solver_control.get_history_data());
     pcout << "   Solved in " << solver_control.last_step() << " iterations."
           << std::endl;
 
@@ -399,7 +399,7 @@ namespace MFSolver
     {
       pcout << "Solving a time independent problem" << std::endl;
 
-      start_time = MPI_Wtime();
+      this->start_time = MPI_Wtime();
       setup_system();
       pcout << "Finished setup" << std::endl;
       assemble();
@@ -437,7 +437,7 @@ namespace MFSolver
       }
     }
 
-    end_time = MPI_Wtime();
+    this->end_time = MPI_Wtime();
     computing_timer.print_summary();
     computing_timer.reset();
 
@@ -447,10 +447,9 @@ namespace MFSolver
   template <int dim, int fe_degree>
   void MatrixBasedADRSolver<dim, fe_degree>::output_to_file()
   {
-    // TODO: adapt this method for time-dependent problems
     // Creating and open a text file (and folders, if needed)
     std::filesystem::path save_dir =
-        std::filesystem::path("../tests") /
+        std::filesystem::path("tests") /
         "matrix_based" /
         this->problem.problem_name /
         std::to_string(this->problem.refinement_level) /
@@ -469,41 +468,41 @@ namespace MFSolver
     // NOTE: total_t is for all timesteps
     MyFile << "max_iter tol t_step it_n err total_t\n";
 
-    for (size_t i = 0; i < conv_history[0].size(); i++)
+    for (size_t i = 0; i < this->conv_history[0].size(); i++)
     {
       MyFile << this->problem.solver_max_iterations << " "
              << this->problem.solver_tolerance_factor << " "
              << 0 << " "
              << i << " "
-             << conv_history[0][i] << " "
-             << end_time - start_time << "\n";
+             << this->conv_history[0][i] << " "
+             << this->end_time - this->start_time << "\n";
     }
 
-    if (conv_history.size() > 1)
+    if (this->conv_history.size() > 1)
     {
-      size_t mid_step = conv_history.size() / 2;
-      for (size_t i = 0; i < conv_history[mid_step].size(); i++)
+      size_t mid_step = this->conv_history.size() / 2;
+      for (size_t i = 0; i < this->conv_history[mid_step].size(); i++)
       {
         MyFile << this->problem.solver_max_iterations << " "
                << this->problem.solver_tolerance_factor << " "
                << "T//2" << " "
                << i << " "
-               << conv_history[mid_step][i] << " "
-               << end_time - start_time << "\n";
+               << this->conv_history[mid_step][i] << " "
+               << this->end_time - this->start_time << "\n";
       }
     }
 
-    if (conv_history.size() > 2)
+    if (this->conv_history.size() > 2)
     {
-      size_t last_step = conv_history.size() - 1;
-      for (size_t i = 0; i < conv_history[last_step].size(); i++)
+      size_t last_step = this->conv_history.size() - 1;
+      for (size_t i = 0; i < this->conv_history[last_step].size(); i++)
       {
         MyFile << this->problem.solver_max_iterations << " "
                << this->problem.solver_tolerance_factor << " "
                << "T" << " "
                << i << " "
-               << conv_history[last_step][i] << " "
-               << end_time - start_time << "\n";
+               << this->conv_history[last_step][i] << " "
+               << this->end_time - this->start_time << "\n";
       }
     }
 

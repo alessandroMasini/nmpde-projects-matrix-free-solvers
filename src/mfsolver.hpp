@@ -137,7 +137,7 @@ namespace MFSolver
         // /**
         //  * \brief writes the result of the computation in a structured manner on file.
         //  */
-        // virtual void output_to_file() = 0;
+        virtual void output_to_file() = 0;
 
     protected:
         /**
@@ -164,6 +164,14 @@ namespace MFSolver
          * \brief The problem this solver will solve.
          */
         ADR::ProblemData<dim, fe_degree> problem;
+
+        /**
+         * Attributes needed for logging info.
+         */
+        double start_time = 0;
+        double end_time = 0;
+
+        std::vector<std::vector<double>> conv_history;
     };
 
     /**
@@ -420,14 +428,13 @@ namespace MFSolver
         ~MatrixFreeADRSolver() override {};
 
         void run() override;
+        void output_to_file() override;
 
     private:
         void setup_system() override;
         void assemble() override; // <-- this one assembles the RHS, the LHS initialization was already performed somewhere else
         void solve() override;
         void output_results() override;
-
-        // void output_to_file() override;
 
 #ifdef DEAL_II_WITH_P4EST
         //         // The second "dim" is needed in case the spatial dimension
@@ -538,10 +545,6 @@ namespace MFSolver
         unsigned int timestep_number = 0;
         // const double theta = 1.0;
 
-        double start_time = 0;
-        double end_time = 0;
-
-        std::vector<std::vector<double>> conv_history;
     };
 };
 

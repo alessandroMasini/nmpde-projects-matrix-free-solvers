@@ -295,13 +295,17 @@ namespace MFSolver
 
         // Outer Iterative Krylov Solver: Since our ADR equation has an asymmetric advection term,
         // standard Conjugate Gradient (CG) could fail here. We use GMRES instead.
-        SolverControl solver_control(1000, 1e-12 * system_rhs.l2_norm());
+        // pcout << this->problem.solver_max_iterations << std::endl;
+        // pcout << this->problem.solver_tolerance_factor << std::endl;
+        SolverControl solver_control(this->problem.solver_max_iterations, this->problem.solver_tolerance_factor * system_rhs.l2_norm());
+        solver_control.enable_history_data();
         SolverGMRES<DVector<double>> gmres(solver_control);
 
         // Zero out constraints before solving so the GMRES internal vectors aren't corrupted,
         // then distribute the exact boundary values back at the end
         constraints.set_zero(solution);
         gmres.solve(system_matrix, solution, system_rhs, preconditioner);
+        this->conv_history.emplace_back(solver_control.get_history_data());
         constraints.distribute(solution);
 
         pcout << "Solved in " << solver_control.last_step() << " iterations." << std::endl;
@@ -347,13 +351,14 @@ namespace MFSolver
               << std::endl
               << std::endl;
 
+        this->start_time = MPI_Wtime();
         GridGenerator::hyper_cube(triangulation, 0., 1., true); // `true` colorizes the boundaries: 0=left, 1=right, 2=bottom, 3=top, 4=back, 5=front
-        triangulation.refine_global(4 - dim);
+        triangulation.refine_global(this->problem.refinement_level);
 
         if (this->problem.is_time_dependent)
         {
             pcout << "--- Time-Dependent Simulation ---" << std::endl;
-            triangulation.refine_global(2); // refine it a bit for the simulation
+            // triangulation.refine_global(2); // refine it a bit for the simulation
             setup_system();
 
             if (this->problem.initial_condition != nullptr)
@@ -386,30 +391,94 @@ namespace MFSolver
         }
         else
         {
-            for (unsigned int cycle = 0; cycle < 3; ++cycle) // let's do 3 cycles for the test
-            {
-                pcout << "Cycle " << cycle << std::endl;
-                if (cycle > 0)
-                    triangulation.refine_global(1);
+            // for (unsigned int cycle = 0; cycle < 3; ++cycle) // let's do 3 cycles for the test
+            // {
+            //     pcout << "Cycle " << cycle << std::endl;
+            //     if (cycle > 0)
+            //         triangulation.refine_global(1);
 
-                setup_system();
+            setup_system();
 
-                pcout << "   Assembling..." << std::endl;
-                assemble();
+            pcout << "   Assembling..." << std::endl;
+            assemble();
 
-                pcout << "   Solving..." << std::endl;
-                solve();
+            pcout << "   Solving..." << std::endl;
+            solve();
 
-                pcout << "   Outputting results..." << std::endl;
-                output_results();
+            pcout << "   Outputting results..." << std::endl;
+            output_results();
 
-                pcout << "===========================================" << std::endl;
-            }
+            //     pcout << "===========================================" << std::endl;
+            // }
         }
+
+        this->end_time = MPI_Wtime();
     }
 
-    // template <int dim, int fe_degree>
-    // void MatrixFreeADRSolver<dim, fe_degree>::output_to_file()
-    // {
-    // }
+    template <int dim, int fe_degree>
+    void MatrixFreeADRSolver<dim, fe_degree>::output_to_file()
+    {
+        // Creating and open a text file (and folders, if needed)
+        std::filesystem::path save_dir =
+            std::filesystem::path("tests") /
+            "matrix_free" /
+            this->problem.problem_name /
+            std::to_string(this->problem.refinement_level) /
+            std::to_string(Utilities::MPI::n_mpi_processes(MPI_COMM_WORLD)) /
+            "1" / // TODO: read actual multithreading
+            "0";  // TODO: set simd;
+
+        std::filesystem::create_directories(save_dir);
+
+        int file_n = get_max_test_number(save_dir) + 1; // the files are named test_0, test_1, test_2 and so ons
+        std::string filename = "test_" + std::to_string(file_n) + ".txt";
+        std::ofstream MyFile(save_dir / filename);
+
+        // Write to the file: first, mid and last timestep for TD
+        // first only for TI
+        // NOTE: total_t is for all timesteps
+        MyFile << "max_iter tol t_step it_n err total_t\n";
+
+        for (size_t i = 0; i < this->conv_history[0].size(); i++)
+        {
+        MyFile << this->problem.solver_max_iterations << " "
+                << this->problem.solver_tolerance_factor << " "
+                << 0 << " "
+                << i << " "
+                << this->conv_history[0][i] << " "
+                << this->end_time - this->start_time << "\n";
+        }
+
+        if (this->conv_history.size() > 1)
+        {
+        size_t mid_step = this->conv_history.size() / 2;
+        for (size_t i = 0; i < this->conv_history[mid_step].size(); i++)
+        {
+            MyFile << this->problem.solver_max_iterations << " "
+                << this->problem.solver_tolerance_factor << " "
+                << "T//2" << " "
+                << i << " "
+                << this->conv_history[mid_step][i] << " "
+                << this->end_time - this->start_time << "\n";
+        }
+        }
+
+        if (this->conv_history.size() > 2)
+        {
+        size_t last_step = this->conv_history.size() - 1;
+        for (size_t i = 0; i < this->conv_history[last_step].size(); i++)
+        {
+            MyFile << this->problem.solver_max_iterations << " "
+                << this->problem.solver_tolerance_factor << " "
+                << "T" << " "
+                << i << " "
+                << this->conv_history[last_step][i] << " "
+                << this->end_time - this->start_time << "\n";
+        }
+        }
+
+        // Close the file
+        MyFile.close();
+    }
+    
 }

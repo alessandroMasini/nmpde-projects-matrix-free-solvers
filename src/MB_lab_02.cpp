@@ -1,5 +1,5 @@
-#include "../src/mfsolver.hpp"
-#include "../src/ProblemData.hpp"
+#include "mfsolver.hpp"
+#include "ProblemData.hpp"
 
 int main(int argc, char **argv)
 {
@@ -18,12 +18,16 @@ int main(int argc, char **argv)
     //ADR::ProblemData<2, 2> data = ADR::ProblemData<2, 2>::see_miro_for_problem_definition_andrea_knows();
 
     // Refinement level from input
-    if (argc >= 2){
+    if (argc >= 4)
+    {
         data.refinement_level += std::stoi(argv[2]);
-    } else {
+        data.solver_max_iterations = std::stoi(argv[3]);
+        data.solver_tolerance_factor = std::stod(argv[4]);
+    }
+    else
+    {
         throw std::invalid_argument(
-            "Usage: mpirun -n <n_cores> ./MB_lab_02 <n_threads> <global_additional_mesh_refinements>"
-        );
+            "Usage: mpirun -n <n_cores> ./MB_advanced <n_threads> <n_additional_refinements> <max_iters> <max_err>");
     }
     
     MFSolver::MatrixBasedADRSolver<2, 2> solver(data);

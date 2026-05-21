@@ -1,5 +1,5 @@
-#include "../src/mfsolver.hpp"
-#include "../src/ProblemData.hpp"
+#include "mfsolver.hpp"
+#include "ProblemData.hpp"
 
 int main(int argc, char **argv)
 {
@@ -9,8 +9,8 @@ int main(int argc, char **argv)
     // ADR::ProblemData<2, 2> data = ADR::ProblemData<2, 2>::standard_test_case();
     // ADR::ProblemData<3, 2> data = ADR::ProblemData<3, 2>::advanced_test_case();
     // ADR::ProblemData<3, 2> data = ADR::ProblemData<3, 2>::test_case_neumann_fix();
-    // ADR::ProblemData<3, 2> data = ADR::ProblemData<3, 2>::test_case_parabolic();
-    ADR::ProblemData<3, 2> data = ADR::ProblemData<3, 2>::test_case_comprehensive_transient();
+    ADR::ProblemData<3, 2> data = ADR::ProblemData<3, 2>::test_case_parabolic();
+    // ADR::ProblemData<3, 2> data = ADR::ProblemData<3, 2>::test_case_comprehensive_transient();
 
     // ADR::ProblemData<2, 2> data = ADR::ProblemData<2, 2>::lab_02_poisson();
     // ADR::ProblemData<3, 2> data = ADR::ProblemData<3, 2>::lab_03_dr_eq();
@@ -18,12 +18,16 @@ int main(int argc, char **argv)
     //ADR::ProblemData<2, 2> data = ADR::ProblemData<2, 2>::see_miro_for_problem_definition_andrea_knows();
 
     // Refinement level from input
-    if (argc >= 2){
+    if (argc >= 4)
+    {
         data.refinement_level += std::stoi(argv[2]);
-    } else {
+        data.solver_max_iterations = std::stoi(argv[3]);
+        data.solver_tolerance_factor = std::stod(argv[4]);
+    }
+    else
+    {
         throw std::invalid_argument(
-            "Usage: mpirun -n <n_cores> ./MB_transient <n_threads> <global_additional_mesh_refinements>"
-        );
+            "Usage: mpirun -n <n_cores> ./MB_advanced <n_threads> <n_additional_refinements> <max_iters> <max_err>");
     }
     
     MFSolver::MatrixBasedADRSolver<3, 2> solver(data);
