@@ -23,9 +23,14 @@
 #include <deal.II/numerics/data_out.h>
 
 namespace MFSolver
-{
+{  
+    bool to_bool(const std::string& x) {
+        assert(x == "0" || x == "1");
+        return x == "1";
+    }
+
     template <int dim, int fe_degree>
-    void create_saving_directory_mf(ADR::ProblemData<dim, fe_degree> &problem, std::string &output_dir){
+    void create_saving_directory_mf(ADR::ProblemData<dim, fe_degree> &problem, const bool &simd_flag, std::string &output_dir){
         // Creating a saving folder
         std::filesystem::path save_dir =
             std::filesystem::path("tests") /
@@ -34,7 +39,7 @@ namespace MFSolver
             std::to_string(problem.refinement_level) /
             std::to_string(Utilities::MPI::n_mpi_processes(MPI_COMM_WORLD)) /
             "1" / // TODO: restore actual multithreading
-            "0";// TODO: insert SIMD;
+            (simd_flag ? "1" : "0");
 
         std::filesystem::create_directories(save_dir);
         int file_n = get_max_test_number(save_dir) + 1; // the folders are named test_0, test_1, test_2 and so on
@@ -46,7 +51,7 @@ namespace MFSolver
     }
 
     template <int dim, int fe_degree>
-    void retrieve_saving_directory_mf(ADR::ProblemData<dim, fe_degree> &problem, std::string &output_dir){
+    void retrieve_saving_directory_mf(ADR::ProblemData<dim, fe_degree> &problem, const bool &simd_flag, std::string &output_dir){
         // Creating and opening a saving folder (if not existent)
         std::filesystem::path save_dir =
             std::filesystem::path("tests") /
@@ -55,7 +60,7 @@ namespace MFSolver
             std::to_string(problem.refinement_level) /
             std::to_string(Utilities::MPI::n_mpi_processes(MPI_COMM_WORLD)) /
             "1" / // TODO: restore actual multithreading
-            "0"; // TODO: SIMD;
+            (simd_flag ? "1" : "0");
 
         int file_n = get_max_test_number(save_dir); // the folders are named test_0, test_1, test_2 and so on
         save_dir += "/test_" + std::to_string(file_n);
@@ -114,7 +119,12 @@ namespace MFSolver
                 std::shared_ptr<MatrixFree<dim, double>>
                     system_mf_storage(new MatrixFree<dim, double>());
 
-                system_mf_storage->reinit(mapping, dof_handler, constraints, QGaussLobatto<1>(fe.degree + 1), additional_data);
+                // Since the quadrature type decides whether simd is used or not, the choice of the former needs to depend on the latter
+                if (simd_flag){
+                    system_mf_storage->reinit(mapping, dof_handler, constraints, QGaussLobatto<1>(fe.degree + 1), additional_data);
+                } else {
+                    system_mf_storage->reinit(mapping, dof_handler, constraints, QGauss<1>(fe.degree + 1), additional_data);
+                }
 
                 system_matrix.initialize(system_mf_storage);
             }
@@ -160,7 +170,13 @@ namespace MFSolver
                 additional_data.mg_level = level;
 
                 std::shared_ptr<MatrixFree<dim, float>> mg_mf_storage_level = std::make_shared<MatrixFree<dim, float>>();
-                mg_mf_storage_level->reinit(mapping, dof_handler, level_constraints, QGaussLobatto<1>(fe.degree + 1), additional_data);
+
+                // Since the quadrature type decides whether simd is used or not, the choice of the former needs to depend on the latter
+                if (simd_flag){
+                    mg_mf_storage_level->reinit(mapping, dof_handler, level_constraints, QGaussLobatto<1>(fe.degree + 1), additional_data);
+                } else {
+                    mg_mf_storage_level->reinit(mapping, dof_handler, level_constraints, QGauss<1>(fe.degree + 1), additional_data);
+                }
 
                 mg_matrices[level].initialize(mg_mf_storage_level, mg_constrained_dofs, level);
             }
@@ -198,7 +214,13 @@ namespace MFSolver
         typename MatrixFree<dim, double>::AdditionalData additional_data;
         additional_data.mapping_update_flags = update_gradients | update_JxW_values | update_quadrature_points;
         std::shared_ptr<MatrixFree<dim, double>> inhomogeneous_mf_storage(new MatrixFree<dim, double>());
-        inhomogeneous_mf_storage->reinit(mapping, dof_handler, no_constraints, QGaussLobatto<1>(fe.degree + 1), additional_data);
+        
+        // Since the quadrature type decides whether simd is used or not, the choice of the former needs to depend on the latter
+        if (simd_flag){
+            inhomogeneous_mf_storage->reinit(mapping, dof_handler, no_constraints, QGaussLobatto<1>(fe.degree + 1), additional_data);
+        } else {
+            inhomogeneous_mf_storage->reinit(mapping, dof_handler, no_constraints, QGauss<1>(fe.degree + 1), additional_data);
+        }
         inhomogeneous_operator.initialize(inhomogeneous_mf_storage);
 
         solution = 0;
@@ -370,9 +392,9 @@ namespace MFSolver
         std::string output_dir;
 
         if (this->timestep_number == 0){
-        create_saving_directory_mf<dim, fe_degree>(this->problem, output_dir);
+        create_saving_directory_mf<dim, fe_degree>(this->problem, this->simd_flag, output_dir);
         } else if (this->timestep_number > 0){
-        retrieve_saving_directory_mf<dim, fe_degree>(this->problem, output_dir);
+        retrieve_saving_directory_mf<dim, fe_degree>(this->problem, this->simd_flag, output_dir);
         }
         
         data_out.write_vtu_with_pvtu_record(
@@ -390,6 +412,8 @@ namespace MFSolver
 
         pcout << "Number of MPI ranks:            "
               << dealii::Utilities::MPI::n_mpi_processes(MPI_COMM_WORLD) << std::endl;
+
+        // TODO: fix this output in such a way it actually reflects the employed vectorization
         const unsigned int n_vect_doubles = dealii::VectorizedArray<double>::size();
         const unsigned int n_vect_bits = 8 * sizeof(double) * n_vect_doubles;
         pcout << "Vectorization over " << n_vect_doubles
@@ -466,7 +490,7 @@ namespace MFSolver
     void MatrixFreeADRSolver<dim, fe_degree>::output_to_file()
     {
         std::string save_dir;
-        retrieve_saving_directory_mf<dim, fe_degree>(this->problem, save_dir);
+        retrieve_saving_directory_mf<dim, fe_degree>(this->problem, this->simd_flag, save_dir);
         std::ofstream MyFile(save_dir + "/log.txt");
 
         // Write to the file: first, mid and last timestep for TD
