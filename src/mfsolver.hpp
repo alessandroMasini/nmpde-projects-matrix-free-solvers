@@ -423,7 +423,7 @@ namespace MFSolver
               triangulation(Triangulation<dim>::limit_level_difference_at_vertices)
 #endif
               ,
-              fe(fe_degree), dof_handler(triangulation), simd_flag(_simd_flag), mapping(), setup_time(0.0), pcout(std::cout, Utilities::MPI::this_mpi_process(MPI_COMM_WORLD) == 0), time_details(std::cout, false && Utilities::MPI::this_mpi_process(MPI_COMM_WORLD) == 0)
+              fe(fe_degree), dof_handler(triangulation), simd_flag(_simd_flag), mapping(), setup_time(0.0), pcout(std::cout, Utilities::MPI::this_mpi_process(MPI_COMM_WORLD) == 0), time_details(std::cout, true && Utilities::MPI::this_mpi_process(MPI_COMM_WORLD) == 0)
         {
         }
 

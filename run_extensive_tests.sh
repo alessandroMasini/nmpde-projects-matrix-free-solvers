@@ -21,9 +21,9 @@
 #   --n_proc <list>                     List of numbers of processes to use.
 #                                       Default: "1 2 4 8 16"
 #   --n_threads <list>                  List of numbers of threads to use.
+#                                       Default: "1 4 8"
 #   --simd <list>                       List of values of SIMD to use.
-#                                       Default for these 2 values (n_threads/simd):
-#                                       "1/0 1/1 4/1 8/1"
+#                                       Default: "0 1"
 #   --max_iters <list>                  List of maximum iterations.
 #                                       Default: "100"
 #   --max_err <list>                    List of maximum error (per time step).
@@ -85,25 +85,19 @@ for solver in $SOLVERS; do
                                 for ((i=0; i<N_TESTS; i++)); do
                                     echo "RUN $i: solver=$solver problem=$problem n_additional_refinements=$n_additional_refinements n_proc=$n_proc n_threads=$n_threads simd=$simd max_iters=$max_iters max_err=$max_err"
 
-                                    if [[ "$solver" = "mb" ]]; then
-                                        # MATRIX-BASED
-                                        case "$problem" in
-                                            advanced)  mpirun -n "$n_proc" ./MB_advanced "$n_threads" "$n_additional_refinements" "$max_iters" "$max_err";; 
-                                            lab_02)  mpirun -n "$n_proc" ./MB_lab_02 "$n_threads" "$n_additional_refinements" "$max_iters" "$max_err";;
-                                            lab_03)  mpirun -n "$n_proc" ./MB_lab_03 "$n_threads" "$n_additional_refinements" "$max_iters" "$max_err";;
-                                            parabolic)  mpirun -n "$n_proc" ./MB_parabolic "$n_threads" "$n_additional_refinements" "$max_iters" "$max_err";;
-                                            transient)  mpirun -n "$n_proc" ./MB_transient "$n_threads" "$n_additional_refinements" "$max_iters" "$max_err";;
-                                            *) echo "Unknown problem: $problem";;
+                                    if [[ "$solver" == "mf" ]]; then
+                                        # MATRIX-FREE
+                                        case "$simd" in
+                                            0)  mpirun -n "$n_proc" ./matrix_free_no_simd "$n_threads" "$simd" "$problem" "$n_additional_refinements" "$max_iters" "$max_err";;
+                                            1)  mpirun -n "$n_proc" ./matrix_free_simd "$n_threads" "$simd" "$problem" "$n_additional_refinements" "$max_iters" "$max_err";; 
+                                            *) echo "Unknown simd value: $simd";;
                                         esac
                                     else
-                                        # MATRIX-FREE
-                                        case "$problem" in
-                                            advanced)  mpirun -n "$n_proc" ./MF_advanced "$n_threads" "$simd" "$n_additional_refinements" "$max_iters" "$max_err";; 
-                                            lab_02)  mpirun -n "$n_proc" ./MF_lab_02 "$n_threads" "$simd" "$n_additional_refinements" "$max_iters" "$max_err";;
-                                            lab_03)  mpirun -n "$n_proc" ./MF_lab_03 "$n_threads" "$simd" "$n_additional_refinements" "$max_iters" "$max_err";;
-                                            parabolic)  mpirun -n "$n_proc" ./MF_parabolic "$n_threads" "$simd" "$n_additional_refinements" "$max_iters" "$max_err";;
-                                            transient)  mpirun -n "$n_proc" ./MF_transient "$n_threads" "$simd" "$n_additional_refinements" "$max_iters" "$max_err";;
-                                            *) echo "Unknown problem: $problem";;
+                                        # MATRIX-BASED
+                                        case "$simd" in
+                                            0)  mpirun -n "$n_proc" ./matrix_based "$n_threads" "$problem" "$n_additional_refinements" "$max_iters" "$max_err";;
+                                            1)  continue;;
+                                            *) echo "Unknown simd value: $simd";;
                                         esac
                                     fi
                                 done

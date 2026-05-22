@@ -38,7 +38,7 @@ namespace MFSolver
             problem.problem_name /
             std::to_string(problem.refinement_level) /
             std::to_string(Utilities::MPI::n_mpi_processes(MPI_COMM_WORLD)) /
-            "1" / // TODO: restore actual multithreading
+            std::to_string(MultithreadInfo::n_threads()) /
             (simd_flag ? "1" : "0");
 
         std::filesystem::create_directories(save_dir);
@@ -59,7 +59,7 @@ namespace MFSolver
             problem.problem_name /
             std::to_string(problem.refinement_level) /
             std::to_string(Utilities::MPI::n_mpi_processes(MPI_COMM_WORLD)) /
-            "1" / // TODO: restore actual multithreading
+            std::to_string(MultithreadInfo::n_threads()) /
             (simd_flag ? "1" : "0");
 
         int file_n = get_max_test_number(save_dir); // the folders are named test_0, test_1, test_2 and so on
@@ -120,11 +120,12 @@ namespace MFSolver
                     system_mf_storage(new MatrixFree<dim, double>());
 
                 // Since the quadrature type decides whether simd is used or not, the choice of the former needs to depend on the latter
-                if (simd_flag){
-                    system_mf_storage->reinit(mapping, dof_handler, constraints, QGaussLobatto<1>(fe.degree + 1), additional_data);
-                } else {
+                // TODO: Andrea sa
+                // if (simd_flag){
+                //     system_mf_storage->reinit(mapping, dof_handler, constraints, QGaussLobatto<1>(fe.degree + 1), additional_data);
+                // } else {
                     system_mf_storage->reinit(mapping, dof_handler, constraints, QGauss<1>(fe.degree + 1), additional_data);
-                }
+                //}
 
                 system_matrix.initialize(system_mf_storage);
             }
@@ -172,11 +173,12 @@ namespace MFSolver
                 std::shared_ptr<MatrixFree<dim, float>> mg_mf_storage_level = std::make_shared<MatrixFree<dim, float>>();
 
                 // Since the quadrature type decides whether simd is used or not, the choice of the former needs to depend on the latter
-                if (simd_flag){
-                    mg_mf_storage_level->reinit(mapping, dof_handler, level_constraints, QGaussLobatto<1>(fe.degree + 1), additional_data);
-                } else {
+                // TODO: Andrea sa
+                // if (simd_flag){
+                //     mg_mf_storage_level->reinit(mapping, dof_handler, level_constraints, QGaussLobatto<1>(fe.degree + 1), additional_data);
+                // } else {
                     mg_mf_storage_level->reinit(mapping, dof_handler, level_constraints, QGauss<1>(fe.degree + 1), additional_data);
-                }
+                //}
 
                 mg_matrices[level].initialize(mg_mf_storage_level, mg_constrained_dofs, level);
             }
@@ -216,11 +218,12 @@ namespace MFSolver
         std::shared_ptr<MatrixFree<dim, double>> inhomogeneous_mf_storage(new MatrixFree<dim, double>());
         
         // Since the quadrature type decides whether simd is used or not, the choice of the former needs to depend on the latter
-        if (simd_flag){
-            inhomogeneous_mf_storage->reinit(mapping, dof_handler, no_constraints, QGaussLobatto<1>(fe.degree + 1), additional_data);
-        } else {
+        // TODO: Andrea sa
+        // if (simd_flag){
+        //     inhomogeneous_mf_storage->reinit(mapping, dof_handler, no_constraints, QGaussLobatto<1>(fe.degree + 1), additional_data);
+        // } else {
             inhomogeneous_mf_storage->reinit(mapping, dof_handler, no_constraints, QGauss<1>(fe.degree + 1), additional_data);
-        }
+        // }
         inhomogeneous_operator.initialize(inhomogeneous_mf_storage);
 
         solution = 0;
@@ -375,8 +378,9 @@ namespace MFSolver
 
     template <int dim, int fe_degree>
     void MatrixFreeADRSolver<dim, fe_degree>::output_results()
-    {
-        static unsigned int cycle = 0; // Using an internal counter since the method takes no arguments
+    {   
+        Timer timer;
+        // static unsigned int cycle = 0; // Using an internal counter since the method takes no arguments
 
         dealii::DataOut<dim> data_out;
 
@@ -396,11 +400,17 @@ namespace MFSolver
         } else if (this->timestep_number > 0){
         retrieve_saving_directory_mf<dim, fe_degree>(this->problem, this->simd_flag, output_dir);
         }
+
+        time_details << "Creating solution output (cpu/wall): " << timer.cpu_time() << "s/" << timer.wall_time() << "s" << std::endl;
+        timer.restart();
         
         data_out.write_vtu_with_pvtu_record(
             output_dir, "/solution", this->timestep_number, MPI_COMM_WORLD);
+        
+        time_details << "Writing solution output (cpu/wall): " << timer.cpu_time() << "s/" << timer.wall_time() << "s" << std::endl;
 
-            cycle++;
+
+        //    cycle++;
     }
 
     template <int dim, int fe_degree>
