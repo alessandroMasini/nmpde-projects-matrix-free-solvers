@@ -25,6 +25,7 @@
 #include <deal.II/base/timer.h>
 #include <deal.II/base/types.h>
 #include <deal.II/base/utilities.h>
+#include <deal.II/base/work_stream.h>
 
 #include <deal.II/dofs/dof_handler.h>
 #include <deal.II/dofs/dof_tools.h>
@@ -52,6 +53,10 @@
 #include <deal.II/fe/mapping_q1.h>
 
 #include <deal.II/grid/grid_generator.h>
+#include <deal.II/grid/grid_in.h>
+#include <deal.II/grid/grid_out.h>
+#include <deal.II/grid/grid_tools.h>
+#include <deal.II/grid/manifold.h>
 
 #include <deal.II/matrix_free/operators.h>
 
@@ -475,6 +480,40 @@ namespace MFSolver
         ConditionalOStream time_details;
     };
 
+    template <int dim>
+    struct PerTaskData {
+        FullMatrix<double>        cell_matrix;
+        Vector<double>            cell_rhs;
+        std::vector<unsigned int> dof_indices;
+        
+        PerTaskData (const FiniteElement<dim> &fe)
+                    :
+                    cell_matrix (fe.dofs_per_cell, fe.dofs_per_cell),
+                    cell_rhs (fe.dofs_per_cell),
+                    dof_indices (fe.dofs_per_cell)
+            {}
+    };
+
+    template <int dim>
+    struct ScratchData {
+        // TODO: this may need additions (value_list)
+        FEValues<dim>             fe_values;
+        
+        ScratchData (const FiniteElement<dim> &fe,
+                    const Quadrature<dim>    &quadrature,
+                    const UpdateFlags         update_flags)
+                    :
+                    fe_values (fe, quadrature, update_flags)
+            {}
+        
+        ScratchData (const ScratchData &scratch)
+                    :
+                    fe_values (scratch.fe_values.get_fe(),
+                                scratch.fe_values.get_quadrature(),
+                                scratch.fe_values.get_update_flags())
+            {}
+    };
+
     /**
      * \brief Solver class that will solve an ADR problem using matrix-based techniques.
      * \tparam dim The dimensionality of the space the ADR problem is living in.
@@ -503,14 +542,43 @@ namespace MFSolver
                               TimerOutput::wall_times)
         {
         }
+
+        // // Copy constructor
+        // MatrixBasedADRSolver(const MatrixBasedADRSolver<dim, fe_degree> &_solver) : 
+        //     ADRSolver<dim, fe_degree>(_solver.problem),
+        //     mpi_communicator(MPI_COMM_WORLD),
+        //     triangulation(mpi_communicator,
+        //                 typename Triangulation<dim>::MeshSmoothing(
+        //                 Triangulation<dim>::smoothing_on_refinement |
+        //                 Triangulation<dim>::smoothing_on_coarsening),
+        //                     parallel::distributed::Triangulation<dim>::construct_multigrid_hierarchy),
+        //     fe(fe_degree),
+        //     mapping(),
+        //     pcout(std::cout,
+        //         (Utilities::MPI::this_mpi_process(mpi_communicator) == 0)),
+        //     computing_timer(mpi_communicator,
+        //                 pcout,
+        //                 TimerOutput::never,
+        //                 TimerOutput::wall_times)
+        //     {   
+        //         triangulation.copy_triangulation(_solver.triangulation);
+        //         dof_handler(triangulation);
+        //         &fe = 
+        //         &mapping = _solver.mapping.clone();
+        //     }
         ~MatrixBasedADRSolver() override {};
-
+        
         void run() override;
-
         void output_to_file() override;
 
     private:
         void setup_system() override;
+        void assemble_on_one_cell(
+            const typename DoFHandler<dim>::active_cell_iterator &cell,
+            ScratchData<dim> &scratch,
+            PerTaskData<dim> &data);
+        void copy_local_to_global(const PerTaskData<dim> &data);
+        void assemble_multithreaded();
         void assemble() override;
         void solve() override;
         void output_results() override;

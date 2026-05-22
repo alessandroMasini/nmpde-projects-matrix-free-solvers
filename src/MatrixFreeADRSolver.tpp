@@ -423,7 +423,7 @@ namespace MFSolver
         pcout << "Number of MPI ranks:            "
               << dealii::Utilities::MPI::n_mpi_processes(MPI_COMM_WORLD) << std::endl;
 
-        // TODO: fix this output in such a way it actually reflects the employed vectorization
+        // TODO: check this output actually reflects the employed vectorization
         const unsigned int n_vect_doubles = dealii::VectorizedArray<double>::size();
         const unsigned int n_vect_bits = 8 * sizeof(double) * n_vect_doubles;
         pcout << "Vectorization over " << n_vect_doubles
