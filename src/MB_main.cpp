@@ -11,10 +11,10 @@ int main(int argc, char **argv)
 
     // Checking that the considered problem is valid
     // Problems will now be addressed through test_idx, the index relative to the following array
-    std::string problems[5] = {"advanced", "lab_02", "lab_03", "parabolic", "transient"};
-    int test_idx = std::find(problems, problems + 5, argv[2]) - problems;
-    if (test_idx >= 5){
-        throw std::invalid_argument("<problem> needs to be one of 'advanced', 'lab_02', 'lab_03', 'parabolic', 'transient'");
+    std::string problems[6] = {"advanced", "lab_02", "lab_03", "parabolic", "transient", "mms"};
+    int test_idx = std::find(problems, problems + 6, argv[2]) - problems;
+    if (test_idx >= 6){
+        throw std::invalid_argument("<problem> needs to be one of 'advanced', 'lab_02', 'lab_03', 'parabolic', 'transient', 'mms'");
     }
 
     // Initializing MPI
@@ -51,6 +51,10 @@ int main(int argc, char **argv)
 
             case 4:
             data = ADR::ProblemData<3, 2>::test_case_comprehensive_transient();
+            break;
+
+            case 5:
+            data = ADR::ProblemData<3, 2>::mms_test_case();
             break;
         }
 
