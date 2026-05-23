@@ -32,6 +32,9 @@
 *.exe
 *.out
 *.app
+/matrix_based
+/matrix_free_no_simd
+/matrix_free_simd
 
 # deal.II outputs
 *.vtu
