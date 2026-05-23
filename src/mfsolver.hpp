@@ -442,6 +442,7 @@ namespace MFSolver
         void assemble() override; // <-- this one assembles the RHS, the LHS initialization was already performed somewhere else
         void solve() override;
         void output_results() override;
+        void compute_error();
 
 #ifdef DEAL_II_WITH_P4EST
         //         // The second "dim" is needed in case the spatial dimension
@@ -476,6 +477,7 @@ namespace MFSolver
         DVector<double> system_rhs;
 
         double setup_time;
+        double l2_error = 0.0;
         ConditionalOStream pcout;
         ConditionalOStream time_details;
     };
@@ -582,6 +584,7 @@ namespace MFSolver
         void assemble() override;
         void solve() override;
         void output_results() override;
+        void compute_error();
 
         MPI_Comm mpi_communicator;
 
@@ -613,6 +616,7 @@ namespace MFSolver
         TimerOutput computing_timer;
 
         double time = 0.0;
+        double l2_error = 0.0;
         // const double theta = 1.0;
 
     };

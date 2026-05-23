@@ -34,7 +34,7 @@
 
 # Default Parameters
 SOLVER="mb mf"
-PROBLEM="advanced lab_02 lab_03 parabolic transient"
+PROBLEM="advanced lab_02 lab_03 parabolic transient mms"
 N_TESTS=5
 N_ADDITIONAL_REFINEMENTS="0 3 6"
 N_PROCS="1 2 4 8 16"
