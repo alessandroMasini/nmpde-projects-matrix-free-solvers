@@ -369,6 +369,46 @@ namespace ADR
         }
     };
 
+    template <int dim>
+    class MMSExactSolution : public MFSolver::RealFunction<dim> {
+    public:
+        virtual double value(const dealii::Point<dim> &p, const unsigned int = 0) const override {
+            double val = 1.0;
+            for (unsigned int d = 0; d < dim; ++d) val *= std::sin(M_PI * p[d]);
+            return val;
+        }
+        virtual dealii::VectorizedArray<float> value(const dealii::Point<dim, dealii::VectorizedArray<float>> &p, const unsigned int = 0) const override {
+            dealii::VectorizedArray<float> val = dealii::make_vectorized_array<float>(1.0);
+            for (unsigned int d = 0; d < dim; ++d) val *= std::sin(static_cast<float>(M_PI) * p[d]);
+            return val;
+        }
+        virtual dealii::VectorizedArray<double> value(const dealii::Point<dim, dealii::VectorizedArray<double>> &p, const unsigned int = 0) const override {
+            dealii::VectorizedArray<double> val = dealii::make_vectorized_array<double>(1.0);
+            for (unsigned int d = 0; d < dim; ++d) val *= std::sin(M_PI * p[d]);
+            return val;
+        }
+    };
+
+    template <int dim>
+    class MMSForcingTerm : public MFSolver::RealFunction<dim> {
+    public:
+        virtual double value(const dealii::Point<dim> &p, const unsigned int = 0) const override {
+            double val = 1.0;
+            for (unsigned int d = 0; d < dim; ++d) val *= std::sin(M_PI * p[d]);
+            return (dim * M_PI * M_PI + 1.0) * val;
+        }
+        virtual dealii::VectorizedArray<float> value(const dealii::Point<dim, dealii::VectorizedArray<float>> &p, const unsigned int = 0) const override {
+            dealii::VectorizedArray<float> val = dealii::make_vectorized_array<float>(1.0);
+            for (unsigned int d = 0; d < dim; ++d) val *= std::sin(static_cast<float>(M_PI) * p[d]);
+            return (static_cast<float>(dim * M_PI * M_PI + 1.0)) * val;
+        }
+        virtual dealii::VectorizedArray<double> value(const dealii::Point<dim, dealii::VectorizedArray<double>> &p, const unsigned int = 0) const override {
+            dealii::VectorizedArray<double> val = dealii::make_vectorized_array<double>(1.0);
+            for (unsigned int d = 0; d < dim; ++d) val *= std::sin(M_PI * p[d]);
+            return (dim * M_PI * M_PI + 1.0) * val;
+        }
+    };
+
     /**
      * @brief A common structure to hold the algebraic and analytical data
      * required defining the Advection-Diffusion-Reaction (ADR) problem.
@@ -409,6 +449,7 @@ namespace ADR
         std::shared_ptr<MFSolver::RealFunction<dim>> gamma;              /**< Reaction coefficient function: gamma(x) (or k in some notations) */
 
         std::shared_ptr<MFSolver::RealFunction<dim>> forcing_term; /**< Forcing term: f(x) */
+        std::shared_ptr<MFSolver::RealFunction<dim>> exact_solution = nullptr;          /**< Exact solution: u(x) */
         // --- Time Dependency Parameters ---
         bool is_time_dependent = false;                                 /**< Flag to explicitly mark this problem as unsteady/transient. */
         double delta_t = 0.0;                                           /**< The size of the time step. */
@@ -530,6 +571,42 @@ namespace ADR
                 .beta = std::make_shared<ConstantVectorFunctionWithGradient<dim>>(0.0),
                 .gamma = std::make_shared<ConstantRealFunction<dim>>(0.0),
                 .forcing_term = std::make_shared<ConstantRealFunction<dim>>(0.0),
+                .dirichlet_boundaries = dirichlet_boundaries,
+                .neumann_boundaries = neumann_boundaries,
+            };
+            return data;
+        }
+
+        static ProblemData<dim, fe_degree> mms_test_case()
+        {
+            MFSolver::DirichletBoundaries<dim> dirichlet_boundaries;
+            for (int i = 0; i < 2 * dim; i++)
+                dirichlet_boundaries[i] = std::make_shared<ConstantRealFunction<dim>>(0.0);
+
+            MFSolver::NeumannBoundaries<dim> neumann_boundaries;
+
+            ProblemData<dim, fe_degree> data{
+                .mesh_filename = "none",
+                .problem_name = "mms",
+                .num_levels = 5,
+                .num_quadrature_points = fe_degree + 1,
+                .lv0_smoothing_range = 1.e-3,
+                .lvgt0_smoothing_range = 15,
+                .lvgt0_smoothing_degree = 5,
+                .lvgt0_smoothing_eigenvalue_max_iterations = 10,
+                .solver_max_iterations = 1000,
+                .solver_tolerance_factor = 1e-12,
+                .refinement_level = 3,
+                .refinement_coefficient_per_level = 4,
+                .mu = std::make_shared<ConstantRealFunction<dim>>(1.0),
+                .beta = std::make_shared<ConstantVectorFunctionWithGradient<dim>>(0.0),
+                .gamma = std::make_shared<ConstantRealFunction<dim>>(1.0),
+                .forcing_term = std::make_shared<MMSForcingTerm<dim>>(),
+                .exact_solution = std::make_shared<MMSExactSolution<dim>>(),
+                .is_time_dependent = false,
+                .delta_t = 0.0,
+                .end_time = 0.0,
+                .initial_condition = nullptr,
                 .dirichlet_boundaries = dirichlet_boundaries,
                 .neumann_boundaries = neumann_boundaries,
             };
