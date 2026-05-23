@@ -570,7 +570,34 @@ namespace MFSolver
     computing_timer.print_summary();
     computing_timer.reset();
 
+    compute_error();
+    pcout << "   L2 Error vs Exact Solution: " << this->l2_error << std::endl;
+
     pcout << std::endl;
+  }
+
+  template <int dim, int fe_degree>
+  void MatrixBasedADRSolver<dim, fe_degree>::compute_error()
+  {
+      if (this->problem.exact_solution == nullptr) return;
+
+      dealii::Vector<double> difference_per_cell(triangulation.n_active_cells());
+      
+      dealii::VectorTools::integrate_difference(
+          mapping,
+          dof_handler,
+          locally_relevant_solution,
+          *(this->problem.exact_solution),
+          difference_per_cell,
+          dealii::QGauss<dim>(fe.degree + 1),
+          dealii::VectorTools::L2_norm
+      );
+      
+      this->l2_error = dealii::VectorTools::compute_global_error(
+          triangulation,
+          difference_per_cell,
+          dealii::VectorTools::L2_norm
+      );
   }
 
   template <int dim, int fe_degree>
@@ -591,7 +618,7 @@ namespace MFSolver
     // Write to the file: first, mid and last timestep for TD
     // first only for TI
     // NOTE: total_t is for all timesteps
-    deallog << "max_iter tol t_step it_n err total_t\n";
+    deallog << "max_iter tol t_step it_n err total_t l2_error\n";
 
     for (size_t i = 0; i < this->conv_history[0].size(); i++)
     {
@@ -600,7 +627,8 @@ namespace MFSolver
              << 0 << " "
              << i << " "
              << this->conv_history[0][i] << " "
-             << this->end_time - this->start_time << "\n";
+             << this->end_time - this->start_time << " "
+             << this->l2_error << "\n";
     }
 
     if (this->conv_history.size() > 1)
@@ -613,7 +641,8 @@ namespace MFSolver
                << "0.5" << " "
                << i << " "
                << this->conv_history[mid_step][i] << " "
-               << this->end_time - this->start_time << "\n";
+               << this->end_time - this->start_time << " "
+               << this->l2_error << "\n";
       }
     }
 
@@ -627,7 +656,8 @@ namespace MFSolver
                << 1 << " "
                << i << " "
                << this->conv_history[last_step][i] << " "
-               << this->end_time - this->start_time << "\n";
+               << this->end_time - this->start_time << " "
+               << this->l2_error << "\n";
       }
     }
 
