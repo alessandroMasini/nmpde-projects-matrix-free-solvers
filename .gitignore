@@ -56,3 +56,6 @@ Makefile
 *.vtu
 *.pvtu
 results/
+
+# Plots
+plots

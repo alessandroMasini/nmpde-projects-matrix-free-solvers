@@ -6,7 +6,7 @@ int main(int argc, char **argv)
     // Checking that there are enough inputs
     if (argc < 6)
     {
-       throw std::invalid_argument("Usage: mpirun -n <n_cores> <program> <n_threads> <simd> <problem> <n_additional_refinements> <max_iters> <max_err>");
+       throw std::invalid_argument("Usage: mpirun -n <n_cores> <program> <n_threads> <simd> <problem> <n_additional_refinements> <max_iters> <tol>");
     }
 
     // Checking that the considered problem is valid

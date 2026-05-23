@@ -41,11 +41,17 @@ namespace MFSolver
             std::to_string(MultithreadInfo::n_threads()) /
             (simd_flag ? "1" : "0");
 
-        std::filesystem::create_directories(save_dir);
-        int file_n = get_max_test_number(save_dir) + 1; // the folders are named test_0, test_1, test_2 and so on
-        save_dir += "/test_" + std::to_string(file_n);
+        // std::filesystem::create_directories is NOT thread-safe, thus we need to use a lock
+        {
+            Utilities::MPI::CollectiveMutex logging_mutex;
+            Utilities::MPI::CollectiveMutex::ScopedLock lock(logging_mutex, MPI_COMM_WORLD);
 
-        std::filesystem::create_directories(save_dir);
+            std::filesystem::create_directories(save_dir);
+            
+            int file_n = get_max_test_number(save_dir) + 1; // the folders are named test_0, test_1, test_2 and so on
+            save_dir += "/test_" + std::to_string(file_n);
+            std::filesystem::create_directories(save_dir);
+        }
     
         output_dir = save_dir;
     }
@@ -498,19 +504,27 @@ namespace MFSolver
 
     template <int dim, int fe_degree>
     void MatrixFreeADRSolver<dim, fe_degree>::output_to_file()
-    {
+    { 
+        // Only rank 0 should write to file.
+        if (Utilities::MPI::this_mpi_process(MPI_COMM_WORLD) != 0)
+            return;
+
         std::string save_dir;
-        retrieve_saving_directory_mf<dim, fe_degree>(this->problem, this->simd_flag, save_dir);
+        retrieve_saving_directory_mf<dim, fe_degree>(this->problem, simd_flag, save_dir);
+        
+        // This deal.II internal stream is thread-safe
+        LogStream deallog;
         std::ofstream MyFile(save_dir + "/log.txt");
+        deallog.attach(MyFile, false);
 
         // Write to the file: first, mid and last timestep for TD
         // first only for TI
         // NOTE: total_t is for all timesteps
-        MyFile << "max_iter tol t_step it_n err total_t\n";
+        deallog << "max_iter tol t_step it_n err total_t\n";
 
         for (size_t i = 0; i < this->conv_history[0].size(); i++)
         {
-        MyFile << this->problem.solver_max_iterations << " "
+        deallog << this->problem.solver_max_iterations << " "
                 << this->problem.solver_tolerance_factor << " "
                 << 0 << " "
                 << i << " "
@@ -523,9 +537,9 @@ namespace MFSolver
         size_t mid_step = this->conv_history.size() / 2;
         for (size_t i = 0; i < this->conv_history[mid_step].size(); i++)
         {
-            MyFile << this->problem.solver_max_iterations << " "
+            deallog << this->problem.solver_max_iterations << " "
                 << this->problem.solver_tolerance_factor << " "
-                << "T//2" << " "
+                << "0.5" << " "
                 << i << " "
                 << this->conv_history[mid_step][i] << " "
                 << this->end_time - this->start_time << "\n";
@@ -537,9 +551,9 @@ namespace MFSolver
         size_t last_step = this->conv_history.size() - 1;
         for (size_t i = 0; i < this->conv_history[last_step].size(); i++)
         {
-            MyFile << this->problem.solver_max_iterations << " "
+            deallog << this->problem.solver_max_iterations << " "
                 << this->problem.solver_tolerance_factor << " "
-                << "T" << " "
+                << 1 << " "
                 << i << " "
                 << this->conv_history[last_step][i] << " "
                 << this->end_time - this->start_time << "\n";
@@ -547,6 +561,8 @@ namespace MFSolver
         }
 
         // Close the file
+        deallog << std::flush;
+        deallog.detach();
         MyFile.close();
-    }   
+    }
 }
