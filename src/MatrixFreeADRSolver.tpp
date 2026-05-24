@@ -438,7 +438,34 @@ namespace MFSolver
         );
 
         this->l2_error = dealii::VectorTools::compute_global_error(triangulation, difference_per_cell, dealii::VectorTools::L2_norm);
+        
+        dealii::VectorTools::integrate_difference(
+            mapping,
+            dof_handler,
+            this->solution,
+            *(this->problem.exact_solution),
+            difference_per_cell,
+            dealii::QGauss<dim>(fe.degree + 1),
+            dealii::VectorTools::H1_norm
+        );
+
+        this->h1_error = dealii::VectorTools::compute_global_error(triangulation, difference_per_cell, dealii::VectorTools::H1_norm);
+        
+        dealii::VectorTools::integrate_difference(
+            mapping,
+            dof_handler,
+            this->solution,
+            *(this->problem.exact_solution),
+            difference_per_cell,
+            dealii::QGauss<dim>(fe.degree + 1),
+            dealii::VectorTools::Linfty_norm
+        );
+
+        this->linfty_error = dealii::VectorTools::compute_global_error(triangulation, difference_per_cell, dealii::VectorTools::Linfty_norm);
+        
         pcout << "   L2 Error vs Exact Solution: " << this->l2_error << std::endl;
+        pcout << "   H1 Error vs Exact Solution: " << this->h1_error << std::endl;
+        pcout << "   L_infty Error vs Exact Solution: " << this->linfty_error << std::endl;
     }
 
     template <int dim, int fe_degree>
@@ -494,8 +521,11 @@ namespace MFSolver
                 pcout << "   Outputting results..." << std::endl;
                 output_results();
                 compute_error();
-                if (this->problem.exact_solution != nullptr)
+                if (this->problem.exact_solution != nullptr) {
                     pcout << "   L2 Error vs Exact Solution: " << this->l2_error << std::endl;
+                    pcout << "   H1 Error vs Exact Solution: " << this->h1_error << std::endl;
+                    pcout << "   L_infty Error vs Exact Solution: " << this->linfty_error << std::endl;
+                }
 
                 old_solution = solution;
             }
@@ -520,8 +550,11 @@ namespace MFSolver
             pcout << "   Outputting results..." << std::endl;
             output_results();
             compute_error();
-            if (this->problem.exact_solution != nullptr)
+            if (this->problem.exact_solution != nullptr) {
                 pcout << "   L2 Error vs Exact Solution: " << this->l2_error << std::endl;
+                pcout << "   H1 Error vs Exact Solution: " << this->h1_error << std::endl;
+                pcout << "   L_infty Error vs Exact Solution: " << this->linfty_error << std::endl;
+            }
 
             //     pcout << "===========================================" << std::endl;
             // }
@@ -548,7 +581,7 @@ namespace MFSolver
         // Write to the file: first, mid and last timestep for TD
         // first only for TI
         // NOTE: total_t is for all timesteps
-        deallog << "max_iter tol t_step it_n err total_t l2_error\n";
+        deallog << "max_iter tol t_step it_n err total_t l2_error h1_error linfty_error\n";
 
         for (size_t i = 0; i < this->conv_history[0].size(); i++)
         {
@@ -558,7 +591,9 @@ namespace MFSolver
                 << i << " "
                 << this->conv_history[0][i] << " "
                 << this->end_time - this->start_time << " " 
-                << this->l2_error << "\n";
+                << this->l2_error << " "
+                << this->h1_error << " "
+                << this->linfty_error << "\n";
         }
 
         if (this->conv_history.size() > 1)
@@ -572,7 +607,9 @@ namespace MFSolver
                 << i << " "
                 << this->conv_history[mid_step][i] << " "
                 << this->end_time - this->start_time << " " 
-                << this->l2_error << "\n";
+                << this->l2_error << " "
+                << this->h1_error << " "
+                << this->linfty_error << "\n";
         }
         }
 
@@ -587,7 +624,9 @@ namespace MFSolver
                 << i << " "
                 << this->conv_history[last_step][i] << " "
                 << this->end_time - this->start_time << " " 
-                << this->l2_error << "\n";
+                << this->l2_error << " "
+                << this->h1_error << " "
+                << this->linfty_error << "\n";
         }
         }
 

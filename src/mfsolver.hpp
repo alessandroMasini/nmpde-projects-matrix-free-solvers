@@ -478,6 +478,8 @@ namespace MFSolver
 
         double setup_time;
         double l2_error = 0.0;
+        double h1_error = 0.0;
+        double linfty_error = 0.0;
         ConditionalOStream pcout;
         ConditionalOStream time_details;
     };
@@ -617,6 +619,8 @@ namespace MFSolver
 
         double time = 0.0;
         double l2_error = 0.0;
+        double h1_error = 0.0;
+        double linfty_error = 0.0;
         // const double theta = 1.0;
 
     };
