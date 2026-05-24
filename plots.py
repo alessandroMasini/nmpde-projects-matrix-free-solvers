@@ -12,11 +12,11 @@ from collections import defaultdict
 # Columns and Directory Parameters
 # -----------------------------------------------------------------------------
 
-FILE_COLUMNS = ["max_iter", "tol", "t_step", "it_n", "err", "total_t", "l2_error"]
+FILE_COLUMNS = ["max_iter", "tol", "t_step", "it_n", "err", "total_t", "l2_error", "h1_error" "linfty_error"]
 DIR_PARAMS = ["solver", "problem", "n_additional_refinements", "n_procs", "n_threads", "simd"]
 
 X_PARAMS = ["n_additional_refinements", "n_procs", "n_threads", "simd", "tol", "t_step"]
-Y_PARAMS = ["it_n", "total_t", "l2_error"]
+Y_PARAMS = ["it_n", "total_t", "l2_error", "h1_error" "linfty_error"]
 
 
 # Algo directory names are too expressive, and they need to be remapped in order to be actually usable
