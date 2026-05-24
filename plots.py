@@ -12,10 +12,10 @@ from collections import defaultdict
 # Columns and Directory Parameters
 # -----------------------------------------------------------------------------
 
-FILE_COLUMNS = ["max_iter", "tol", "t_step", "it_n", "err", "total_t", "l2_error", "h1_error" "linfty_error"]
+FILE_COLUMNS = ["delta_t", "max_iter", "tol", "t_step", "it_n", "err", "total_t", "l2_error", "h1_error" "linfty_error"]
 DIR_PARAMS = ["solver", "problem", "n_additional_refinements", "n_procs", "n_threads", "simd"]
 
-X_PARAMS = ["n_additional_refinements", "n_procs", "n_threads", "simd", "tol", "t_step"]
+X_PARAMS = ["delta_t", "n_additional_refinements", "n_procs", "n_threads", "simd", "tol", "t_step"]
 Y_PARAMS = ["it_n", "total_t", "l2_error", "h1_error" "linfty_error"]
 
 
@@ -28,6 +28,7 @@ def comparison_name(key, value):
 def load_file_data(file_path):
     with open(file_path, "r") as f:
         header = f.readline().strip().split()
+        header[0] = header[0][6:]   # deal.II LogStream automatically writes DEAL:: in front of files 
     data = np.loadtxt(file_path, skiprows=1)
     if data.ndim == 1:
         data = data.reshape(1, -1)
