@@ -24,6 +24,8 @@
 #                                       Default: "1 4 8"
 #   --simd <list>                       List of values of SIMD to use.
 #                                       Default: "0 1"
+#   --delta_t <list>                    List of timesteps to use.
+#                                       Default: 0 (i.e. problem default; this may vary across problems)
 #   --max_iters <list>                  List of maximum iterations.
 #                                       Default: "100"
 #   --tol <list>                        List of tolerances (per time step).
@@ -40,6 +42,7 @@ N_ADDITIONAL_REFINEMENTS="0 3 6"
 N_PROCS="1 2 4 8 16"
 N_THREADS="1 4 8"
 SIMD="0 1"
+DELTA_T="0"
 MAX_ITERS="100"
 TOL="0.000001 0.00000001 0.0000000001 0.000000000001"
 
@@ -60,6 +63,7 @@ while [[ $# -gt 0 ]]; do
         --n_procs) shift; N_PROCS=""; while [[ $# -gt 0 && "$1" != --* ]]; do N_PROCS+="$1 "; shift; done;;
         --n_threads) shift; N_THREADS=""; while [[ $# -gt 0 && "$1" != --* ]]; do N_THREADS+="$1 "; shift; done;;
         --simd) shift; SIMD=""; while [[ $# -gt 0 && "$1" != --* ]]; do SIMD+="$1 "; shift; done;;
+        --delta_t) shift; DELTA_T=""; while [[ $# -gt 0 && "$1" != --* ]]; do DELTA_T+="$1 "; shift; done;;
         --max_iters) shift; MAX_ITERS=""; while [[ $# -gt 0 && "$1" != --* ]]; do MAX_ITERS+="$1 "; shift; done;;
         --tol) shift; TOL=""; while [[ $# -gt 0 && "$1" != --* ]]; do TOL+="$1 "; shift; done;;
         --help) show_help;; 
@@ -80,26 +84,28 @@ for solver in $SOLVER; do
             for n_procs in $N_PROCS; do
                 for n_threads in $N_THREADS; do
                     for simd in $SIMD; do
-                        for max_iters in $MAX_ITERS; do
-                            for tol in $TOL; do
-                                for ((i=0; i<N_TESTS; i++)); do
-                                    echo "RUN $i: solver=$solver problem=$problem n_additional_refinements=$n_additional_refinements n_procs=$n_procs n_threads=$n_threads simd=$simd max_iters=$max_iters tol=$tol"
+                        for delta_t in $DELTA_T; do
+                            for max_iters in $MAX_ITERS; do
+                                for tol in $TOL; do
+                                    for ((i=0; i<N_TESTS; i++)); do
+                                        echo "RUN $i: solver=$solver problem=$problem n_additional_refinements=$n_additional_refinements n_procs=$n_procs n_threads=$n_threads simd=$simd max_iters=$max_iters tol=$tol"
 
-                                    if [[ "$solver" == "mf" ]]; then
-                                        # MATRIX-FREE
-                                        case "$simd" in
-                                            0)  mpirun -n "$n_procs" ./matrix_free_no_simd "$n_threads" "$simd" "$problem" "$n_additional_refinements" "$max_iters" "$tol";;
-                                            1)  mpirun -n "$n_procs" ./matrix_free_simd "$n_threads" "$simd" "$problem" "$n_additional_refinements" "$max_iters" "$tol";; 
-                                            *) echo "Unknown simd value: $simd";;
-                                        esac
-                                    else
-                                        # MATRIX-BASED
-                                        case "$simd" in
-                                            0)  mpirun -n "$n_procs" ./matrix_based "$n_threads" "$problem" "$n_additional_refinements" "$max_iters" "$tol";;
-                                            1)  continue;;
-                                            *) echo "Unknown simd value: $simd";;
-                                        esac
-                                    fi
+                                        if [[ "$solver" == "mf" ]]; then
+                                            # MATRIX-FREE
+                                            case "$simd" in
+                                                0)  mpirun -n "$n_procs" ./matrix_free_no_simd "$n_threads" "$simd" "$problem" "$n_additional_refinements" "$delta_t" "$max_iters" "$tol";;
+                                                1)  mpirun -n "$n_procs" ./matrix_free_simd "$n_threads" "$simd" "$problem" "$n_additional_refinements" "$delta_t" "$max_iters" "$tol";; 
+                                                *) echo "Unknown simd value: $simd";;
+                                            esac
+                                        else
+                                            # MATRIX-BASED
+                                            case "$simd" in
+                                                0)  mpirun -n "$n_procs" ./matrix_based "$n_threads" "$problem" "$n_additional_refinements" "$delta_t" "$max_iters" "$tol";;
+                                                1)  continue;;
+                                                *) echo "Unknown simd value: $simd";;
+                                            esac
+                                        fi
+                                    done
                                 done
                             done
                         done

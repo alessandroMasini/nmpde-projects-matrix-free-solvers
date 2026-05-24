@@ -4,9 +4,9 @@
 int main(int argc, char **argv)
 {   
     // Checking that there are enough inputs
-    if (argc < 5)
+    if (argc < 6)
     {
-       throw std::invalid_argument("Usage: mpirun -n <n_cores> <program> <n_threads> <problem> <n_additional_refinements> <max_iters> <tol>");
+       throw std::invalid_argument("Usage: mpirun -n <n_cores> <program> <n_threads> <problem> <n_additional_refinements> <delta_t> <max_iters> <tol>");
     }
 
     // Checking that the considered problem is valid
@@ -25,8 +25,22 @@ int main(int argc, char **argv)
     if (test_idx == 1){
         ADR::ProblemData<2, 2> data = ADR::ProblemData<2, 2>::lab_02_poisson();
         data.refinement_level += std::stoi(argv[3]);
-        data.solver_max_iterations = std::stoi(argv[4]);
-        data.solver_tolerance_factor = std::stod(argv[5]);
+
+        // A time step of 0 simply means getting the problem's default
+        // A value different then [0, 1] for a time-indepedent gets simply ignored since 
+        // the is_time_dependent flag checks for that
+        double delta_t = std::stod(argv[4]);
+        if (!data.is_time_dependent && delta_t != 0){
+            if (dealii::Utilities::MPI::this_mpi_process(MPI_COMM_WORLD) == 0)
+                std::cout << "WARNING: in steady problems, the delta_t argument defaults to 0" << std::endl;
+        }
+        else if (delta_t > 0 && delta_t < 1)
+            data.delta_t = delta_t;
+        else if (delta_t != 0)
+            throw std::invalid_argument("The time step must be a number between 0 and 1");
+
+        data.solver_max_iterations = std::stoi(argv[5]);
+        data.solver_tolerance_factor = std::stod(argv[6]);
 
         MFSolver::MatrixBasedADRSolver<2, 2> solver(data);
         solver.run();
@@ -59,8 +73,22 @@ int main(int argc, char **argv)
         }
 
         data.refinement_level += std::stoi(argv[3]);
-        data.solver_max_iterations = std::stoi(argv[4]);
-        data.solver_tolerance_factor = std::stod(argv[5]);
+
+        // A time step of 0 simply means getting the problem's default
+        // A value different then [0, 1] for a time-indepedent gets simply ignored since 
+        // the is_time_dependent flag checks for that
+        double delta_t = std::stod(argv[4]);
+        if (!data.is_time_dependent && delta_t != 0){
+            if (dealii::Utilities::MPI::this_mpi_process(MPI_COMM_WORLD) == 0)
+                std::cout << "WARNING: in steady problems, the delta_t argument defaults to 0" << std::endl;
+        }
+        else if (delta_t > 0 && delta_t < 1)
+            data.delta_t = delta_t;
+        else if (delta_t != 0)
+            throw std::invalid_argument("The time step must be a number between 0 and 1");
+
+        data.solver_max_iterations = std::stoi(argv[5]);
+        data.solver_tolerance_factor = std::stod(argv[6]);
         
         MFSolver::MatrixBasedADRSolver<3, 2> solver(data);
         solver.run();
