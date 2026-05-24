@@ -581,11 +581,12 @@ namespace MFSolver
         // Write to the file: first, mid and last timestep for TD
         // first only for TI
         // NOTE: total_t is for all timesteps
-        deallog << "max_iter tol t_step it_n err total_t l2_error h1_error linfty_error\n";
+        deallog << "delta_t max_iter tol rel_t_step it_n err total_t l2_error h1_error linfty_error\n";
 
         for (size_t i = 0; i < this->conv_history[0].size(); i++)
         {
-        deallog << this->problem.solver_max_iterations << " "
+      deallog << this->problem.delta_t << " "
+             << this->problem.solver_max_iterations << " "
                 << this->problem.solver_tolerance_factor << " "
                 << 0 << " "
                 << i << " "
@@ -601,7 +602,8 @@ namespace MFSolver
         size_t mid_step = this->conv_history.size() / 2;
         for (size_t i = 0; i < this->conv_history[mid_step].size(); i++)
         {
-            deallog << this->problem.solver_max_iterations << " "
+        deallog << this->problem.delta_t << " "
+               << this->problem.solver_max_iterations << " "
                 << this->problem.solver_tolerance_factor << " "
                 << "0.5" << " "
                 << i << " "
@@ -618,7 +620,8 @@ namespace MFSolver
         size_t last_step = this->conv_history.size() - 1;
         for (size_t i = 0; i < this->conv_history[last_step].size(); i++)
         {
-            deallog << this->problem.solver_max_iterations << " "
+        deallog << this->problem.delta_t << " "
+                << this->problem.solver_max_iterations << " "
                 << this->problem.solver_tolerance_factor << " "
                 << 1 << " "
                 << i << " "
