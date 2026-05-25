@@ -94,6 +94,8 @@ int main(int argc, char **argv)
         bool simd_flag = MFSolver::to_bool(argv[2]);
         MFSolver::MatrixFreeADRSolver<3, 2> solver(data, simd_flag);
         solver.run();
+        if (dealii::Utilities::MPI::this_mpi_process(MPI_COMM_WORLD) == 0)
+                std::cout << "Run completed" << std::endl;
         solver.output_to_file();
     }
 

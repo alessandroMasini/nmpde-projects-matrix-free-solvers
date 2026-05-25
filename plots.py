@@ -12,24 +12,95 @@ from collections import defaultdict
 # Columns and Directory Parameters
 # -----------------------------------------------------------------------------
 
-FILE_COLUMNS = ["delta_t", "max_iter", "tol", "t_step", "it_n", "err", "total_t", "l2_error", "h1_error" "linfty_error"]
+FILE_COLUMNS = ["delta_t", "max_iter", "tol", "rel_t_step", "it_n", "err", "total_t", "l2_error", "h1_error", "linfty_error", "converged"]
 DIR_PARAMS = ["solver", "problem", "n_additional_refinements", "n_procs", "n_threads", "simd"]
 
-X_PARAMS = ["delta_t", "n_additional_refinements", "n_procs", "n_threads", "simd", "tol", "t_step"]
-Y_PARAMS = ["it_n", "total_t", "l2_error", "h1_error" "linfty_error"]
+X_PARAMS = ["delta_t", "n_additional_refinements", "n_procs", "n_threads", "simd", "tol", "rel_t_step", "it_n"]
+Y_PARAMS = ["it_n", "total_t", "l2_error", "h1_error", "linfty_error"]
 
-
-# Algo directory names are too expressive, and they need to be remapped in order to be actually usable
-# algo_name = {"cmaes_mpi_1": "cmaes", "cmaes_mpi_2": "cmaes", "cmaes_serial": "cmaes", "pso_serial": "pso", "pso_mpi": "pso", "rcga_serial": "rcga", "rcga_mpi": "rcga", "de_serial": "de", "de_mpi": "de"}
+# Log files are the interface between the C++ solvers and the plotting code.
+# FILE_COLUMNS is the current contract: every log row must contain exactly
+# these whitespace-separated quantities, in this order.
 
 def comparison_name(key, value):
     return str(value)
 
+def normalize_column_name(column):
+    """Return the semantic column name used by the plotting code."""
+    # deallog may prefix the first token with DEAL::. That prefix describes the
+    # logging channel, not the physical quantity in the column.
+    return column.removeprefix("DEAL::")
+
+def column_index(header, column):
+    return header.index(normalize_column_name(column))
+
+def is_file_column(column):
+    return column in FILE_COLUMNS
+
+def normalize_header(header_line):
+    """Interpret a log header according to the current solver-to-script schema."""
+    raw_header = header_line.strip().split()
+
+    # A standalone DEAL:: token can appear when deallog separates its prefix
+    # from the first real column. Remove it before normalizing names; otherwise
+    # "DEAL::".removeprefix("DEAL::") becomes an empty pseudo-column.
+    if raw_header and raw_header[0] == "DEAL::":
+        raw_header = raw_header[1:]
+
+    header = [normalize_column_name(column) for column in raw_header]
+
+    # From here on, be strict. If the C++ output changes, the scripts should
+    # fail loudly instead of silently plotting numbers under the wrong labels.
+    if header != FILE_COLUMNS:
+        raise ValueError(
+            "Unexpected log header. Expected "
+            + " ".join(FILE_COLUMNS)
+            + ", got "
+            + " ".join(header)
+        )
+
+    return header
+
+def parse_data_line(line, n_columns):
+    """Parse one row from the current whitespace-separated log layout."""
+    parts = line.split()
+
+    # Match the same optional deallog prefix handled for the header. After this,
+    # every remaining token should be one numeric column. The check happens
+    # before normalize_column_name for the same reason as in normalize_header:
+    # DEAL:: alone is a log prefix, not an empty data field.
+    if parts and parts[0] == "DEAL::":
+        parts = parts[1:]
+
+    if len(parts) != n_columns:
+        raise ValueError(
+            f"Unexpected number of log columns: expected {n_columns}, got {len(parts)}"
+        )
+
+    return parts
+
 def load_file_data(file_path):
+    """Load a log file as numeric data while preserving column meaning."""
     with open(file_path, "r") as f:
-        header = f.readline().strip().split()
-        header[0] = header[0][6:]   # deal.II LogStream automatically writes DEAL:: in front of files 
-    data = np.loadtxt(file_path, skiprows=1)
+        # The header tells the plotting code what each numeric column means.
+        # We validate it once so the rest of the code can use column names
+        # without repeatedly checking the file layout.
+        header = normalize_header(f.readline())
+
+        # Empty lines are harmless, but every non-empty line must be a complete
+        # row in the current log format.
+        rows = [
+            parse_data_line(line, len(header))
+            for line in f
+            if line.strip()
+        ]
+
+    # Convert only after parsing all rows so a malformed row produces a useful
+    # format error rather than a confusing partial NumPy array.
+    data = np.array(rows, dtype=float)
+
+    # np.array collapses a single-row file to one dimension; the plotting code
+    # always works with "rows x columns", so put that dimension back.
     if data.ndim == 1:
         data = data.reshape(1, -1)
     return header, data
@@ -54,8 +125,8 @@ def satisfies_fixed_params(file_data, fixed_params, compare, compare_values_info
         # -----------------------------
         # Parameters coming from file columns
         # -----------------------------
-        if key in FILE_COLUMNS:
-            idx = header.index(key)
+        if is_file_column(key):
+            idx = column_index(header, key)
             if not np.allclose(data[:, idx], val):
                 return False
         elif key in DIR_PARAMS:
@@ -64,8 +135,8 @@ def satisfies_fixed_params(file_data, fixed_params, compare, compare_values_info
             raise ValueError(f"Unknown fixed parameter: {key}")
     
     # Checking that the value is between the allowed for comparison
-    if compare_values_info[0] and not compare_values_info[1] and str(compare) in FILE_COLUMNS:
-        idx = header.index(str(compare))
+    if compare_values_info[0] and not compare_values_info[1] and is_file_column(str(compare)):
+        idx = column_index(header, str(compare))
         flag = False
         for el in compare_values:
             if np.allclose(data[:, idx], float(el)):
@@ -77,13 +148,18 @@ def satisfies_fixed_params(file_data, fixed_params, compare, compare_values_info
     return True
 
 def actually_finished(file_data):
+    """Decide whether a run converged using the solver's own convergence flag.
+
+    The final residual is still useful for plotting, but it is not the
+    authoritative answer. SolverControl already decided whether the solve
+    converged, and the current log format writes that decision explicitly.
+    """
     header, data = file_data
-    tol_idx = header.index("tol")
-    err_idx = header.index("err")
 
-    converged = float(data[-1][tol_idx]) >= float(data[-1][err_idx])
-
-    return converged
+    # The last row is enough because the convergence flag is repeated on every
+    # residual-history row by the C++ logger.
+    converged_idx = column_index(header, "converged")
+    return bool(int(data[-1][converged_idx]))
 
 
 def extract_data(dir_params, file_data, x, all):
@@ -93,14 +169,14 @@ def extract_data(dir_params, file_data, x, all):
         if x in DIR_PARAMS:
             return np.array([float(dir_params[x])] * len(data))
 
-        if x in FILE_COLUMNS:
-            return data[:, header.index(x)]
+        if is_file_column(x):
+            return data[:, column_index(header, x)]
     else: 
         if x in DIR_PARAMS:
             return np.array([float(dir_params[x])])
 
-        if x in FILE_COLUMNS:
-            return np.array([data[-1, header.index(x)]])
+        if is_file_column(x):
+            return np.array([data[-1, column_index(header, x)]])
 
     raise ValueError(f"Unknown parameter: {x}")
 
@@ -112,7 +188,7 @@ def stop_searching(fixed_params, key, dir, compare, compare_values_flags, compar
     elif key in fixed_params and str(fixed_params[key]) != comparison_name(key, dir.name):
         return True
         
-    if compare_values_flags[0] and not compare_values_flags[1] and str(compare) == key and comparison_name(key, dir.name) not in compare_values[1]:
+    if compare_values_flags[0] and not compare_values_flags[1] and str(compare) == key and comparison_name(key, dir.name) not in compare_values:
         return True
     
     return False
@@ -321,8 +397,8 @@ def plot_average_results(fixed_params, x, y, req_finished, compare, compare_valu
 
             plt.plot(xs, means, "--", color = p[0].get_color())
 
-    xlegend = int(logxscale) * " (log scale)"
-    ylegend = int(logyscale) * " (log scale)"
+    xlegend = int(scalex) * " (log scale)"
+    ylegend = int(scaley) * " (log scale)"
     plt.xlabel(x + xlegend)
     plt.ylabel(y + ylegend)
 
@@ -336,6 +412,7 @@ def plot_average_results(fixed_params, x, y, req_finished, compare, compare_valu
     if scaley:
         plt.yscale("log")
 
+    os.makedirs("plots", exist_ok=True)
     plt.savefig("plots/" + save_path + ".png", dpi=300, bbox_inches="tight")
     plt.close()
 
@@ -471,7 +548,7 @@ if __name__ == "__main__":
             output_name += p + "-" + val + "---" 
 
             # Convert integer-valued directory params properly
-            if p in ["n_additional_refinements", "n_procs", "n_threads", "simd, it_n"]:
+            if p in ["n_additional_refinements", "n_procs", "n_threads", "simd", "it_n", "max_iter", "converged"]:
                 val = int(val)
             elif p in ["tol"]:
                 val = float(val)

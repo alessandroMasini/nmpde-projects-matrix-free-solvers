@@ -1,4 +1,5 @@
 #include <exception>
+#include <cassert>
 #include <stdexcept>
 #include <functional>
 #include <memory>
@@ -6,6 +7,8 @@
 #include <fstream>
 #include <iostream>
 #include <filesystem>
+#include <mutex>
+#include <iomanip>
 
 #include <algorithm>
 #include <boost/accumulators/accumulators.hpp>
@@ -173,12 +176,28 @@ namespace MFSolver
         unsigned int timestep_number = 0;
 
         /**
-         * Attributes needed for logging info.
+         * Timing and convergence data collected during one solver run.
+         *
+         * The same solver object writes both the visualization files and the
+         * final log.txt summary. Keeping the selected output directory here
+         * makes that relationship explicit: all artifacts produced by one run
+         * must land in the same test_N folder, even when several MPI ranks are
+         * contributing different VTU pieces.
          */
         double start_time = 0;
         double end_time = 0;
 
         std::vector<std::vector<double>> conv_history;
+
+        /**
+         * Directory reserved for this run.
+         *
+         * It is intentionally solver state, not recomputed from the filesystem
+         * later. Looking up "the latest test_N" after output has started is
+         * ambiguous in parallel runs and can send log.txt to a different folder
+         * than the solution files.
+         */
+        std::string output_dir;
     };
 
     /**
@@ -480,6 +499,7 @@ namespace MFSolver
         double l2_error = 0.0;
         double h1_error = 0.0;
         double linfty_error = 0.0;
+        bool converged = false;
         ConditionalOStream pcout;
         ConditionalOStream time_details;
     };
@@ -621,11 +641,13 @@ namespace MFSolver
         double l2_error = 0.0;
         double h1_error = 0.0;
         double linfty_error = 0.0;
+        bool converged = false;
         // const double theta = 1.0;
 
     };
 };
 
 // Including template function implementations
+#include "SolverOutputUtilities.tpp"
 #include "MatrixBasedADRSolver.tpp"
 #include "MatrixFreeADRSolver.tpp"

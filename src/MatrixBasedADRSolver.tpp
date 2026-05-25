@@ -1,68 +1,5 @@
 namespace MFSolver
 {
-  /**
-   * It returns the number of directories -1 in a directory.
-   */
-  int get_max_test_number(const std::filesystem::path &dir)
-  {
-    int counter = -1;
-
-    for (const auto &entry : std::filesystem::directory_iterator(dir))
-    {
-      if (!entry.is_directory())
-        continue;
-
-      counter++;
-    }
-
-    return counter;
-  }
-
-  template <int dim, int fe_degree>
-  void create_saving_directory_mb(ADR::ProblemData<dim, fe_degree> &problem, MPI_Comm &mpi_communicator, std::string &output_dir){
-    // Creating a saving folder
-    std::filesystem::path save_dir =
-        std::filesystem::path("tests") /
-        "matrix_based" /
-        problem.problem_name /
-        std::to_string(problem.refinement_level) /
-        std::to_string(Utilities::MPI::n_mpi_processes(mpi_communicator)) /
-        std::to_string(MultithreadInfo::n_threads()) / // TODO: restore actual multithreading
-        "0";// there is no SIMD for MB solver;
-    
-    // std::filesystem::create_directories is NOT thread-safe, thus we need to use a lock
-    {
-      Utilities::MPI::CollectiveMutex logging_mutex;
-      Utilities::MPI::CollectiveMutex::ScopedLock lock(logging_mutex, mpi_communicator);
-
-      std::filesystem::create_directories(save_dir);
-      
-      int file_n = get_max_test_number(save_dir) + 1; // the folders are named test_0, test_1, test_2 and so on
-      save_dir += "/test_" + std::to_string(file_n);
-      std::filesystem::create_directories(save_dir);
-    }
-    
-    output_dir = save_dir;
-  }
-
-  template <int dim, int fe_degree>
-  void retrieve_saving_directory_mb(ADR::ProblemData<dim, fe_degree> &problem, MPI_Comm &mpi_communicator, std::string &output_dir){
-    // Creating and opening a saving folder (if not existent)
-    std::filesystem::path save_dir =
-        std::filesystem::path("tests") /
-        "matrix_based" /
-        problem.problem_name /
-        std::to_string(problem.refinement_level) /
-        std::to_string(Utilities::MPI::n_mpi_processes(mpi_communicator)) /
-        std::to_string(MultithreadInfo::n_threads()) / // TODO: restore actual multithreading
-        "0";// SIMD;
-
-    int file_n = get_max_test_number(save_dir); // the folders are named test_0, test_1, test_2 and so on
-    save_dir += "/test_" + std::to_string(file_n);
-  
-    output_dir = save_dir;
-  }
-
   template <int dim, int fe_degree>
   void MatrixBasedADRSolver<dim, fe_degree>::setup_system()
   {
@@ -461,8 +398,6 @@ namespace MFSolver
         preconditioner(dof_handler, mg, mg_transfer);
 
     // Solver and preconditioner
-    // TODO: should we actually multiply by the norm of the RHS?
-    // why is that?
     SolverControl solver_control(this->problem.solver_max_iterations,
                                  this->problem.solver_tolerance_factor * system_rhs.l2_norm());
     solver_control.enable_history_data();
@@ -474,6 +409,7 @@ namespace MFSolver
                  preconditioner);
 
     this->conv_history.emplace_back(solver_control.get_history_data());
+    converged = (solver_control.last_check() == SolverControl::State::success);
     pcout << "   Solved in " << solver_control.last_step() << " iterations."
           << std::endl;
 
@@ -487,27 +423,35 @@ namespace MFSolver
   {
     TimerOutput::Scope t(computing_timer, "output");
 
+    // DataOut owns the conversion from the distributed finite-element solution
+    // to VTU/PVTU files. The directory logic below only decides where those
+    // collective files belong.
     DataOut<dim> data_out;
     data_out.attach_dof_handler(dof_handler);
     data_out.add_data_vector(locally_relevant_solution, "u");
 
+    // Writing the subdomain id beside the solution makes it easier to inspect
+    // parallel decompositions when a run is distributed across several ranks.
     Vector<float> subdomain(triangulation.n_active_cells());
     for (unsigned int i = 0; i < subdomain.size(); ++i)
       subdomain(i) = triangulation.locally_owned_subdomain();
     data_out.add_data_vector(subdomain, "subdomain");
-
     data_out.build_patches();
 
-    std::string output_dir;
-
-    if (this->timestep_number == 0){
-      create_saving_directory_mb<dim, fe_degree>(this->problem, this->mpi_communicator, output_dir);
-    } else if (this->timestep_number > 0){
-      retrieve_saving_directory_mb<dim, fe_degree>(this->problem, this->mpi_communicator, output_dir);
-    }
+    /*
+     * Reserve the run folder at the first output point and then reuse it for
+     * every following time step. This keeps solution_0.*, solution_1.*, ...
+     * together even for time-dependent problems.
+     */
+    if (this->output_dir.empty())
+      create_saving_directory_mb<dim, fe_degree>(this->problem,
+                                                 this->mpi_communicator,
+                                                 this->output_dir);
     
+    // Every time step writes into the same reserved run folder. The time-step
+    // number appears in the filename, not in the directory name.
     data_out.write_vtu_with_pvtu_record(
-        output_dir, "/solution", this->timestep_number, mpi_communicator);
+        this->output_dir, "/solution", this->timestep_number, mpi_communicator);
   }
 
   template <int dim, int fe_degree>
@@ -638,77 +582,31 @@ namespace MFSolver
 
   template <int dim, int fe_degree>
   void MatrixBasedADRSolver<dim, fe_degree>::output_to_file()
-  { 
+  {
     // Only rank 0 should write to file.
     if (Utilities::MPI::this_mpi_process(this->mpi_communicator) != 0)
       return;
 
-    std::string save_dir;
-    retrieve_saving_directory_mb<dim, fe_degree>(this->problem, this->mpi_communicator, save_dir);
-    
-    // This deal.II internal stream is thread-safe
-    LogStream deallog;
-    std::ofstream MyFile(save_dir + "/log.txt");
-    deallog.attach(MyFile, false);
+    /*
+     * log.txt is the metadata companion of the VTU/PVTU files. It must be
+     * written into the directory selected during output_results(), not into
+     * whatever happens to be the newest test_N folder at the end of the run.
+     */
+    AssertThrow(!this->output_dir.empty(),
+                ExcMessage("output_results() must be called before output_to_file()"));
 
-    // Write to the file: first, mid and last timestep for TD
-    // first only for TI
-    // NOTE: total_t is for all timesteps
-    deallog << "delta_t max_iter tol rel_t_step it_n err total_t l2_error h1_error linfty_error\n";
-
-    for (size_t i = 0; i < this->conv_history[0].size(); i++)
-    {
-      deallog << this->problem.delta_t << " "
-             << this->problem.solver_max_iterations << " "
-             << this->problem.solver_tolerance_factor << " "
-             << 0 << " "
-             << i << " "
-             << this->conv_history[0][i] << " "
-             << this->end_time - this->start_time << " "
-             << this->l2_error << " "
-             << this->h1_error << " "
-             << this->linfty_error << "\n";
-    }
-
-    if (this->conv_history.size() > 1)
-    {
-      size_t mid_step = this->conv_history.size() / 2;
-      for (size_t i = 0; i < this->conv_history[mid_step].size(); i++)
-      {
-        deallog << this->problem.delta_t << " "
-               << this->problem.solver_max_iterations << " "
-               << this->problem.solver_tolerance_factor << " "
-               << "0.5" << " "
-               << i << " "
-               << this->conv_history[mid_step][i] << " "
-               << this->end_time - this->start_time << " "
-               << this->l2_error << " "
-               << this->h1_error << " "
-               << this->linfty_error << "\n";
-      }
-    }
-
-    if (this->conv_history.size() > 2)
-    {
-      size_t last_step = this->conv_history.size() - 1;
-      for (size_t i = 0; i < this->conv_history[last_step].size(); i++)
-      {
-        deallog << this->problem.delta_t << " "
-               << this->problem.solver_max_iterations << " "
-               << this->problem.solver_tolerance_factor << " "
-               << 1 << " "
-               << i << " "
-               << this->conv_history[last_step][i] << " "
-               << this->end_time - this->start_time << " "
-               << this->l2_error << " "
-               << this->h1_error << " "
-               << this->linfty_error << "\n";
-      }
-    }
-
-    // Close the file
-    deallog << std::flush;
-    deallog.detach();
-    MyFile.close();
+    /*
+     * The table layout is shared with the matrix-free solver. This wrapper only
+     * supplies the matrix-based run state that is private to this concrete
+     * class: error norms, convergence flag, and elapsed time.
+     */
+    write_solver_log_file(this->output_dir,
+                          this->problem,
+                          this->conv_history,
+                          this->end_time - this->start_time,
+                          this->l2_error,
+                          this->h1_error,
+                          this->linfty_error,
+                          converged);
   }
 }

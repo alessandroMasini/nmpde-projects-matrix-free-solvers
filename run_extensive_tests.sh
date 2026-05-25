@@ -32,6 +32,10 @@
 #                                       Default: "1e-6 1-8 1e-10 1e-12"
 #   --help                              Show this help message.
 #
+# Output:
+#   Test results are saved in the ./tests/ directory.
+#   A summary table is printed at the end showing aggregated statistics for each unique parameter combination.
+#
 # -----------------------------------------------------------------------------
 
 # Default Parameters
@@ -118,3 +122,8 @@ for solver in $SOLVER; do
 done
 
 echo "All tests completed."
+
+# Generate summary table
+echo ""
+echo "Generating test summary..."
+python3 "$(dirname "$0")/summarize_tests.py" "$(dirname "$0")/tests" 2>/dev/null || echo "Error: Summary generation failed"
