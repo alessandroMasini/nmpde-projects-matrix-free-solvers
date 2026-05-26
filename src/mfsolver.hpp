@@ -1,5 +1,6 @@
 #include <exception>
 #include <cassert>
+#include <cstdlib>
 #include <stdexcept>
 #include <functional>
 #include <memory>

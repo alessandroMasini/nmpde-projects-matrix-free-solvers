@@ -246,6 +246,20 @@ namespace MFSolver
     create_saving_directory(save_dir, MPI_COMM_WORLD, output_dir);
   }
 
+  inline void register_latest_run_output_dir(const std::string &output_dir)
+  {
+    const char *manifest_path = std::getenv("MFSOLVER_LATEST_RUN_MANIFEST");
+    if (manifest_path == nullptr || std::string(manifest_path).empty())
+      return;
+
+    std::ofstream manifest_file(manifest_path, std::ios::app);
+    AssertThrow(manifest_file,
+                ExcMessage("Could not open latest-run manifest " +
+                           std::string(manifest_path)));
+
+    manifest_file << output_dir << '\n';
+  }
+
   template <int dim, int fe_degree>
   void write_solver_log_file(const std::string &output_dir,
                              const ADR::ProblemData<dim, fe_degree> &problem,
@@ -357,5 +371,7 @@ namespace MFSolver
     // LogStream treats the empty buffer as another log record.
     deallog.detach();
     log_file.close();
+
+    register_latest_run_output_dir(output_dir);
   }
 }

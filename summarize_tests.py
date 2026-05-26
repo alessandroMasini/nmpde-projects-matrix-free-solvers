@@ -2,6 +2,11 @@
 """
 Summarize extensive test results into a formatted table.
 
+The script treats the on-disk test tree as the source of the experiment
+configuration, and the log.txt files as the source of the measured quantities.
+Each test_N directory becomes one TestResult. Results with the same
+configuration key are then averaged into one table row.
+
 Table columns:
   solver problem n_procs n_threads simd n_additional_refinements delta_t
   it_n err converged total_t %err
@@ -11,6 +16,7 @@ Identical runs (same first 7 params) are aggregated with averages.
 
 import os
 import sys
+import argparse
 from pathlib import Path
 from collections import defaultdict
 from dataclasses import dataclass
@@ -18,13 +24,31 @@ from typing import Optional, List, Dict, Tuple
 import statistics
 
 
-FILE_COLUMNS = ["delta_t", "max_iter", "tol", "rel_t_step", "it_n", "err", "total_t", "l2_error", "h1_error", "linfty_error", "converged"]
-
 # The summary script reads the current log contract. Every row is expected to
-# contain exactly these whitespace-separated columns, in this order.
+# contain exactly these whitespace-separated columns, in this order. Some of
+# these columns are not printed in the final table, but they are still part of
+# the contract because their position keeps the remaining values unambiguous.
+FILE_COLUMNS = [
+    "delta_t",
+    "max_iter",
+    "tol",
+    "rel_t_step",
+    "it_n",
+    "err",
+    "total_t",
+    "l2_error",
+    "h1_error",
+    "linfty_error",
+    "converged",
+]
+
+LATEST_RUN_MANIFEST = "latest_run_tests.txt"
 
 @dataclass
 class TestResult:
+    # One physical test run found under tests/{solver}/{problem}/.../test_N.
+    # Configuration fields come from the directory names, while measurement
+    # fields come from log.txt when it exists and can be parsed.
     solver: str
     problem: str
     n_procs: int
@@ -40,13 +64,17 @@ class TestResult:
     has_log: bool = False
 
     def key(self) -> Tuple:
-        """Return key for grouping identical runs."""
+        """Return key for grouping repeated runs of the same configuration."""
+        # test_N is deliberately excluded. Repeated test_N directories under
+        # the same configuration are samples of the same experiment.
         return (self.solver, self.problem, self.n_procs, self.n_threads,
                 self.simd, self.n_additional_refinements, self.delta_t)
 
 
 def normalize_column_name(column: str) -> str:
     """Map a raw log token to the column name used by the summarizer."""
+    # Keep normalization small and explicit. The only accepted decoration at
+    # the moment is deallog's DEAL:: prefix.
     # Strip deallog's prefix before interpreting the physical meaning of the
     # column. The prefix is about where the line came from, not about the data.
     return column.removeprefix("DEAL::")
@@ -54,6 +82,8 @@ def normalize_column_name(column: str) -> str:
 
 def normalize_header(header_line: str) -> List[str]:
     """Recognize the meaning of each log column in the current layout."""
+    # The header is validated before any row is parsed. That keeps accidental
+    # logger changes from silently shifting numeric columns in the summary.
     raw_header = header_line.strip().split()
 
     # deallog can emit DEAL:: as its own token. Remove it so the comparison is
@@ -80,6 +110,8 @@ def normalize_header(header_line: str) -> List[str]:
 
 def parse_data_line(line: str, n_columns: int) -> Optional[List[str]]:
     """Parse one row from the current whitespace-separated log layout."""
+    # This mirrors normalize_header(): remove only the optional deallog prefix,
+    # then require the remaining data to match the validated column count.
     parts = line.split()
 
     # Handle the same optional deallog prefix as the header path, before any
@@ -104,6 +136,8 @@ def parse_log_file(log_path: Path) -> Optional[Dict]:
     whenever that flag is available, because it is the closest representation of
     what the linear solver actually decided.
     """
+    # A missing, unreadable, or empty log is represented as None. The caller
+    # keeps the TestResult, but marks it as a run without usable measurements.
     try:
         with open(log_path, 'r') as f:
             lines = f.readlines()
@@ -126,7 +160,8 @@ def parse_log_file(log_path: Path) -> Optional[Dict]:
     # Time-dependent runs print one block per relative time step. Grouping rows
     # this way lets the table report a representative iteration count and
     # residual for the whole run instead of over-weighting problems with more
-    # internal solver iterations.
+    # internal solver iterations. Stationary runs naturally form one group,
+    # usually at rel_t_step == 0.0.
     time_steps = {}  # rel_t_step -> list of (it_n, err)
     delta_t = None
     total_t = None
@@ -139,6 +174,8 @@ def parse_log_file(log_path: Path) -> Optional[Dict]:
         parts = parse_data_line(line, len(header))
         row = dict(zip(header, parts))
 
+        # The log writer already chose scientific or fixed formatting. Once the
+        # columns are known, the summarizer stores only typed values.
         delta_t = float(row['delta_t'])
         rel_t_step = float(row['rel_t_step'])
         it_n = int(row['it_n'])
@@ -178,11 +215,62 @@ def parse_log_file(log_path: Path) -> Optional[Dict]:
     }
 
 
+def make_result_from_test_dir(tests_dir: Path, test_dir: Path) -> Optional[TestResult]:
+    """Build one TestResult from a tests/.../test_N directory."""
+    try:
+        relative_parts = test_dir.relative_to(tests_dir).parts
+    except ValueError:
+        return None
+
+    if len(relative_parts) != 7:
+        return None
+
+    solver, problem, n_add_ref, n_procs, n_threads, simd, test_name = relative_parts
+
+    if not test_name.startswith('test_'):
+        return None
+
+    try:
+        n_additional_refinements = int(n_add_ref)
+        n_procs_value = int(n_procs)
+        n_threads_value = int(n_threads)
+        simd_value = int(simd)
+    except ValueError:
+        return None
+
+    result = TestResult(
+        solver=solver,
+        problem=problem,
+        n_procs=n_procs_value,
+        n_threads=n_threads_value,
+        simd=simd_value,
+        n_additional_refinements=n_additional_refinements,
+        delta_t=0.0,
+    )
+
+    log_file = test_dir / 'log.txt'
+    if log_file.exists():
+        parsed = parse_log_file(log_file)
+        if parsed:
+            result.delta_t = parsed['delta_t']
+            result.it_n = parsed['it_n']
+            result.err = parsed['err']
+            result.converged = parsed['converged']
+            result.total_t = parsed['total_t']
+            result.has_log = True
+
+    return result
+
+
 def collect_test_results(tests_dir: Path) -> List[TestResult]:
     """Collect all test results from directory structure."""
+    # The directory path encodes the parameters that were used to launch the
+    # run. Non-directory entries and non-integer parameter folders are ignored
+    # so auxiliary files do not break the summary.
     results = []
 
-    # Directory structure: tests/{solver}/{problem}/{n_add_ref}/{n_procs}/{n_threads}/{simd}/test_N/log.txt
+    # Directory structure:
+    # tests/{solver}/{problem}/{n_add_ref}/{n_procs}/{n_threads}/{simd}/test_N/log.txt
     for solver_dir in tests_dir.iterdir():
         if not solver_dir.is_dir():
             continue
@@ -225,39 +313,62 @@ def collect_test_results(tests_dir: Path) -> List[TestResult]:
                             except ValueError:
                                 continue
 
-                            # Iterate over test_N directories
+                            # Each test_N directory is a separate repetition of
+                            # the same configuration. Missing logs are kept so
+                            # the final %err column can report incomplete runs.
                             for test_dir in simd_dir.iterdir():
                                 if not test_dir.is_dir() or not test_dir.name.startswith('test_'):
                                     continue
 
-                                log_file = test_dir / 'log.txt'
-                                result = TestResult(
-                                    solver=solver,
-                                    problem=problem,
-                                    n_procs=n_procs,
-                                    n_threads=n_threads,
-                                    simd=simd,
-                                    n_additional_refinements=n_additional_refinements,
-                                    delta_t=0.0,  # Will be set from log file
-                                )
+                                result = make_result_from_test_dir(tests_dir, test_dir)
+                                if result is not None:
+                                    results.append(result)
 
-                                if log_file.exists():
-                                    parsed = parse_log_file(log_file)
-                                    if parsed:
-                                        result.delta_t = parsed['delta_t']
-                                        result.it_n = parsed['it_n']
-                                        result.err = parsed['err']
-                                        result.converged = parsed['converged']
-                                        result.total_t = parsed['total_t']
-                                        result.has_log = True
+    return results
 
-                                results.append(result)
+
+def collect_manifest_test_results(tests_dir: Path, manifest_path: Path) -> List[TestResult]:
+    """Collect only the test_N directories listed in a latest-run manifest."""
+    results = []
+    seen = set()
+    repo_root = tests_dir.parent
+
+    try:
+        manifest_lines = manifest_path.read_text().splitlines()
+    except OSError:
+        return results
+
+    for line in manifest_lines:
+        raw_path = line.strip()
+        if not raw_path:
+            continue
+
+        test_dir = Path(raw_path)
+        if not test_dir.is_absolute():
+            test_dir = repo_root / test_dir
+
+        try:
+            test_dir = test_dir.resolve()
+            tests_dir_resolved = tests_dir.resolve()
+        except OSError:
+            continue
+
+        if test_dir in seen:
+            continue
+        seen.add(test_dir)
+
+        result = make_result_from_test_dir(tests_dir_resolved, test_dir)
+        if result is not None:
+            results.append(result)
 
     return results
 
 
 def aggregate_results(results: List[TestResult]) -> Dict[Tuple, Dict]:
     """Group identical runs and calculate averages."""
+    # The aggregation boundary is TestResult.key(). That means two rows with
+    # different measured delta_t values will not be combined, even if their
+    # directory parameters are otherwise identical.
     grouped = defaultdict(list)
 
     for result in results:
@@ -265,12 +376,14 @@ def aggregate_results(results: List[TestResult]) -> Dict[Tuple, Dict]:
 
     aggregated = {}
     for key, group in grouped.items():
-        # Count how many have log files
+        # Count how many expected repetitions produced usable logs. The script
+        # reports missing data separately from measured values.
         with_log = sum(1 for r in group if r.has_log)
         total = len(group)
         missing_pct = 100 * (total - with_log) / total if total > 0 else 0
 
-        # Average statistics from runs with logs
+        # Average statistics only across successful parses. Missing logs should
+        # affect %err, not pull numerical averages toward zero.
         runs_with_logs = [r for r in group if r.has_log]
 
         if runs_with_logs:
@@ -295,6 +408,9 @@ def aggregate_results(results: List[TestResult]) -> Dict[Tuple, Dict]:
 
 def format_table(aggregated: Dict[Tuple, Dict]) -> str:
     """Format aggregated results as a pretty table."""
+    # Formatting is intentionally kept separate from collection and aggregation.
+    # The rest of the code returns structured data; only this function decides
+    # how wide columns are and how floats should be displayed.
     if not aggregated:
         return "No results to display."
 
@@ -314,7 +430,8 @@ def format_table(aggregated: Dict[Tuple, Dict]) -> str:
         'err_pct': 8,
     }
 
-    # Header with column names
+    # Fixed column widths make repeated summaries easy to compare in a terminal
+    # or saved text file.
     header = (
         f"{'Solver':<{col_widths['solver']}} "
         f"{'Problem':<{col_widths['problem']}} "
@@ -334,7 +451,8 @@ def format_table(aggregated: Dict[Tuple, Dict]) -> str:
     lines.append(header)
     lines.append(separator)
 
-    # Sort by key for consistent output
+    # Sort by the full configuration key so repeated executions produce stable
+    # output even if the filesystem returns directories in a different order.
     for key in sorted(aggregated.keys()):
         solver, problem, n_procs, n_threads, simd, n_add_ref, delta_t = key
         stats = aggregated[key]
@@ -358,18 +476,54 @@ def format_table(aggregated: Dict[Tuple, Dict]) -> str:
     return "\n".join(lines)
 
 
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description="Summarize matrix-free and matrix-based test results."
+    )
+    parser.add_argument(
+        "tests_dir",
+        nargs="?",
+        default=Path(__file__).parent / "tests",
+        type=Path,
+        help="Path to the tests directory.",
+    )
+    parser.add_argument(
+        "--latest",
+        action="store_true",
+        help="Summarize only test_N directories listed in the latest-run manifest.",
+    )
+    parser.add_argument(
+        "--all",
+        action="store_true",
+        help="Summarize every test_N directory under tests_dir.",
+    )
+    parser.add_argument(
+        "--manifest",
+        type=Path,
+        help=f"Path to the latest-run manifest. Defaults to tests_dir/{LATEST_RUN_MANIFEST}.",
+    )
+    return parser.parse_args()
+
+
 def main():
-    if len(sys.argv) > 1:
-        tests_dir = Path(sys.argv[1])
-    else:
-        tests_dir = Path(__file__).parent / "tests"
+    # The optional positional argument lets the same script summarize another
+    # test tree. Without it, the repository's tests/ directory is used.
+    args = parse_args()
+    tests_dir = args.tests_dir
 
     if not tests_dir.exists():
         print(f"Error: tests directory not found at {tests_dir}")
         sys.exit(1)
 
+    manifest_path = args.manifest or (tests_dir / LATEST_RUN_MANIFEST)
+    use_latest = args.latest or (not args.all and manifest_path.exists())
+
     print("Collecting test results...")
-    results = collect_test_results(tests_dir)
+    if use_latest:
+        results = collect_manifest_test_results(tests_dir, manifest_path)
+        print(f"Using latest-run manifest: {manifest_path}")
+    else:
+        results = collect_test_results(tests_dir)
 
     if not results:
         print("No test results found!")

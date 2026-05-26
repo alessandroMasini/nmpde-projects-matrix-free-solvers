@@ -80,6 +80,25 @@ done
 # Run tests
 echo "=== Running tests ==="
 
+# Absolute path to the directory containing this script. This keeps the
+# manifest location stable even if the script is launched from another folder.
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+
+# File used as the manifest for this batch. Each completed solver run appends
+# its test_N output directory here.
+LATEST_RUN_MANIFEST="$SCRIPT_DIR/tests/latest_run_tests.txt"
+
+# Ensure the tests directory exists before truncating/creating the manifest.
+mkdir -p "$SCRIPT_DIR/tests"
+
+# Start this extensive run with an empty manifest. The ':' command does
+# nothing; the redirection is the useful part, truncating or creating the file.
+: > "$LATEST_RUN_MANIFEST"
+
+# Child processes inherit exported variables. The C++ log writer reads this
+# variable and appends its chosen test_N directory after it writes log.txt.
+export MFSOLVER_LATEST_RUN_MANIFEST="$LATEST_RUN_MANIFEST"
+
 for solver in $SOLVER; do
     echo "--- Solver: $solver ---"
     
@@ -126,4 +145,4 @@ echo "All tests completed."
 # Generate summary table
 echo ""
 echo "Generating test summary..."
-python3 "$(dirname "$0")/summarize_tests.py" "$(dirname "$0")/tests" 2>/dev/null || echo "Error: Summary generation failed"
+python3 "$SCRIPT_DIR/summarize_tests.py" "$SCRIPT_DIR/tests" --latest --manifest "$LATEST_RUN_MANIFEST" 2>/dev/null || echo "Error: Summary generation failed"
