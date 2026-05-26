@@ -24,7 +24,8 @@ int main(int argc, char **argv)
     // We first distinguish between 2d and 3d case, and then specialize
     if (test_idx == 1){
         ADR::ProblemData<2, 2> data = ADR::ProblemData<2, 2>::lab_02_poisson();
-        data.refinement_level += std::stoi(argv[4]);
+        data.n_additional_refinements = std::stoi(argv[4]);
+        data.refinement_level += data.n_additional_refinements;
 
         // A time step of 0 simply means getting the problem's default
         // A value different then [0, 1] for a time-indepedent gets simply ignored since 
@@ -73,7 +74,8 @@ int main(int argc, char **argv)
             break;
         }
 
-        data.refinement_level += std::stoi(argv[4]);
+        data.n_additional_refinements = std::stoi(argv[4]);
+        data.refinement_level += data.n_additional_refinements;
 
         // A time step of 0 simply means getting the problem's default
         // A value different then [0, 1] for a time-indepedent gets simply ignored since 

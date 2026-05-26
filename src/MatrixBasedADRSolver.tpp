@@ -114,83 +114,209 @@ namespace MFSolver
     const typename DoFHandler<dim>::active_cell_iterator &cell,
     ScratchData<dim> &scratch,
     PerTaskData<dim> &data) {
-        const unsigned int dofs_per_cell = fe.n_dofs_per_cell();
-        const unsigned int n_q_points    = scratch.fe_values.n_quadrature_points;
-        double mu_loc;
-        Tensor<1, dim, double> b_loc;
-        double b_div;
-        double k_loc;
-        double f_loc;
+    const unsigned int dofs_per_cell = fe.n_dofs_per_cell();
+    const unsigned int n_q_points = scratch.fe_values.n_quadrature_points;
 
-        // TODO: is this check useful?
-        if (cell->is_locally_owned())
-          {
-            scratch.fe_values.reinit(cell);
+    /*
+     * WorkStream reuses CopyData objects. Always reset every field that the
+     * copier may inspect, including the skip flag, before returning control to
+     * the framework.
+     */
+    data.cell_matrix = 0.;
+    data.cell_rhs = 0.;
+    data.cell_level = numbers::invalid_unsigned_int;
+    data.cell_is_locally_owned = false;
 
-            data.cell_matrix = 0.;
-            data.cell_rhs    = 0.;
-            for (unsigned int q = 0; q < n_q_points; ++q) {
-              mu_loc = this->problem.mu->value (scratch.fe_values.quadrature_point (q));
-              b_loc = this->problem.beta->value (scratch.fe_values.quadrature_point (q));
-              b_div = this->problem.beta->divergence(scratch.fe_values.quadrature_point (q));
-              k_loc = this->problem.gamma->value (scratch.fe_values.quadrature_point (q));
-              f_loc = this->problem.forcing_term->value (scratch.fe_values.quadrature_point (q));
+    /*
+     * In a distributed triangulation, every rank can iterate over cells that
+     * exist only as ghosts or artificial cells. Those cells must not contribute
+     * to this rank's PETSc matrix/vector. The copier still runs for the item,
+     * but the flag above makes it a cheap no-op.
+     */
+    if (!cell->is_locally_owned())
+      return;
 
-              for (unsigned int i = 0; i < dofs_per_cell; ++i) {
-                for (unsigned int j = 0; j < dofs_per_cell; ++j) {
-                  // Diffusion.
-                  data.cell_matrix (i, j) +=
-                mu_loc *                             //
-                scratch.fe_values.shape_grad (i, q) *  //
-                scratch.fe_values.shape_grad (j, q) * //
-                scratch.fe_values.JxW (q);
+    data.cell_is_locally_owned = true;
+    data.cell_level = cell->level();
 
-              // Advection
-              data.cell_matrix (i, j) += b_loc *
-                scratch.fe_values.shape_grad (j, q) *
-                scratch.fe_values.shape_value (i, q) *
-                scratch.fe_values.JxW (q);
+    scratch.fe_values.reinit(cell);
 
-              // Reaction
-              data.cell_matrix (i, j) += (k_loc + b_div)*
-                scratch.fe_values.shape_value (i, q) *
-                scratch.fe_values.shape_value (j, q) *
-                scratch.fe_values.JxW (q);
-          }
+    /*
+     * Time-dependent problems need the previous solution in the mass-term
+     * contribution to the right-hand side. This vector lives in ScratchData so
+     * each worker thread has private storage for FEValues to fill.
+     */
+    if (this->problem.is_time_dependent)
+      scratch.fe_values.get_function_values(old_solution,
+                                            scratch.old_solution_values);
 
-          // Forcing term.
-          data.cell_rhs (i) += f_loc * //
-            scratch.fe_values.shape_value (i, q) *                     //
-            scratch.fe_values.JxW (q);
+    for (unsigned int q = 0; q < n_q_points; ++q)
+    {
+      const Point<dim> &quadrature_point =
+          scratch.fe_values.quadrature_point(q);
+      const double mu_loc = this->problem.mu->value(quadrature_point);
+      const Tensor<1, dim, double> b_loc =
+          this->problem.beta->value(quadrature_point);
+      const double b_div =
+          this->problem.beta->divergence(quadrature_point);
+      const double k_loc = this->problem.gamma->value(quadrature_point);
+      const double f_loc =
+          this->problem.forcing_term->value(quadrature_point);
+      const double dx = scratch.fe_values.JxW(q);
+
+      for (unsigned int i = 0; i < dofs_per_cell; ++i)
+      {
+        const double phi_i = scratch.fe_values.shape_value(i, q);
+
+        for (unsigned int j = 0; j < dofs_per_cell; ++j)
+        {
+          const double phi_j = scratch.fe_values.shape_value(j, q);
+
+          /*
+           * Mass term.
+           */
+          if (this->problem.is_time_dependent)
+            data.cell_matrix(i, j) +=
+                (1.0 / this->problem.delta_t) * phi_i * phi_j * dx;
+
+          // Diffusion: mu grad(phi_i) . grad(phi_j).
+          data.cell_matrix(i, j) +=
+              mu_loc *
+              scratch.fe_values.shape_grad(i, q) *
+              scratch.fe_values.shape_grad(j, q) *
+              dx;
+
+          // Advection part beta . grad(phi_j), tested against phi_i.
+          data.cell_matrix(i, j) +=
+              b_loc *
+              scratch.fe_values.shape_grad(j, q) *
+              phi_i *
+              dx;
+
+          // Reaction plus div(beta) term from the conservative formulation.
+          data.cell_matrix(i, j) +=
+              (k_loc + b_div) * phi_i * phi_j * dx;
         }
-      }cell->get_dof_indices(data.dof_indices);
+
+        if (this->problem.is_time_dependent)
+          data.cell_rhs(i) +=
+              (1.0 / this->problem.delta_t) *
+              phi_i *
+              scratch.old_solution_values[q] *
+              dx;
+
+        // Forcing term.
+        data.cell_rhs(i) += f_loc * phi_i * dx;
+      }
     }
+
+    /*
+     * Neumann data are face-local, so the face FEValues object also belongs in
+     * ScratchData. Only faces explicitly listed in ProblemData contribute; all
+     * other boundary faces are either Dirichlet or natural zero-flux.
+     */
+    for (unsigned int f = 0; f < GeometryInfo<dim>::faces_per_cell; ++f)
+    {
+      if (!cell->face(f)->at_boundary())
+        continue;
+
+      /**
+       * Checking if the face boundary id is in the Neumann boundary map.
+       * If not, it means that this face is either a Dirichlet boundary or
+       * a natural zero-flux boundary, so we can skip it.
+       */
+      const auto boundary_id = cell->face(f)->boundary_id();
+      auto it = this->problem.neumann_boundaries.find(boundary_id);
+      if (it == this->problem.neumann_boundaries.end())
+        continue;
+
+      /**
+       * It is necessary to specify the index of the face in the reinit call
+       * to set up the correct face quadrature formula. This is particularly
+       * relevant if the cell degrees differ.
+       */
+      scratch.fe_face_values.reinit(cell, f);
+
+      for (unsigned int q = 0;
+           q < scratch.fe_face_values.n_quadrature_points;
+           ++q)
+      {
+        const double g =
+            it->second->value(scratch.fe_face_values.quadrature_point(q));
+        const double dx = scratch.fe_face_values.JxW(q);
+
+        for (unsigned int i = 0; i < dofs_per_cell; ++i)
+          data.cell_rhs(i) +=
+              g *
+              scratch.fe_face_values.shape_value(i, q) *
+              dx;
+      }
+    }
+
+    cell->get_dof_indices(data.dof_indices);
   }
     
   template <int dim, int fe_degree>
   void MatrixBasedADRSolver<dim, fe_degree>::copy_local_to_global(const PerTaskData<dim> &data)
-    {     
-      constraints.distribute_local_to_global(data.cell_matrix,
-                                              data.cell_rhs,
-                                              data.dof_indices,
-                                              system_matrix,
-                                              system_rhs);
+  {
+    /*
+     * WorkStream guarantees that this copier is never executed concurrently
+     * with another copier invocation and that calls happen in iterator order.
+     * That is why the PETSc matrix/vector writes below need no explicit mutex.
+     */
+    if (!data.cell_is_locally_owned)
+      return;
+
+    constraints.distribute_local_to_global(data.cell_matrix,
+                                           data.cell_rhs,
+                                           data.dof_indices,
+                                           system_matrix,
+                                           system_rhs);
+
+    /*
+     * Every local cell matrix is also scattered to the level matrix associated with the cell's
+     * level. The scatter remains in the copier for the same reason as the
+     * global system scatter: sparse-matrix writes are shared mutable state.
+     */
+    constraints.distribute_local_to_global(data.cell_matrix,
+                                           data.dof_indices,
+                                           mg_matrices[data.cell_level]);
   }
 
   template <int dim, int fe_degree>
-  void MatrixBasedADRSolver<dim, fe_degree>::assemble_multithreaded () {
+  void MatrixBasedADRSolver<dim, fe_degree>::assemble_multithreaded()
+  {
     TimerOutput::Scope t(computing_timer, "assembly");
 
-    PerTaskData per_task_data(fe);
+    /*
+     * The solver can assemble once for steady problems and many times for
+     * transient problems. Start every assembly from a clean algebraic state.
+     */
+    system_matrix = 0;
+    system_rhs = 0;
+    for (unsigned int l = 0; l < triangulation.n_levels(); ++l)
+      mg_matrices[l] = 0;
 
     const QGauss<dim> quadrature_formula(this->problem.num_quadrature_points);
-    ScratchData scratch_data(fe,
-                             quadrature_formula,
-                             update_values | update_gradients |
-                             update_quadrature_points | update_JxW_values);
+    const QGauss<dim - 1> quadrature_boundary(this->problem.num_quadrature_points);
 
+    PerTaskData<dim> per_task_data(fe);
+    ScratchData<dim> scratch_data(fe,
+                                  quadrature_formula,
+                                  quadrature_boundary,
+                                  update_values | update_gradients |
+                                      update_quadrature_points | update_JxW_values,
+                                  update_values |
+                                      update_quadrature_points | update_JxW_values);
 
-    WorkStream::run (dof_handler.begin_active(),
+    /*
+     * WorkStream runs assemble_on_one_cell() in parallel with private scratch
+     * and copy buffers, then runs copy_local_to_global() sequentially. This is
+     * the deal.II pattern intended for local finite-element assembly: the
+     * expensive quadrature loop is parallel, while the non-thread-safe sparse
+     * matrix/vector insertion is serialized by the framework.
+     */
+    WorkStream::run(dof_handler.begin_active(),
                  dof_handler.end(),
                  *this,
                  &MatrixBasedADRSolver<dim, fe_degree>::assemble_on_one_cell,
@@ -198,170 +324,22 @@ namespace MFSolver
                  scratch_data,
                  per_task_data);
 
-    pcout<<"After local assembly I'm still alive :)"<<std::endl;
-
-    // TODO: can compression be done in multi-threaded way?
+    /*
+     * PETSc accumulates off-process entries lazily. Compression is collective
+     * over MPI ranks and must happen after all local WorkStream copy operations
+     * have finished.
+     */
     system_matrix.compress(VectorOperation::add);
     system_rhs.compress(VectorOperation::add);
+
+    for (unsigned int l = 0; l < triangulation.n_levels(); ++l)
+      mg_matrices[l].compress(VectorOperation::add);
   }
 
   template <int dim, int fe_degree>
   void MatrixBasedADRSolver<dim, fe_degree>::assemble()
   {
-    TimerOutput::Scope t(computing_timer, "assembly");
-
-    const QGauss<dim> quadrature_formula(this->problem.num_quadrature_points);
-    const QGauss<dim - 1> quadrature_boundary(this->problem.num_quadrature_points);
-
-    FEValues<dim> fe_values(fe,
-                            quadrature_formula,
-                            update_values | update_gradients |
-                                update_quadrature_points | update_JxW_values);
-
-    FEFaceValues<dim> fe_values_boundary(fe,
-                                         quadrature_boundary,
-                                         update_values |
-                                             update_quadrature_points | update_JxW_values);
-
-    const unsigned int dofs_per_cell = fe.n_dofs_per_cell();
-    const unsigned int n_q_points = quadrature_formula.size();
-
-    FullMatrix<double> cell_matrix(dofs_per_cell, dofs_per_cell);
-    Vector<double> cell_rhs(dofs_per_cell);
-
-    std::vector<types::global_dof_index> local_dof_indices(dofs_per_cell);
-
-    double mu_loc;
-    Tensor<1, dim, double> b_loc;
-    double b_div;
-    double k_loc;
-    double f_loc;
-
-    std::vector<double> old_solution_values(n_q_points);
-
-    system_matrix = 0;
-    system_rhs = 0;
-    for (unsigned int l = 0; l < triangulation.n_levels(); ++l)
-      mg_matrices[l] = 0;
-
-    // TODO: implement ADR with actual functions
-    for (const auto &cell : dof_handler.active_cell_iterators())
-    {
-      if (cell->is_locally_owned())
-      {
-        fe_values.reinit(cell);
-
-        cell_matrix = 0.;
-        cell_rhs = 0.;
-
-        fe_values.get_function_values(old_solution, old_solution_values);
-
-        for (unsigned int q = 0; q < n_q_points; ++q)
-        {
-          mu_loc = this->problem.mu->value(fe_values.quadrature_point(q));
-          b_loc = this->problem.beta->value(fe_values.quadrature_point(q));
-          b_div = this->problem.beta->divergence(fe_values.quadrature_point(q));
-          k_loc = this->problem.gamma->value(fe_values.quadrature_point(q));
-          f_loc = this->problem.forcing_term->value(fe_values.quadrature_point(q));
-
-          for (unsigned int i = 0; i < dofs_per_cell; ++i)
-          {
-            for (unsigned int j = 0; j < dofs_per_cell; ++j)
-            {
-              if (this->problem.is_time_dependent)
-              {
-                cell_matrix(i, j) += (1.0 / this->problem.delta_t) *
-                                     fe_values.shape_value(i, q) *
-                                     fe_values.shape_value(j, q) *
-                                     fe_values.JxW(q);
-              }
-
-              // Diffusion.
-              cell_matrix(i, j) +=
-                  // (this->problem.is_time_dependent ? theta : 1.0) * assuming theta = 1.0
-                  mu_loc *                     //
-                  fe_values.shape_grad(i, q) * //
-                  fe_values.shape_grad(j, q) * //
-                  fe_values.JxW(q);
-
-              // Advection
-              cell_matrix(i, j) +=
-                  // (this->problem.is_time_dependent ? theta : 1.0) * assuming theta = 1.0
-                  b_loc *
-                  fe_values.shape_grad(j, q) *
-                  fe_values.shape_value(i, q) *
-                  fe_values.JxW(q);
-
-              // Reaction
-              cell_matrix(i, j) +=
-                  // (this->problem.is_time_dependent ? theta : 1.0) * assuming theta = 1.0
-                  (k_loc + b_div) *
-                  fe_values.shape_value(i, q) *
-                  fe_values.shape_value(j, q) *
-                  fe_values.JxW(q);
-            }
-
-            if (this->problem.is_time_dependent)
-            {
-              cell_rhs(i) += (1.0 / this->problem.delta_t) * //
-                             fe_values.shape_value(i, q) *   //
-                             old_solution_values[q] *        //
-                             fe_values.JxW(q);
-            }
-            // Forcing term.
-            cell_rhs(i) += f_loc *                       //
-                           fe_values.shape_value(i, q) * //
-                           fe_values.JxW(q);
-          }
-        }
-
-        // Neumann
-        for (unsigned int f = 0; f < GeometryInfo<dim>::faces_per_cell; ++f)
-        {
-          if (!cell->face(f)->at_boundary())
-            continue;
-
-          const auto boundary_id = cell->face(f)->boundary_id();
-          auto it = this->problem.neumann_boundaries.find(boundary_id);
-          if (it == this->problem.neumann_boundaries.end())
-            continue;
-
-          const auto &function = it->second;
-
-          fe_values_boundary.reinit(cell, f);
-
-          for (unsigned int q = 0; q < quadrature_boundary.size(); ++q)
-          {
-            const double g = function->value(fe_values_boundary.quadrature_point(q));
-            for (unsigned int i = 0; i < dofs_per_cell; ++i)
-            {
-              cell_rhs(i) += g *
-                             fe_values_boundary.shape_value(i, q) *
-                             fe_values_boundary.JxW(q);
-            }
-          }
-        }
-
-        cell->get_dof_indices(local_dof_indices);
-        constraints.distribute_local_to_global(cell_matrix,
-                                               cell_rhs,
-                                               local_dof_indices,
-                                               system_matrix,
-                                               system_rhs);
-
-        constraints.distribute_local_to_global(cell_matrix,
-                                               local_dof_indices,
-                                               mg_matrices[cell->level()]);
-      }
-    }
-
-    system_matrix.compress(VectorOperation::add);
-    system_rhs.compress(VectorOperation::add);
-
-    for (unsigned int l = 0; l < triangulation.n_levels(); ++l)
-    {
-      mg_matrices[l].compress(VectorOperation::add);
-    }
+    assemble_multithreaded();
   }
 
   template <int dim, int fe_degree>
@@ -475,7 +453,7 @@ namespace MFSolver
       this->start_time = MPI_Wtime();
       setup_system();
       pcout << "Finished setup" << std::endl;
-      assemble();
+      assemble_multithreaded();
       pcout << "Finished assemble" << std::endl;
       solve();
       pcout << "Finished solve" << std::endl;
@@ -498,7 +476,7 @@ namespace MFSolver
         ++this->timestep_number;
 
         pcout << "TIMESTEP " << this->timestep_number << std::endl;
-        assemble();
+        assemble_multithreaded();
         pcout << "   Finished assemble" << std::endl;
         solve();
         pcout << "   Finished solve" << std::endl;

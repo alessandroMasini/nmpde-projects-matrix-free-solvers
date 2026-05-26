@@ -8,7 +8,7 @@ Each test_N directory becomes one TestResult. Results with the same
 configuration key are then averaged into one table row.
 
 Table columns:
-  solver problem n_procs n_threads simd n_additional_refinements delta_t
+  solver problem n_procs n_threads simd n_add_ref delta_t
   it_n err converged total_t %err
 
 Identical runs (same first 7 params) are aggregated with averages.

@@ -438,7 +438,8 @@ namespace ADR
         unsigned int solver_max_iterations; /**< Maximum number of iterations when solving the algebraic system. */
         double solver_tolerance_factor;     /**< Factor to multiply to the l2 norm of the rhs of the algebraic system in order to get the absolute tolerance. */
 
-        unsigned int refinement_level = 3; /**< Number of times the grid is refined. This should be changed for problem to problem. */
+        unsigned int refinement_level = 3; /**< Total number of times the grid is refined. This should be changed for problem to problem. */
+        unsigned int n_additional_refinements = 0; /**< Extra global refinements requested on top of the problem default. */
         // TODO: where is this used???
         unsigned int refinement_coefficient_per_level = 4; /**< Mesh refinement level (if generating a hyper_cube/hyper_ball) */
 

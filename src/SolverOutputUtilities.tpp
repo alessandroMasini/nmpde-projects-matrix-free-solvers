@@ -208,9 +208,12 @@ namespace MFSolver
     std::filesystem::path save_dir =
         std::filesystem::path("tests") /
         "matrix_based" /
-        // Problem name and refinement describe the numerical case.
+        // The directory stores the command-line experiment parameter: the
+        // extra refinements requested on top of the problem's built-in default.
+        // The total refinement level is still kept in problem.refinement_level
+        // and is what setup_system() uses to refine the mesh.
         problem.problem_name /
-        std::to_string(problem.refinement_level) /
+        std::to_string(problem.n_additional_refinements) /
         // MPI ranks and threads describe the parallel execution shape.
         std::to_string(Utilities::MPI::n_mpi_processes(mpi_communicator)) /
         std::to_string(MultithreadInfo::n_threads()) / // TODO: restore actual multithreading
@@ -234,9 +237,11 @@ namespace MFSolver
     std::filesystem::path save_dir =
         std::filesystem::path("tests") /
         "matrix_free" /
-        // Problem name and refinement identify the numerical experiment.
+        // Store the additional refinement count, not the total mesh refinement.
+        // This keeps the output tree aligned with run_extensive_tests.sh and
+        // with plots.py/summarize_tests.py column names.
         problem.problem_name /
-        std::to_string(problem.refinement_level) /
+        std::to_string(problem.n_additional_refinements) /
         // MPI ranks and threads identify the parallel execution shape.
         std::to_string(Utilities::MPI::n_mpi_processes(MPI_COMM_WORLD)) /
         std::to_string(MultithreadInfo::n_threads()) /

@@ -507,35 +507,72 @@ namespace MFSolver
 
     template <int dim>
     struct PerTaskData {
-        FullMatrix<double>        cell_matrix;
-        Vector<double>            cell_rhs;
-        std::vector<unsigned int> dof_indices;
-        
+        FullMatrix<double> cell_matrix;
+        Vector<double> cell_rhs;
+        std::vector<types::global_dof_index> dof_indices;
+        unsigned int cell_level = numbers::invalid_unsigned_int;
+        bool cell_is_locally_owned = false;
+
         PerTaskData (const FiniteElement<dim> &fe)
                     :
                     cell_matrix (fe.dofs_per_cell, fe.dofs_per_cell),
                     cell_rhs (fe.dofs_per_cell),
                     dof_indices (fe.dofs_per_cell)
             {}
+
+        /*
+         * WorkStream keeps a pool of CopyData objects and constructs that pool
+         * by copying this sample object. Copy only the allocated shape, not the
+         * transient values from a previous cell. The worker resets the fields
+         * again before every use, but keeping the copy constructor explicit
+         * documents the required contract: each copy is an independent local
+         * matrix/vector buffer that can be filled by one worker thread and then
+         * consumed by the sequential copier.
+         */
+        PerTaskData(const PerTaskData &data)
+            :
+            cell_matrix(data.cell_matrix.m(), data.cell_matrix.n()),
+            cell_rhs(data.cell_rhs.size()),
+            dof_indices(data.dof_indices.size()),
+            cell_level(numbers::invalid_unsigned_int),
+            cell_is_locally_owned(false)
+            {}
     };
 
     template <int dim>
     struct ScratchData {
-        // TODO: this may need additions (value_list)
-        FEValues<dim>             fe_values;
+        FEValues<dim> fe_values;
+        FEFaceValues<dim> fe_face_values;
+        std::vector<double> old_solution_values;
         
         ScratchData (const FiniteElement<dim> &fe,
                     const Quadrature<dim>    &quadrature,
-                    const UpdateFlags         update_flags)
+                    const Quadrature<dim - 1> &face_quadrature,
+                    const UpdateFlags         update_flags,
+                    const UpdateFlags         face_update_flags)
                     :
-                    fe_values (fe, quadrature, update_flags)
+                    fe_values (fe, quadrature, update_flags),
+                    fe_face_values(fe, face_quadrature, face_update_flags),
+                    old_solution_values(quadrature.size())
             {}
         
+        /*
+         * FEValues and FEFaceValues own mutable caches that are changed by
+         * reinit(). Sharing them across threads would be a data race, so a
+         * ScratchData copy must construct fresh evaluator objects using the
+         * same finite element, quadrature, and update flags as the sample.
+         * WorkStream then gives each worker one of these private scratch
+         * objects.
+         */
         ScratchData (const ScratchData &scratch)
                     :
                     fe_values (scratch.fe_values.get_fe(),
                                 scratch.fe_values.get_quadrature(),
-                                scratch.fe_values.get_update_flags())
+                                scratch.fe_values.get_update_flags()),
+                    fe_face_values(scratch.fe_face_values.get_fe(),
+                                   scratch.fe_face_values.get_quadrature(),
+                                   scratch.fe_face_values.get_update_flags()),
+                    old_solution_values(scratch.old_solution_values.size())
             {}
     };
 
@@ -568,29 +605,6 @@ namespace MFSolver
         {
         }
 
-        // // Copy constructor
-        // MatrixBasedADRSolver(const MatrixBasedADRSolver<dim, fe_degree> &_solver) : 
-        //     ADRSolver<dim, fe_degree>(_solver.problem),
-        //     mpi_communicator(MPI_COMM_WORLD),
-        //     triangulation(mpi_communicator,
-        //                 typename Triangulation<dim>::MeshSmoothing(
-        //                 Triangulation<dim>::smoothing_on_refinement |
-        //                 Triangulation<dim>::smoothing_on_coarsening),
-        //                     parallel::distributed::Triangulation<dim>::construct_multigrid_hierarchy),
-        //     fe(fe_degree),
-        //     mapping(),
-        //     pcout(std::cout,
-        //         (Utilities::MPI::this_mpi_process(mpi_communicator) == 0)),
-        //     computing_timer(mpi_communicator,
-        //                 pcout,
-        //                 TimerOutput::never,
-        //                 TimerOutput::wall_times)
-        //     {   
-        //         triangulation.copy_triangulation(_solver.triangulation);
-        //         dof_handler(triangulation);
-        //         &fe = 
-        //         &mapping = _solver.mapping.clone();
-        //     }
         ~MatrixBasedADRSolver() override {};
         
         void run() override;
