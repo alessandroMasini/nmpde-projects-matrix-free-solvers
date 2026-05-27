@@ -1,5 +1,0 @@
- - make it run from a single apptainer command
- - make it run as a batch job
- - make it save on the right folders
- - get sure it actually uses the right amount of mpi processes/threads/simd (into logging information)
- - first actual run on cluster
