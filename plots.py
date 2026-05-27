@@ -3,6 +3,7 @@
 """
 
 import os
+import getpass
 import numpy as np
 import matplotlib.pyplot as plt
 from pathlib import Path
@@ -17,6 +18,33 @@ DIR_PARAMS = ["solver", "problem", "n_additional_refinements", "n_procs", "n_thr
 
 X_PARAMS = ["delta_t", "n_additional_refinements", "n_procs", "n_threads", "simd", "tol", "rel_t_step", "it_n"]
 Y_PARAMS = ["it_n", "total_t", "l2_error", "h1_error", "linfty_error"]
+
+def scratch_global_tests_dir(root=None):
+    '''A highly redundant function to retrieve files in case they are saved to 
+    scratch global.'''
+    if root is not None:
+        return root / "tests"
+
+    direct = os.environ.get("MFSOLVER_SCRATCH_GLOBAL_TESTS_DIR")
+    if direct:
+        return Path(direct)
+
+    root_from_env = os.environ.get("MFSOLVER_SCRATCH_GLOBAL_ROOT")
+    if root_from_env:
+        return Path(root_from_env) / "tests"
+
+    user_name = os.environ.get("USER") or getpass.getuser()
+    repo_name = Path(__file__).resolve().parent.name
+    return Path("/scratch_global") / user_name / repo_name / "tests"
+
+
+def resolve_tests_dir(tests_dir=None, from_scratch_global=False, scratch_global_root=None):
+    if from_scratch_global or scratch_global_root is not None:
+        if tests_dir is not None:
+            raise ValueError("provide either --tests_dir or --from-scratch-global, not both")
+        return scratch_global_tests_dir(scratch_global_root)
+
+    return tests_dir or Path("./tests")
 
 # Log files are the interface between the C++ solvers and the plotting code.
 # FILE_COLUMNS is the current contract: every log row must contain exactly
@@ -197,8 +225,12 @@ def stop_searching(fixed_params, key, dir, compare, compare_values_flags, compar
 # Aggregated Plots
 # -----------------------------------------------------------------------------
 
-def plot_average_results(fixed_params, x, y, req_finished, compare, compare_values, save_path, scalex, scaley, plot_theor):
-    tests_dir = Path("./tests")
+def plot_average_results(fixed_params, x, y, req_finished, compare, compare_values, save_path, scalex, scaley, plot_theor, tests_dir):
+    tests_dir = Path(tests_dir)
+    if not tests_dir.exists():
+        print(f"[ERROR] tests directory not found at {tests_dir}")
+        return 1
+
     required_finish = bool(req_finished)
     curves = []
     compare_values_info = []
@@ -519,6 +551,27 @@ if __name__ == "__main__":
     )
 
     # -------------------------------------------------------------------------
+    # Input tree
+    # -------------------------------------------------------------------------
+    parser.add_argument(
+        "--tests_dir",
+        type=Path,
+        help="Path to the tests directory.",
+    )
+
+    parser.add_argument(
+        "--from-scratch-global",
+        action="store_true",
+        help="Read tests from /scratch_global/$USER/<repo>/tests.",
+    )
+
+    parser.add_argument(
+        "--scratch-global-root",
+        type=Path,
+        help="Scratch-global root containing tests/. Implies --from-scratch-global.",
+    )
+
+    # -------------------------------------------------------------------------
     # Output file
     # -------------------------------------------------------------------------
     '''
@@ -531,6 +584,14 @@ if __name__ == "__main__":
     '''
     args = parser.parse_args()
     no_error = True
+
+    # Retrieving the test directory
+    try:
+        tests_dir = resolve_tests_dir(args.tests_dir, args.from_scratch_global, args.scratch_global_root)
+    except ValueError as exception:
+        print(f"Error: {exception}")
+        no_error = False
+        tests_dir = Path("./tests")
 
     # -------------------------------------------------------------------------
     # Build fixed_params dictionary
@@ -599,6 +660,6 @@ if __name__ == "__main__":
     # Dispatch plot
     # -------------------------------------------------------------------------
     if no_error:
-        discarded = plot_average_results(fixed_params, args.x, args.y, args.finished, args.compare, args.compare_only, output_name, logxscale, logyscale, args.scale_line)
+        discarded = plot_average_results(fixed_params, args.x, args.y, args.finished, args.compare, args.compare_only, output_name, logxscale, logyscale, args.scale_line, tests_dir)
     
         print(f"A fraction of {discarded} tests did not actually converge and were not plotted")

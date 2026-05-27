@@ -17,6 +17,7 @@ Identical runs (same first 7 params) are aggregated with averages.
 import os
 import sys
 import argparse
+import getpass
 from pathlib import Path
 from collections import defaultdict
 from dataclasses import dataclass
@@ -43,6 +44,59 @@ FILE_COLUMNS = [
 ]
 
 LATEST_RUN_MANIFEST = "latest_run_tests.txt"
+
+
+def scratch_global_tests_dir(root: Optional[Path] = None) -> Path:
+    if root is not None:
+        return root / "tests"
+
+    direct = os.environ.get("MFSOLVER_SCRATCH_GLOBAL_TESTS_DIR")
+    if direct:
+        return Path(direct)
+
+    root_from_env = os.environ.get("MFSOLVER_SCRATCH_GLOBAL_ROOT")
+    if root_from_env:
+        return Path(root_from_env) / "tests"
+
+    user_name = os.environ.get("USER") or getpass.getuser()
+    repo_name = Path(__file__).resolve().parent.name
+    return Path("/scratch_global") / user_name / repo_name / "tests"
+
+
+def resolve_tests_dir(args: argparse.Namespace) -> Path:
+    if args.from_scratch_global or args.scratch_global_root is not None:
+        if args.tests_dir is not None:
+            raise ValueError("provide either tests_dir or --from-scratch-global, not both")
+        return scratch_global_tests_dir(args.scratch_global_root)
+
+    return args.tests_dir or (Path(__file__).parent / "tests")
+
+
+def manifest_test_dir_candidates(raw_path: str, tests_dir: Path, repo_root: Path) -> List[Path]:
+    test_dir = Path(raw_path)
+    candidates = []
+
+    if test_dir.is_absolute():
+        candidates.append(test_dir)
+    else:
+        candidates.append(repo_root / test_dir)
+
+    parts = test_dir.parts
+    for index in range(len(parts) - 1, -1, -1):
+        if parts[index] == tests_dir.name and index + 1 < len(parts):
+            candidates.append(tests_dir.joinpath(*parts[index + 1:]))
+            break
+
+    unique_candidates = []
+    seen = set()
+    for candidate in candidates:
+        key = str(candidate)
+        if key not in seen:
+            seen.add(key)
+            unique_candidates.append(candidate)
+
+    return unique_candidates
+
 
 @dataclass
 class TestResult:
@@ -343,23 +397,27 @@ def collect_manifest_test_results(tests_dir: Path, manifest_path: Path) -> List[
         if not raw_path:
             continue
 
-        test_dir = Path(raw_path)
-        if not test_dir.is_absolute():
-            test_dir = repo_root / test_dir
-
         try:
-            test_dir = test_dir.resolve()
             tests_dir_resolved = tests_dir.resolve()
         except OSError:
             continue
 
-        if test_dir in seen:
-            continue
-        seen.add(test_dir)
+        for candidate in manifest_test_dir_candidates(raw_path, tests_dir_resolved, repo_root):
+            try:
+                test_dir = candidate.resolve()
+            except OSError:
+                continue
 
-        result = make_result_from_test_dir(tests_dir_resolved, test_dir)
-        if result is not None:
+            if test_dir in seen or not test_dir.is_dir():
+                continue
+
+            result = make_result_from_test_dir(tests_dir_resolved, test_dir)
+            if result is None:
+                continue
+
+            seen.add(test_dir)
             results.append(result)
+            break
 
     return results
 
@@ -483,7 +541,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "tests_dir",
         nargs="?",
-        default=Path(__file__).parent / "tests",
+        default=None,
         type=Path,
         help="Path to the tests directory.",
     )
@@ -502,6 +560,16 @@ def parse_args() -> argparse.Namespace:
         type=Path,
         help=f"Path to the latest-run manifest. Defaults to tests_dir/{LATEST_RUN_MANIFEST}.",
     )
+    parser.add_argument(
+        "--from-scratch-global",
+        action="store_true",
+        help="Read tests from /scratch_global/$USER/<repo>/tests.",
+    )
+    parser.add_argument(
+        "--scratch-global-root",
+        type=Path,
+        help="Scratch-global root containing tests/. Implies --from-scratch-global.",
+    )
     return parser.parse_args()
 
 
@@ -509,7 +577,11 @@ def main():
     # The optional positional argument lets the same script summarize another
     # test tree. Without it, the repository's tests/ directory is used.
     args = parse_args()
-    tests_dir = args.tests_dir
+    try:
+        tests_dir = resolve_tests_dir(args)
+    except ValueError as exception:
+        print(f"Error: {exception}")
+        sys.exit(2)
 
     if not tests_dir.exists():
         print(f"Error: tests directory not found at {tests_dir}")
