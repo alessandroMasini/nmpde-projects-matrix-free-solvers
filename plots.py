@@ -53,6 +53,16 @@ def resolve_tests_dir(tests_dir=None, from_scratch_global=False, scratch_global_
 def comparison_name(key, value):
     return str(value)
 
+def fixed_param_value(key, value):
+    """Convert command-line fixed parameters to the type used internally."""
+    if key in ["n_additional_refinements", "n_procs", "n_threads", "simd", "it_n", "max_iter", "converged"]:
+        return int(value)
+
+    if key in ["delta_t", "tol", "rel_t_step", "l2_error", "h1_error", "linfty_error"]:
+        return float(value)
+
+    return value
+
 def normalize_column_name(column):
     """Return the semantic column name used by the plotting code."""
     # deallog may prefix the first token with DEAL::. That prefix describes the
@@ -387,47 +397,34 @@ def plot_average_results(fixed_params, x, y, req_finished, compare, compare_valu
     # Inserting optimal scaling line, if necessary
     if plot_theor:
         # Since the theoretical plotting line is considered by taking
-        # serial_time / (n_procs * n_cores)
-        # we need to retrieve the other divisor that is not the currently
-        # considered x axis point.
-        # For example, if on the x axis we have n_procs, we need to retrieve
-        # the test's n_cores.
+        # serial_time / (n_procs * n_threads), retrieve the parallel dimension
+        # that is not currently on the x axis.
         divisor = 0
         if x == "n_threads":
-            divisor = dir_params["n_cores"]
-        elif x == "n_cores":
+            divisor = dir_params["n_procs"]
+        elif x == "n_procs":
             divisor = dir_params["n_threads"]
 
         if compare is not None:
             i = 0
             for compare_value, value_list in curves.items():
-                bucket_theoretical = defaultdict(list)
+                if compare == "n_threads" or compare == "n_procs":
+                    divisor = int(compare_value)
+                if not value_list:
+                    i += 1
+                    continue
 
-                # We need to consider only the array of x_points, since the
-                # times are derived by dividing the base_time recorded
-                # in the first loop. They are stored in curves[0]
-                for xi in curves[0]:
-                    bucket_theoretical[xi].append(base_time[compare_value]/(xi * divisor))
+                xs = np.array(sorted({xi for x_arr, _ in value_list for xi in x_arr}))
+                theoretical = base_time[compare_value] / (xs * divisor)
 
-                xs = np.array(sorted(bucket_theoretical.keys()))
-                means = np.array([np.mean(bucket_theoretical[xv]) for xv in xs])
-
-                plt.plot(xs, means, "--", color = p[i][0].get_color())
+                plt.plot(xs, theoretical, "--", color = p[i][0].get_color())
                 i+=1
 
         else: 
-            bucket_theoretical = defaultdict(list)
+            xs = np.array(sorted({xi for x_arr, _ in curves for xi in x_arr}))
+            theoretical = base_time / (xs * divisor)
 
-            # We need to consider only the array of x_points, since the
-            # times are derived by dividing the base_time recorded
-            # in the first loop. They are stored in curves[0]
-            for xi in curves[0]:
-                bucket_theoretical[xi].append(base_time/(xi * divisor))
-
-            xs = np.array(sorted(bucket_theoretical.keys()))
-            means = np.array([np.mean(bucket_theoretical[xv]) for xv in xs])
-
-            plt.plot(xs, means, "--", color = p[0].get_color())
+            plt.plot(xs, theoretical, "--", color = p[0].get_color())
 
     xlegend = int(scalex) * " (log scale)"
     ylegend = int(scaley) * " (log scale)"
@@ -608,12 +605,7 @@ if __name__ == "__main__":
             # Update output name
             output_name += p + "-" + val + "---" 
 
-            # Convert integer-valued directory params properly
-            if p in ["n_additional_refinements", "n_procs", "n_threads", "simd", "it_n", "max_iter", "converged"]:
-                val = int(val)
-            elif p in ["tol"]:
-                val = float(val)
-            fixed_params[p] = val
+            fixed_params[p] = fixed_param_value(p, val)
 
     # Correctness checking for compare variable
     if getattr(args, "compare") is not None:

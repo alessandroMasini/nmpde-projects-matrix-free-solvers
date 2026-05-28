@@ -1,6 +1,5 @@
 #!/bin/bash
 #PBS -l select=2:ncpus=8
-#PBS -l select=2:ncpus=8
 #PBS -l place=scatter
 #PBS -l walltime=10:00:00
 #PBS -q cpu
