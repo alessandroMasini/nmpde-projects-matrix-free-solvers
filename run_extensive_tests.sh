@@ -46,6 +46,8 @@
 # Output:
 #   Test results are saved in the ./tests/ directory unless
 #   --use-scratch-local is set.
+#   Test results are saved in the ./tests/ directory unless
+#   --use-scratch-local is set.
 #   A summary table is printed at the end showing aggregated statistics for each unique parameter combination.
 #
 # -----------------------------------------------------------------------------
@@ -177,18 +179,87 @@ copy_scratch_results() {
 }
 
 trap copy_scratch_results EXIT
+REPO_NAME="$(basename "$SCRIPT_DIR")"
+USER_NAME="${USER:-$(id -un)}"
+
+if [[ "$USE_SCRATCH_LOCAL" -eq 1 ]]; then
+    if [[ -z "$SCRATCH_LOCAL_ROOT" ]]; then
+        SCRATCH_LOCAL_ROOT="/scratch_local/$USER_NAME/$REPO_NAME"
+    fi
+
+    if [[ -z "$SCRATCH_GLOBAL_ROOT" ]]; then
+        SCRATCH_GLOBAL_ROOT="/scratch_global/$USER_NAME/$REPO_NAME"
+    fi
+
+    TESTS_DIR="$SCRATCH_LOCAL_ROOT/tests"
+else
+    TESTS_DIR="$SCRIPT_DIR/tests"
+fi
+
+copy_scratch_results() {
+    # Capture the status that made the script exit. The EXIT trap runs this
+    # function after normal completion and after failures, so we preserve that
+    # original status and return it at the end.
+    local exit_status=$?
+    local copy_status=0
+
+    # In the default mode, results already live in the repository tests/
+    # directory. Only the scratch-local mode needs a final transfer.
+    if [[ "$USE_SCRATCH_LOCAL" -ne 1 ]]; then
+        exit "$exit_status"
+    fi
+
+    echo ""
+    echo "Copying scratch-local tests to scratch_global..."
+    echo "  from: $TESTS_DIR"
+    echo "  to:   $SCRATCH_GLOBAL_ROOT/tests"
+
+    mkdir -p "$SCRATCH_GLOBAL_ROOT"
+
+    # Prefer rsync when available because it handles existing destination
+    # trees cleanly. Fall back to cp for simpler cluster/container images.
+    # The || command is an or command. copy_status=$? reports the status
+    # of the latest command; since || runs the right argument only if the 
+    # left fails, this essentially sets copy_status to the error of rsync.
+    if command -v rsync >/dev/null 2>&1; then
+        rsync -a "$TESTS_DIR" "$SCRATCH_GLOBAL_ROOT/" || copy_status=$?
+    else
+        cp -a "$TESTS_DIR" "$SCRATCH_GLOBAL_ROOT/" || copy_status=$?
+    fi
+
+    # If the solver run succeeded but the copy failed, make the script fail so
+    # the PBS job reports the transfer problem. If the solver already failed,
+    # keep the original failure status.
+    if [[ "$copy_status" -ne 0 ]]; then
+        echo "Error: copy to scratch_global failed with status $copy_status" >&2
+        if [[ "$exit_status" -eq 0 ]]; then
+            exit_status="$copy_status"
+        fi
+    fi
+
+    # End the script with the correct status. Returning from an EXIT trap can be
+    # subtle, so this function exits explicitly.
+    exit "$exit_status"
+}
+
+trap copy_scratch_results EXIT
 
 # File used as the manifest for this batch. Each completed solver run appends
 # its test_N output directory here.
 LATEST_RUN_MANIFEST="$TESTS_DIR/latest_run_tests.txt"
+LATEST_RUN_MANIFEST="$TESTS_DIR/latest_run_tests.txt"
 
 # Ensure the tests directory exists before truncating/creating the manifest.
+mkdir -p "$TESTS_DIR"
 mkdir -p "$TESTS_DIR"
 
 # Start this extensive run with an empty manifest. The ':' command does
 # nothing; the redirection is the useful part, truncating or creating the file.
 : > "$LATEST_RUN_MANIFEST"
 
+# Child processes inherit exported variables. The C++ output helpers read
+# these paths when choosing the tests root and appending completed runs.
+export MFSOLVER_TESTS_DIR="$TESTS_DIR"
 # Child processes inherit exported variables. The C++ output helpers read
 # these paths when choosing the tests root and appending completed runs.
 export MFSOLVER_TESTS_DIR="$TESTS_DIR"
