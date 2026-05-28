@@ -11,6 +11,15 @@ namespace MFSolver
     return x == "1";
   }
 
+  inline std::filesystem::path get_tests_base_dir()
+  {
+    const char *tests_dir = std::getenv("MFSOLVER_TESTS_DIR");
+    if (tests_dir != nullptr && !std::string(tests_dir).empty())
+      return std::filesystem::path(tests_dir);
+
+    return std::filesystem::path("tests");
+  }
+
   /**
    * Find the highest run number already present in a parameter directory.
    *
@@ -206,7 +215,7 @@ namespace MFSolver
      * variant, but keeping the slot makes the test tree uniform for plotting.
      */
     std::filesystem::path save_dir =
-        std::filesystem::path("tests") /
+        get_tests_base_dir() /
         "matrix_based" /
         // The directory stores the command-line experiment parameter: the
         // extra refinements requested on top of the problem's built-in default.
@@ -216,7 +225,7 @@ namespace MFSolver
         std::to_string(problem.n_additional_refinements) /
         // MPI ranks and threads describe the parallel execution shape.
         std::to_string(Utilities::MPI::n_mpi_processes(mpi_communicator)) /
-        std::to_string(MultithreadInfo::n_threads()) / // TODO: restore actual multithreading
+        std::to_string(MultithreadInfo::n_threads()) /
         // The final slot is the SIMD flag in the matrix-free tree. Matrix-based
         // output uses 0 so both solvers keep the same directory depth.
         "0";
@@ -235,7 +244,7 @@ namespace MFSolver
      * inspecting executable names.
      */
     std::filesystem::path save_dir =
-        std::filesystem::path("tests") /
+        get_tests_base_dir() /
         "matrix_free" /
         // Store the additional refinement count, not the total mesh refinement.
         // This keeps the output tree aligned with run_extensive_tests.sh and
