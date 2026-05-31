@@ -62,3 +62,6 @@ results/
 
 # Plots
 plots
+
+# Test outputs
+core_threads_large

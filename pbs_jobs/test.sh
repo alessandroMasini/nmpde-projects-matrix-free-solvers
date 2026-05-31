@@ -1,5 +1,5 @@
 #!/bin/bash
-#PBS -l select=2:ncpus=8
+#PBS -l select=1:ncpus=16:mpiprocs=8:host=cpu02
 #PBS -l place=scatter
 #PBS -l walltime=10:00:00
 #PBS -q cpu
@@ -15,11 +15,15 @@ set -euo pipefail
 LOG_FILE="$PWD/pbs_jobs/last_output.txt"
 mkdir -p "$(dirname "$LOG_FILE")"
 
+
+
 # Capture the whole PBS job, not only run_extensive_tests.sh. This makes early
 # failures in apptainer, module loading, cmake, or make visible in last_output.
 exec > >(tee "$LOG_FILE") 2>&1
 
 echo "PBS job started on $(hostname) at $(date)"
+# Checking the number of nodes, cores, hardware threads
+cat $PBS_NODEFILE
 echo "Working directory: $PWD"
 
 USER_NAME="${USER:-$(id -un)}"
@@ -62,12 +66,15 @@ cmake -U MPI_* \
     -DMPI_C_COMPILER=$(command -v mpicc) \
     -DMPI_CXX_COMPILER=$(command -v mpicxx) \
     .
-make
+make -j 4
 ./run_extensive_tests.sh \
-    --problem lab_02 parabolic mms \
-    --n_tests 2 \
-    --tol 0.000001 \
-    --n_additional_refinements 3 \
+    --solver mb mf \
+    --n_tests 1 \
+    --tol 0.001 \
+    --n_procs 1 2 4 8 \
+    --n_threads 1 2 \
+    --run-timeout-seconds 90 \
+    --n_additional_refinements 2 \
     --use-scratch-local \
     --scratch-local-root "$SCRATCH_LOCAL_ROOT" \
     --scratch-global-root "$SCRATCH_GLOBAL_ROOT"

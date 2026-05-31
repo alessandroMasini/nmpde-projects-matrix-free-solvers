@@ -292,13 +292,19 @@ namespace MFSolver
      * The solver can assemble once for steady problems and many times for
      * transient problems. Start every assembly from a clean algebraic state.
      */
-    system_matrix = 0;
-    system_rhs = 0;
-    for (unsigned int l = 0; l < triangulation.n_levels(); ++l)
-      mg_matrices[l] = 0;
+    {
+      TimerOutput::Scope t(computing_timer, "assembly: zero algebraic objects");
+      system_matrix = 0;
+      system_rhs = 0;
+      for (unsigned int l = 0; l < triangulation.n_levels(); ++l)
+        mg_matrices[l] = 0;
+    }
 
+    TimerOutput::Scope workstream_setup_timer(computing_timer,
+                                              "assembly: workstream setup");
     const QGauss<dim> quadrature_formula(this->problem.num_quadrature_points);
-    const QGauss<dim - 1> quadrature_boundary(this->problem.num_quadrature_points);
+    const QGauss<dim - 1> quadrature_boundary(
+        this->problem.num_quadrature_points);
 
     PerTaskData<dim> per_task_data(fe);
     ScratchData<dim> scratch_data(fe,
@@ -308,6 +314,7 @@ namespace MFSolver
                                       update_quadrature_points | update_JxW_values,
                                   update_values |
                                       update_quadrature_points | update_JxW_values);
+    workstream_setup_timer.stop();
 
     /*
      * WorkStream runs assemble_on_one_cell() in parallel with private scratch
@@ -316,24 +323,34 @@ namespace MFSolver
      * expensive quadrature loop is parallel, while the non-thread-safe sparse
      * matrix/vector insertion is serialized by the framework.
      */
-    WorkStream::run(dof_handler.begin_active(),
-                 dof_handler.end(),
-                 *this,
-                 &MatrixBasedADRSolver<dim, fe_degree>::assemble_on_one_cell,
-                 &MatrixBasedADRSolver<dim, fe_degree>::copy_local_to_global,
-                 scratch_data,
-                 per_task_data);
+    {
+      TimerOutput::Scope t(computing_timer, "assembly: workstream run");
+      WorkStream::run(
+          dof_handler.begin_active(),
+          dof_handler.end(),
+          *this,
+          &MatrixBasedADRSolver<dim, fe_degree>::assemble_on_one_cell,
+          &MatrixBasedADRSolver<dim, fe_degree>::copy_local_to_global,
+          scratch_data,
+          per_task_data);
+    }
 
     /*
      * PETSc accumulates off-process entries lazily. Compression is collective
      * over MPI ranks and must happen after all local WorkStream copy operations
      * have finished.
      */
-    system_matrix.compress(VectorOperation::add);
-    system_rhs.compress(VectorOperation::add);
+    {
+      TimerOutput::Scope t(computing_timer, "assembly: compress system");
+      system_matrix.compress(VectorOperation::add);
+      system_rhs.compress(VectorOperation::add);
+    }
 
-    for (unsigned int l = 0; l < triangulation.n_levels(); ++l)
-      mg_matrices[l].compress(VectorOperation::add);
+    {
+      TimerOutput::Scope t(computing_timer, "assembly: compress mg matrices");
+      for (unsigned int l = 0; l < triangulation.n_levels(); ++l)
+        mg_matrices[l].compress(VectorOperation::add);
+    }
   }
 
   template <int dim, int fe_degree>
@@ -347,53 +364,112 @@ namespace MFSolver
   {
     TimerOutput::Scope t(computing_timer, "solve");
 
-    completely_distributed_solution.reinit(locally_owned_dofs, mpi_communicator);
+    {
+      TimerOutput::Scope t(computing_timer, "solve: solution reinit");
+      completely_distributed_solution.reinit(locally_owned_dofs,
+                                             mpi_communicator);
+    }
 
-    // Smoother
-    MGSmootherPrecondition<LA::MPI::SparseMatrix, PETScWrappers::PreconditionJacobi, LA::MPI::Vector> mg_smoother;
-    mg_smoother.initialize(mg_matrices);
-    mg_smoother.set_steps(2);
+    double solver_tolerance = 0.0;
+    {
+      TimerOutput::Scope t(computing_timer, "solve: rhs l2 norm");
+      solver_tolerance =
+          this->problem.solver_tolerance_factor * system_rhs.l2_norm();
+    }
 
-    // Coarse grid solver and preconditioner
-    SolverControl coarse_control(1000, 1e-8);
-    PETScWrappers::SolverCG coarse_solver(coarse_control, mpi_communicator);
+    /*
+     * Keep the multigrid and GMRES objects in one lexical scope so the
+     * preconditioner remains alive for the complete Krylov solve, while still
+     * timing the expensive construction steps separately.
+     */
+    {
+      // Smoother
+      MGSmootherPrecondition<LA::MPI::SparseMatrix,
+                             PETScWrappers::PreconditionJacobi,
+                             LA::MPI::Vector>
+          mg_smoother;
+      {
+        TimerOutput::Scope t(computing_timer,
+                             "solve: mg smoother initialize");
+        mg_smoother.initialize(mg_matrices);
+        mg_smoother.set_steps(2);
+      }
 
-    PETScWrappers::PreconditionJacobi coarse_prec;
-    coarse_prec.initialize(mg_matrices[0]);
+      // Coarse grid solver and preconditioner
+      SolverControl coarse_control(1000, 1e-8);
+      PETScWrappers::SolverCG coarse_solver(coarse_control, mpi_communicator);
 
-    MGCoarseGridApplySmoother<LA::MPI::Vector> mg_coarse;
-    mg_coarse.initialize(mg_smoother);
-    mg::Matrix<LA::MPI::Vector> mg_matrix(mg_matrices);
+      PETScWrappers::PreconditionJacobi coarse_prec;
+      {
+        TimerOutput::Scope t(computing_timer,
+                             "solve: coarse jacobi initialize");
+        coarse_prec.initialize(mg_matrices[0]);
+      }
 
-    // Multigrid
-    Multigrid<LA::MPI::Vector> mg(mg_matrix,
-                                  mg_coarse,
-                                  mg_transfer,
-                                  mg_smoother,
-                                  mg_smoother);
+      MGCoarseGridApplySmoother<LA::MPI::Vector> mg_coarse;
+      mg::Matrix<LA::MPI::Vector> mg_matrix(mg_matrices);
+      {
+        TimerOutput::Scope t(computing_timer,
+                             "solve: coarse smoother initialize");
+        mg_coarse.initialize(mg_smoother);
+      }
 
-    PreconditionMG<dim, LA::MPI::Vector, MGTransferPrebuilt<LA::MPI::Vector>>
-        preconditioner(dof_handler, mg, mg_transfer);
+      // Multigrid
+      Multigrid<LA::MPI::Vector> mg(mg_matrix,
+                                    mg_coarse,
+                                    mg_transfer,
+                                    mg_smoother,
+                                    mg_smoother);
 
-    // Solver and preconditioner
-    SolverControl solver_control(this->problem.solver_max_iterations,
-                                 this->problem.solver_tolerance_factor * system_rhs.l2_norm());
-    solver_control.enable_history_data();
-    SolverGMRES<LA::MPI::Vector> solver(solver_control);
+      PreconditionMG<dim, LA::MPI::Vector, MGTransferPrebuilt<LA::MPI::Vector>>
+          preconditioner(dof_handler, mg, mg_transfer);
 
-    solver.solve(system_matrix,
-                 completely_distributed_solution,
-                 system_rhs,
-                 preconditioner);
+      // Solver and preconditioner
+      SolverControl solver_control(this->problem.solver_max_iterations,
+                                   solver_tolerance);
+      SolverGMRES<LA::MPI::Vector> solver(solver_control);
+      {
+        TimerOutput::Scope t(computing_timer, "solve: gmres initialize");
+        solver_control.enable_history_data();
+      }
 
-    this->conv_history.emplace_back(solver_control.get_history_data());
-    converged = (solver_control.last_check() == SolverControl::State::success);
-    pcout << "   Solved in " << solver_control.last_step() << " iterations."
-          << std::endl;
+      // AMG test
+      LA::MPI::PreconditionAMG::AdditionalData data;
+      data.symmetric_operator = true;
+      LA::MPI::PreconditionAMG preconditioner_amg;
+      {
+        TimerOutput::Scope t(computing_timer, "solve: amg initialize");
+        preconditioner_amg.initialize(system_matrix, data);
+      }
 
-    constraints.distribute(completely_distributed_solution);
+      {
+        TimerOutput::Scope t(computing_timer, "solve: gmres iterations");
+        solver.solve(system_matrix,
+                     completely_distributed_solution,
+                     system_rhs,
+                     preconditioner_amg);
+      }
 
-    locally_relevant_solution = completely_distributed_solution;
+      {
+        TimerOutput::Scope t(computing_timer, "solve: convergence bookkeeping");
+        this->conv_history.emplace_back(solver_control.get_history_data());
+        converged = (solver_control.last_check() ==
+                     SolverControl::State::success);
+        pcout << "   Solved in " << solver_control.last_step()
+              << " iterations." << std::endl;
+      }
+    }
+
+    {
+      TimerOutput::Scope t(computing_timer, "solve: constraints distribute");
+      constraints.distribute(completely_distributed_solution);
+    }
+
+    {
+      TimerOutput::Scope t(computing_timer,
+                           "solve: copy to locally relevant solution");
+      locally_relevant_solution = completely_distributed_solution;
+    }
   }
 
   template <int dim, int fe_degree>

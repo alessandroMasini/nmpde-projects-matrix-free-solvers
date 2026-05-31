@@ -395,8 +395,8 @@ for solver in $SOLVER; do
                                             # MATRIX-FREE
                                             test_base_dir="$(test_base_dir_for_run "$solver" "$problem" "$n_additional_refinements" "$n_procs" "$n_threads" "$simd")"
                                             case "$simd" in
-                                                0)  run_solver_command "run $i" "$test_base_dir" mpirun -n "$n_procs" ./matrix_free_no_simd "$n_threads" "$simd" "$problem" "$n_additional_refinements" "$delta_t" "$max_iters" "$tol";;
-                                                1)  run_solver_command "run $i" "$test_base_dir" mpirun -n "$n_procs" ./matrix_free_simd "$n_threads" "$simd" "$problem" "$n_additional_refinements" "$delta_t" "$max_iters" "$tol";; 
+                                                0)  run_solver_command "run $i" "$test_base_dir" mpirun --report-bindings -n "$n_procs" --bind-to hwthread --map-by core:PE="$n_threads" ./matrix_free_no_simd "$n_threads" "$simd" "$problem" "$n_additional_refinements" "$delta_t" "$max_iters" "$tol";;
+                                                1)  run_solver_command "run $i" "$test_base_dir" mpirun --report-bindings -n "$n_procs" --bind-to hwthread --map-by core:PE="$n_threads" ./matrix_free_simd "$n_threads" "$simd" "$problem" "$n_additional_refinements" "$delta_t" "$max_iters" "$tol";; 
                                                 *) echo "Unknown simd value: $simd";;
                                             esac
                                         else
@@ -404,7 +404,7 @@ for solver in $SOLVER; do
                                             case "$simd" in
                                                 0)
                                                     test_base_dir="$(test_base_dir_for_run "$solver" "$problem" "$n_additional_refinements" "$n_procs" "$n_threads" "0")"
-                                                    run_solver_command "run $i" "$test_base_dir" mpirun -n "$n_procs" ./matrix_based "$n_threads" "$problem" "$n_additional_refinements" "$delta_t" "$max_iters" "$tol";;
+                                                    run_solver_command "run $i" "$test_base_dir" mpirun --report-bindings -n "$n_procs" --bind-to hwthread --map-by core:PE="$n_threads" ./matrix_based "$n_threads" "$problem" "$n_additional_refinements" "$delta_t" "$max_iters" "$tol";;
                                                 1)  continue;;
                                                 *) echo "Unknown simd value: $simd";;
                                             esac
