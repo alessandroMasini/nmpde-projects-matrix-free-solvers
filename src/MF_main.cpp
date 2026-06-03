@@ -23,7 +23,7 @@ int main(int argc, char **argv)
     
     // We first distinguish between 2d and 3d case, and then specialize
     if (test_idx == 1){
-        ADR::ProblemData<2, 2> data = ADR::ProblemData<2, 2>::lab_02_poisson();
+        ADR::ProblemData<2, 4> data = ADR::ProblemData<2, 4>::lab_02_poisson();
         data.n_additional_refinements = std::stoi(argv[4]);
         data.refinement_level += data.n_additional_refinements;
 
@@ -44,33 +44,33 @@ int main(int argc, char **argv)
         data.solver_tolerance_factor = std::stod(argv[7]);
 
         bool simd_flag = MFSolver::to_bool(argv[2]);
-        MFSolver::MatrixFreeADRSolver<2, 2> solver(data, simd_flag);
+        MFSolver::MatrixFreeADRSolver<2, 4> solver(data, simd_flag);
         solver.run();
         solver.output_to_file();
     
     } else {
-        ADR::ProblemData<3, 2> data;
+        ADR::ProblemData<3, 4> data;
 
         // Switching based on the test case to be created
         switch (test_idx){
             case 0:
-            data = ADR::ProblemData<3, 2>::advanced_test_case();
+            data = ADR::ProblemData<3, 4>::advanced_test_case();
             break;
             
             case 2:
-            data = ADR::ProblemData<3, 2>::lab_03_dr_eq();
+            data = ADR::ProblemData<3, 4>::lab_03_dr_eq();
             break;
 
             case 3:
-            data = ADR::ProblemData<3, 2>::test_case_parabolic();
+            data = ADR::ProblemData<3, 4>::test_case_parabolic();
             break;
 
             case 4:
-            data = ADR::ProblemData<3, 2>::test_case_comprehensive_transient();
+            data = ADR::ProblemData<3, 4>::test_case_comprehensive_transient();
             break;
 
             case 5:
-            data = ADR::ProblemData<3, 2>::mms_test_case();
+            data = ADR::ProblemData<3, 4>::mms_test_case();
             break;
         }
 
@@ -94,7 +94,7 @@ int main(int argc, char **argv)
         data.solver_tolerance_factor = std::stod(argv[7]);
         
         bool simd_flag = MFSolver::to_bool(argv[2]);
-        MFSolver::MatrixFreeADRSolver<3, 2> solver(data, simd_flag);
+        MFSolver::MatrixFreeADRSolver<3, 4> solver(data, simd_flag);
         solver.run();
         solver.output_to_file();
     }
