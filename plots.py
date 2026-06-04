@@ -14,10 +14,17 @@ from collections import defaultdict
 # -----------------------------------------------------------------------------
 
 FILE_COLUMNS = ["delta_t", "max_iter", "tol", "rel_t_step", "it_n", "err", "total_t", "l2_error", "h1_error", "linfty_error", "converged"]
-DIR_PARAMS = ["solver", "problem", "n_additional_refinements", "n_procs", "n_threads", "simd"]
+DIR_PARAMS = ["solver", "problem", "fe_deg", "n_additional_refinements", "n_procs", "n_threads", "simd"]
 
-X_PARAMS = ["delta_t", "n_additional_refinements", "n_procs", "n_threads", "simd", "tol", "rel_t_step", "it_n"]
+X_PARAMS = ["delta_t", "fe_deg", "n_additional_refinements", "n_procs", "n_threads", "simd", "tol", "rel_t_step", "it_n"]
 Y_PARAMS = ["it_n", "total_t", "l2_error", "h1_error", "linfty_error"]
+
+def legacy_fe_degree_for_solver(solver):
+    """Return the old hard-coded FE degree for pre-fe_deg result folders."""
+    # New output paths carry fe_deg explicitly. The fallback lets older result
+    # trees remain plottable without losing the fact that old matrix-free runs
+    # used degree 4 while old matrix-based runs used degree 2.
+    return 4 if solver == "matrix_free" else 2
 
 def scratch_global_tests_dir(root=None):
     '''A highly redundant function to retrieve files in case they are saved to 
@@ -55,7 +62,7 @@ def comparison_name(key, value):
 
 def fixed_param_value(key, value):
     """Convert command-line fixed parameters to the type used internally."""
-    if key in ["n_additional_refinements", "n_procs", "n_threads", "simd", "it_n", "max_iter", "converged"]:
+    if key in ["fe_deg", "n_additional_refinements", "n_procs", "n_threads", "simd", "it_n", "max_iter", "converged"]:
         return int(value)
 
     if key in ["delta_t", "tol", "rel_t_step", "l2_error", "h1_error", "linfty_error"]:
@@ -145,9 +152,28 @@ def load_file_data(file_path):
 
 def extract_dir_params(path_parts):
     """Extract directory parameters from path parts."""
+    # New layout:
+    # tests/{solver}/{problem}/{fe_deg}/{n_add_ref}/{n_procs}/{n_threads}/{simd}/test_N
+    try:
+        return {
+            "solver": path_parts[-7],
+            "problem": path_parts[-6],
+            "fe_deg": int(path_parts[-5]),
+            "n_additional_refinements": int(path_parts[-4]),
+            "n_procs": int(path_parts[-3]),
+            "n_threads": int(path_parts[-2]),
+            "simd": int(path_parts[-1]),
+        }
+    except (IndexError, ValueError):
+        pass
+
+    # Legacy layout before fe_deg was a directory level:
+    # tests/{solver}/{problem}/{n_add_ref}/{n_procs}/{n_threads}/{simd}/test_N
+    solver = path_parts[-6]
     return {
-        "solver": path_parts[-6],
+        "solver": solver,
         "problem": path_parts[-5],
+        "fe_deg": legacy_fe_degree_for_solver(solver),
         "n_additional_refinements": int(path_parts[-4]),
         "n_procs": int(path_parts[-3]),
         "n_threads": int(path_parts[-2]),
@@ -231,6 +257,22 @@ def stop_searching(fixed_params, key, dir, compare, compare_values_flags, compar
     
     return False
 
+
+def satisfies_dir_params(dir_params, fixed_params, compare, compare_values_info, compare_values):
+    """Check fixed and comparison filters that are encoded in directory names."""
+    # Directory parameters are already typed by extract_dir_params(). Filter
+    # them before loading log.txt so missing or malformed logs do not matter for
+    # configurations the user explicitly excluded.
+    for key, val in fixed_params.items():
+        if key in DIR_PARAMS and dir_params[key] != val:
+            return False
+
+    if (compare_values_info[0] and not compare_values_info[1]
+            and str(compare) in DIR_PARAMS):
+        return comparison_name(compare, dir_params[compare]) in compare_values
+
+    return True
+
 # -----------------------------------------------------------------------------
 # Aggregated Plots
 # -----------------------------------------------------------------------------
@@ -263,75 +305,58 @@ def plot_average_results(fixed_params, x, y, req_finished, compare, compare_valu
     potential = 0
     discarded = 0
 
-    # Tree traversal.
-    # A directory is skipped if it is not in the fixed parameters
-    # or among the values chosen for comparison
-    for solver_dir in tests_dir.iterdir():          
-        if stop_searching(fixed_params, "solver", solver_dir, compare, compare_values_info, compare_values):
+    # Tree traversal. Recursing from log.txt keeps the plotting code compatible
+    # with both the new fe_deg-aware hierarchy and older saved test folders.
+    last_dir_params = None
+    for log_file in tests_dir.rglob("log.txt"):
+        test_dir = log_file.parent
+        if not test_dir.name.startswith("test_"):
             continue
 
-        for problem_dir in solver_dir.iterdir():
-            if stop_searching(fixed_params, "problem", problem_dir, compare, compare_values_info, compare_values):
-                continue
+        try:
+            dir_params = extract_dir_params(test_dir.parent.parts)
+        except (IndexError, ValueError):
+            continue
 
-            for n_additional_refinements_dir in problem_dir.iterdir():
-                if stop_searching(fixed_params, "n_additional_refinements", n_additional_refinements_dir, compare, compare_values_info, compare_values):
-                    continue
+        if not satisfies_dir_params(dir_params, fixed_params, compare, compare_values_info, compare_values):
+            continue
 
-                for n_procs_dir in n_additional_refinements_dir.iterdir():
-                    if stop_searching(fixed_params, "n_procs", n_procs_dir, compare, compare_values_info, compare_values):
-                        continue
-                
-                    for n_threads_dir in n_procs_dir.iterdir():
-                        if stop_searching(fixed_params, "n_threads", n_threads_dir, compare, compare_values_info, compare_values):
-                            continue
+        file_data = load_file_data(log_file)
 
-                        for simd_dir in n_threads_dir.iterdir():
-                            if stop_searching(fixed_params, "simd", simd_dir, compare, compare_values_info, compare_values):
-                                continue
-                                
-                            # At this point, all test parameters from the
-                            # directory can be extracted and saved
-                            dir_params = extract_dir_params(simd_dir.parts)
+        # A file is skipped if it does not respect fixed file-column parameters
+        # or its values are not among the ones chosen for comparison.
+        if not satisfies_fixed_params(file_data, fixed_params, compare, compare_values_info, compare_values):
+            continue
 
-                            # Looping among the various identical problems
-                            # Note: solver settings may still change, i.e.
-                            #       we may still have different tol, 
-                            #       max_iter values
-                            for test in simd_dir.iterdir():
-                                file_data = load_file_data(str(test) + "/log.txt")
+        # At this point, only if the test did not converge the run is discarded.
+        potential += 1
 
-                                # A file is skipped if it is does not respect the fixed parameters
-                                # or its values are not among the ones chosen for comparison
-                                if not satisfies_fixed_params(file_data, fixed_params, compare, compare_values_info, compare_values):
-                                    continue
-                                
-                                # At this point, only if the test did not converge the
-                                # run is discarded
-                                potential += 1
+        if required_finish and not actually_finished(file_data):
+            discarded += 1
+            continue
 
-                                if required_finish and not actually_finished(file_data):
-                                    discarded += 1
-                                    continue
+        # If the current value for the comparing attribute has not yet been
+        # seen, add a curve bucket for it.
+        if compare_values_info[0] and compare_values_info[1]:
+            if comparison_name(compare, dir_params[compare]) not in curves.keys():
+                curves[comparison_name(compare, dir_params[compare])] = []
 
-                                # If the current value for the comparing attribute has not yet been seen, we need to update the list of possible values for the comparison
-                                if compare_values_info[0] and compare_values_info[1]:
-                                    if comparison_name(compare, dir_params[compare]) not in curves.keys():
-                                        curves[comparison_name(compare, dir_params[compare])] = []
-                                
-                                # Only if the number of iterations is considered on the x axis
-                                # it makes sense to take all points. Otherwise, only the last needs to be considered.
-                                if x == "it_n":
-                                    x_arr = extract_data(dir_params, file_data, x, True)
-                                    y_arr = extract_data(dir_params, file_data, y, True)
-                                else:
-                                    x_arr = extract_data(dir_params, file_data, x, False)
-                                    y_arr = extract_data(dir_params, file_data, y, False)
-                                
-                                if compare is not None:
-                                    curves[comparison_name(compare, dir_params[compare])].append((x_arr, y_arr))
-                                else: 
-                                    curves.append((x_arr, y_arr))
+        # Only when the number of iterations is on the x axis does it make
+        # sense to take every residual-history point. Other plots use the final
+        # row for each run.
+        if x == "it_n":
+            x_arr = extract_data(dir_params, file_data, x, True)
+            y_arr = extract_data(dir_params, file_data, y, True)
+        else:
+            x_arr = extract_data(dir_params, file_data, x, False)
+            y_arr = extract_data(dir_params, file_data, y, False)
+
+        if compare is not None:
+            curves[comparison_name(compare, dir_params[compare])].append((x_arr, y_arr))
+        else:
+            curves.append((x_arr, y_arr))
+
+        last_dir_params = dir_params
 
     frac_discarded = 0
 
@@ -401,9 +426,9 @@ def plot_average_results(fixed_params, x, y, req_finished, compare, compare_valu
         # that is not currently on the x axis.
         divisor = 0
         if x == "n_threads":
-            divisor = dir_params["n_procs"]
+            divisor = last_dir_params["n_procs"]
         elif x == "n_procs":
-            divisor = dir_params["n_threads"]
+            divisor = last_dir_params["n_threads"]
 
         if compare is not None:
             i = 0

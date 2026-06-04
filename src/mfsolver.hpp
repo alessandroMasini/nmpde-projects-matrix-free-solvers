@@ -118,9 +118,8 @@ namespace MFSolver
     /**
      * \brief Abstract class used to keep a common interface between the matrix-free solver (MatrixFreeADRSolver) and the matrix-based solver (MatrixBasedADRSolver).
      * \tparam dim The dimensionality of the space the ADR problem is living in.
-     * \tparam fe_degree The degree of the finite elements used to solve the problem.
      */
-    template <unsigned int dim, unsigned int fe_degree>
+    template <unsigned int dim>
     class ADRSolver
     {
     public:
@@ -128,7 +127,7 @@ namespace MFSolver
          * \brief Constructs a new instance of ADRSolver
          * \param _problem The problem this solver will solve.
          */
-        ADRSolver(const ADR::ProblemData<dim, fe_degree> &_problem)
+        ADRSolver(const ADR::ProblemData<dim> &_problem)
             : problem(_problem)
         {
         }
@@ -172,7 +171,7 @@ namespace MFSolver
         /**
          * \brief The problem this solver will solve.
          */
-        ADR::ProblemData<dim, fe_degree> problem;
+        ADR::ProblemData<dim> problem;
 
         unsigned int timestep_number = 0;
 
@@ -204,12 +203,11 @@ namespace MFSolver
     /**
      * \brief Class representing the Advection-Diffusion-Reaction operator.
      * \tparam dim The dimensionality of the space the ADR problem lives in.
-     * \tparam fe_degree The degree used in the finite element approximation
      * \tparam Number The data type used to represent coordinates in the space the ADR problem lives in.
      *
      * The ADR operator is built to represent an operator \f( L \f) such that the problem to solve can be expressed as \f[ Lu := -\nabla \cdot (\mu \nabla u) + \nabla \cdot (\beta u) + \gamma u = f \f]
      */
-    template <int dim, int fe_degree, typename Number>
+    template <int dim, typename Number>
     class ADROperator : public MatrixFreeOperators::Base<dim, DVector<Number>>
     {
     public:
@@ -312,9 +310,14 @@ namespace MFSolver
         using Super = MatrixFreeOperators::Base<dim, DVector<Number>>;
 
         /**
-         * \brief Type alias used as a shorthand to use FEEvaluation with the correct template parameters
+         * \brief Type alias used as a shorthand to use FEEvaluation with the correct template parameters.
+         *
+         * The FE degree is controlled at runtime through FE_Q(problem.fe_degree).
+         * deal.II supports FEEvaluation<dim, -1, 0, ...> for this mode: -1
+         * tells the evaluator to read the element degree from MatrixFree, and
+         * 0 does the same for the 1D quadrature size.
          */
-        using Phi = FEEvaluation<dim, fe_degree, fe_degree + 1, 1, Number>;
+        using Phi = FEEvaluation<dim, -1, 0, 1, Number>;
 
         /**
          * \brief Computes the lhs for a given cell.
@@ -432,14 +435,13 @@ namespace MFSolver
     /**
      * \brief Solver class that will solve an ADR problem using matrix-free techniques.
      * \tparam dim The dimensionality of the space the ADR problem is living in.
-     * \tparam fe_degree The degree of the finite elements used to solve the problem.
      */
-    template <int dim, int fe_degree>
-    class MatrixFreeADRSolver : public ADRSolver<dim, fe_degree>
+    template <int dim>
+    class MatrixFreeADRSolver : public ADRSolver<dim>
     {
     public:
-        MatrixFreeADRSolver(const ADR::ProblemData<dim, fe_degree> &_problem, bool _simd_flag)
-            : ADRSolver<dim, fe_degree>(_problem)
+        MatrixFreeADRSolver(const ADR::ProblemData<dim> &_problem, bool _simd_flag)
+            : ADRSolver<dim>(_problem)
 #ifdef DEAL_II_WITH_P4EST
               ,
               triangulation(MPI_COMM_WORLD, Triangulation<dim>::limit_level_difference_at_vertices, parallel::distributed::Triangulation<dim>::construct_multigrid_hierarchy)
@@ -448,7 +450,7 @@ namespace MFSolver
               triangulation(Triangulation<dim>::limit_level_difference_at_vertices)
 #endif
               ,
-              fe(fe_degree), dof_handler(triangulation), simd_flag(_simd_flag), mapping(), setup_time(0.0), pcout(std::cout, Utilities::MPI::this_mpi_process(MPI_COMM_WORLD) == 0), time_details(std::cout, true && Utilities::MPI::this_mpi_process(MPI_COMM_WORLD) == 0)
+              fe(_problem.fe_degree), dof_handler(triangulation), simd_flag(_simd_flag), mapping(), setup_time(0.0), pcout(std::cout, Utilities::MPI::this_mpi_process(MPI_COMM_WORLD) == 0), time_details(std::cout, true && Utilities::MPI::this_mpi_process(MPI_COMM_WORLD) == 0)
         {
         }
 
@@ -479,17 +481,14 @@ namespace MFSolver
 
         AffineConstraints<double> constraints;
 
-        // TODO: again, the number of quadrature points in 1D
-        // is known at runtime (part of the problem object), however
-        // the laplace operator type needs it a compile time
-
-        // TODO: last 4 arguments were set considering deal.II documentation; shall it be our implementation choice?
-        using SystemMatrixType = ADROperator<dim, fe_degree, double>;
+        // The matrix-free operator reads degree and quadrature size from the
+        // MatrixFree object at runtime through FEEvaluation<dim, -1, 0, ...>.
+        using SystemMatrixType = ADROperator<dim, double>;
         SystemMatrixType system_matrix;
 
         MGConstrainedDoFs mg_constrained_dofs;
 
-        using LevelMatrixType = ADROperator<dim, fe_degree, float>;
+        using LevelMatrixType = ADROperator<dim, float>;
         MGLevelObject<LevelMatrixType> mg_matrices;
 
         DVector<double> solution;
@@ -579,21 +578,20 @@ namespace MFSolver
     /**
      * \brief Solver class that will solve an ADR problem using matrix-based techniques.
      * \tparam dim The dimensionality of the space the ADR problem is living in.
-     * \tparam fe_degree The degree of the finite elements used to solve the problem.
      */
-    template <int dim, int fe_degree>
-    class MatrixBasedADRSolver : public ADRSolver<dim, fe_degree>
+    template <int dim>
+    class MatrixBasedADRSolver : public ADRSolver<dim>
     {
     public:
-        MatrixBasedADRSolver(const ADR::ProblemData<dim, fe_degree> &_problem)
-            : ADRSolver<dim, fe_degree>(_problem),
+        MatrixBasedADRSolver(const ADR::ProblemData<dim> &_problem)
+            : ADRSolver<dim>(_problem),
               mpi_communicator(MPI_COMM_WORLD),
               triangulation(mpi_communicator,
                             typename Triangulation<dim>::MeshSmoothing(
                                 Triangulation<dim>::smoothing_on_refinement |
                                 Triangulation<dim>::smoothing_on_coarsening),
                             parallel::distributed::Triangulation<dim>::construct_multigrid_hierarchy),
-              fe(fe_degree),
+              fe(_problem.fe_degree),
               dof_handler(triangulation),
               mapping(),
               pcout(std::cout,

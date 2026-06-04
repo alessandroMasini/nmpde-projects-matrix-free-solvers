@@ -8,10 +8,10 @@ Each test_N directory becomes one TestResult. Results with the same
 configuration key are then averaged into one table row.
 
 Table columns:
-  solver problem n_procs n_threads simd n_add_ref delta_t
+  solver problem fe_deg n_procs n_threads simd n_add_ref delta_t
   it_n err converged total_t %err
 
-Identical runs (same first 7 params) are aggregated with averages.
+Identical runs (same first 8 params) are aggregated with averages.
 """
 
 import os
@@ -44,6 +44,14 @@ FILE_COLUMNS = [
 ]
 
 LATEST_RUN_MANIFEST = "latest_run_tests.txt"
+
+
+def legacy_fe_degree_for_solver(solver: str) -> int:
+    """Return the old hard-coded degree for pre-fe_deg result trees."""
+    # New results store fe_deg in the directory path. This fallback keeps old
+    # tests/{solver}/{problem}/{n_add_ref}/... folders readable without mixing
+    # matrix-based degree-2 runs and matrix-free degree-4 runs under one label.
+    return 4 if solver == "matrix_free" else 2
 
 
 def scratch_global_tests_dir(root: Optional[Path] = None) -> Path:
@@ -105,6 +113,7 @@ class TestResult:
     # fields come from log.txt when it exists and can be parsed.
     solver: str
     problem: str
+    fe_deg: int
     n_procs: int
     n_threads: int
     simd: int
@@ -121,8 +130,9 @@ class TestResult:
         """Return key for grouping repeated runs of the same configuration."""
         # test_N is deliberately excluded. Repeated test_N directories under
         # the same configuration are samples of the same experiment.
-        return (self.solver, self.problem, self.n_procs, self.n_threads,
-                self.simd, self.n_additional_refinements, self.delta_t)
+        return (self.solver, self.problem, self.fe_deg, self.n_procs,
+                self.n_threads, self.simd, self.n_additional_refinements,
+                self.delta_t)
 
 
 def normalize_column_name(column: str) -> str:
@@ -276,15 +286,21 @@ def make_result_from_test_dir(tests_dir: Path, test_dir: Path) -> Optional[TestR
     except ValueError:
         return None
 
-    if len(relative_parts) != 7:
+    if len(relative_parts) == 8:
+        solver, problem, fe_deg, n_add_ref, n_procs, n_threads, simd, test_name = relative_parts
+    elif len(relative_parts) == 7:
+        # Legacy layout, before fe_deg became an explicit sweep parameter:
+        # tests/{solver}/{problem}/{n_add_ref}/{n_procs}/{n_threads}/{simd}/test_N
+        solver, problem, n_add_ref, n_procs, n_threads, simd, test_name = relative_parts
+        fe_deg = str(legacy_fe_degree_for_solver(solver))
+    else:
         return None
-
-    solver, problem, n_add_ref, n_procs, n_threads, simd, test_name = relative_parts
 
     if not test_name.startswith('test_'):
         return None
 
     try:
+        fe_degree = int(fe_deg)
         n_additional_refinements = int(n_add_ref)
         n_procs_value = int(n_procs)
         n_threads_value = int(n_threads)
@@ -295,6 +311,7 @@ def make_result_from_test_dir(tests_dir: Path, test_dir: Path) -> Optional[TestR
     result = TestResult(
         solver=solver,
         problem=problem,
+        fe_deg=fe_degree,
         n_procs=n_procs_value,
         n_threads=n_threads_value,
         simd=simd_value,
@@ -319,64 +336,19 @@ def make_result_from_test_dir(tests_dir: Path, test_dir: Path) -> Optional[TestR
 def collect_test_results(tests_dir: Path) -> List[TestResult]:
     """Collect all test results from directory structure."""
     # The directory path encodes the parameters that were used to launch the
-    # run. Non-directory entries and non-integer parameter folders are ignored
-    # so auxiliary files do not break the summary.
+    # run. Recursive traversal supports both the new fe_deg-aware layout and
+    # the legacy layout parsed by make_result_from_test_dir().
     results = []
 
-    # Directory structure:
-    # tests/{solver}/{problem}/{n_add_ref}/{n_procs}/{n_threads}/{simd}/test_N/log.txt
-    for solver_dir in tests_dir.iterdir():
-        if not solver_dir.is_dir():
+    # New directory structure:
+    # tests/{solver}/{problem}/{fe_deg}/{n_add_ref}/{n_procs}/{n_threads}/{simd}/test_N/log.txt
+    for test_dir in tests_dir.rglob("test_*"):
+        if not test_dir.is_dir() or not test_dir.name.startswith('test_'):
             continue
-        solver = solver_dir.name
 
-        for problem_dir in solver_dir.iterdir():
-            if not problem_dir.is_dir():
-                continue
-            problem = problem_dir.name
-
-            for n_add_ref_dir in problem_dir.iterdir():
-                if not n_add_ref_dir.is_dir():
-                    continue
-                try:
-                    n_additional_refinements = int(n_add_ref_dir.name)
-                except ValueError:
-                    continue
-
-                for n_procs_dir in n_add_ref_dir.iterdir():
-                    if not n_procs_dir.is_dir():
-                        continue
-                    try:
-                        n_procs = int(n_procs_dir.name)
-                    except ValueError:
-                        continue
-
-                    for n_threads_dir in n_procs_dir.iterdir():
-                        if not n_threads_dir.is_dir():
-                            continue
-                        try:
-                            n_threads = int(n_threads_dir.name)
-                        except ValueError:
-                            continue
-
-                        for simd_dir in n_threads_dir.iterdir():
-                            if not simd_dir.is_dir():
-                                continue
-                            try:
-                                simd = int(simd_dir.name)
-                            except ValueError:
-                                continue
-
-                            # Each test_N directory is a separate repetition of
-                            # the same configuration. Missing logs are kept so
-                            # the final %err column can report incomplete runs.
-                            for test_dir in simd_dir.iterdir():
-                                if not test_dir.is_dir() or not test_dir.name.startswith('test_'):
-                                    continue
-
-                                result = make_result_from_test_dir(tests_dir, test_dir)
-                                if result is not None:
-                                    results.append(result)
+        result = make_result_from_test_dir(tests_dir, test_dir)
+        if result is not None:
+            results.append(result)
 
     return results
 
@@ -476,6 +448,7 @@ def format_table(aggregated: Dict[Tuple, Dict]) -> str:
     col_widths = {
         'solver': 14,
         'problem': 14,
+        'fe_deg': 8,
         'n_procs': 10,
         'n_threads': 11,
         'simd': 7,
@@ -493,6 +466,7 @@ def format_table(aggregated: Dict[Tuple, Dict]) -> str:
     header = (
         f"{'Solver':<{col_widths['solver']}} "
         f"{'Problem':<{col_widths['problem']}} "
+        f"{'fe_deg':>{col_widths['fe_deg']}} "
         f"{'n_procs':>{col_widths['n_procs']}} "
         f"{'n_threads':>{col_widths['n_threads']}} "
         f"{'simd':>{col_widths['simd']}} "
@@ -512,12 +486,13 @@ def format_table(aggregated: Dict[Tuple, Dict]) -> str:
     # Sort by the full configuration key so repeated executions produce stable
     # output even if the filesystem returns directories in a different order.
     for key in sorted(aggregated.keys()):
-        solver, problem, n_procs, n_threads, simd, n_add_ref, delta_t = key
+        solver, problem, fe_deg, n_procs, n_threads, simd, n_add_ref, delta_t = key
         stats = aggregated[key]
 
         line = (
             f"{solver:<{col_widths['solver']}} "
             f"{problem:<{col_widths['problem']}} "
+            f"{fe_deg:>{col_widths['fe_deg']}} "
             f"{n_procs:>{col_widths['n_procs']}} "
             f"{n_threads:>{col_widths['n_threads']}} "
             f"{simd:>{col_widths['simd']}} "

@@ -1,60 +1,12 @@
 #!/bin/bash
 
-# -----------------------------------------------------------------------------
-# run_extensive_tests.sh
-# -----------------------------------------------------------------------------
-#
-# This script performs extensive testing over the various problems.
-#
-# Usage:
-#   ./run_extensive_tests.sh [options]
-#
-# Options:
-#   --solver <list>                     List of solvers to test (mb, mf).
-#                                       Default: "all"
-#   --problem <list>                    List of problems to test, space-separated or "all".
-#                                       Default: "all"
-#   --n_tests <int>                     Number of runs for each parameter combination.
-#                                       Default: 5
-#   --n_additional_refinements <list>   List of additional global mesh refinements (on top of problem default).
-#                                       Default: "0 3 6"
-#   --n_procs <list>                     List of numbers of processes to use.
-#                                       Default: "1 2 4 8 16"
-#   --n_threads <list>                  List of numbers of threads to use.
-#                                       Default: "1 4 8"
-#   --simd <list>                       List of values of SIMD to use.
-#                                       Default: "0 1"
-#   --delta_t <list>                    List of timesteps to use.
-#                                       Default: 0 (i.e. problem default; this may vary across problems)
-#   --max_iters <list>                  List of maximum iterations.
-#                                       Default: "100"
-#   --tol <list>                        List of tolerances (per time step).
-#                                       Default: "1e-6 1-8 1e-10 1e-12"
-#   --run-timeout-seconds <int>         Discard a single run if it lasts longer
-#                                       than this many seconds. Use 0 to disable.
-#                                       Default: 60
-#   --use-scratch-local                 Write tests to /scratch_local and copy
-#                                       the completed tests folder to
-#                                       /scratch_global at the end.
-#   --scratch-local-root <path>         Root used with --use-scratch-local.
-#                                       Default: /scratch_local/$USER/<repo>
-#   --scratch-global-root <path>        Copy destination root used with
-#                                       --use-scratch-local.
-#                                       Default: /scratch_global/$USER/<repo>
-#   --help                              Show this help message.
-#
-# Output:
-#   Test results are saved in the ./tests/ directory unless
-#   --use-scratch-local is set.
-#   Test results are saved in the ./tests/ directory unless
-#   --use-scratch-local is set.
-#   A summary table is printed at the end showing aggregated statistics for each unique parameter combination.
-#
-# -----------------------------------------------------------------------------
-
 # Default Parameters
 SOLVER="mb mf"
 PROBLEM="advanced lab_02 lab_03 parabolic transient mms"
+# Keep one FE degree for both solver families by default; otherwise timings
+# would compare different discretizations. Pass --fe_deg 4 to reproduce the
+# old matrix-free hard-coded degree.
+FE_DEG="2"
 N_TESTS=5
 N_ADDITIONAL_REFINEMENTS="0 3 6"
 N_PROCS="1 2"
@@ -71,8 +23,54 @@ SCRATCH_GLOBAL_ROOT=""
 # Function Definitions
 
 show_help() {
-    grep -E '^# ?' "$0" | cut -c3-
-    exit 0
+    echo "This script performs extensive testing over the various problems.
+
+Usage:
+  ./run_extensive_tests.sh [options]
+
+Options:
+  --solver <list>                     List of solvers to test (mb, mf).
+                                      Default: "all"
+  --problem <list>                    List of problems to test, space-separated or "all".
+                                      Default: "all"
+  --fe_deg <list>                     List of finite-element polynomial degrees to use.
+                                      Default: "2"
+  --n_tests <int>                     Number of runs for each parameter combination.
+                                      Default: 5
+  --n_additional_refinements <list>   List of additional global mesh refinements (on top of problem default).
+                                      Default: "0 3 6"
+  --n_procs <list>                     List of numbers of processes to use.
+                                      Default: "1 2 4 8 16"
+  --n_threads <list>                  List of numbers of threads to use.
+                                      Default: "1 4 8"
+  --simd <list>                       List of values of SIMD to use.
+                                      Default: "0 1"
+  --delta_t <list>                    List of timesteps to use.
+                                      Default: 0 (i.e. problem default; this may vary across problems)
+  --max_iters <list>                  List of maximum iterations.
+                                      Default: "100"
+  --tol <list>                        List of tolerances (per time step).
+                                      Default: "1e-6 1-8 1e-10 1e-12"
+  --run-timeout-seconds <int>         Discard a single run if it lasts longer
+                                      than this many seconds. Use 0 to disable.
+                                      Default: 60
+  --use-scratch-local                 Write tests to /scratch_local and copy
+                                      the completed tests folder to
+                                      /scratch_global at the end.
+  --scratch-local-root <path>         Root used with --use-scratch-local.
+                                      Default: /scratch_local/$USER/<repo>
+  --scratch-global-root <path>        Copy destination root used with
+                                      --use-scratch-local.
+                                      Default: /scratch_global/$USER/<repo>
+  --help                              Show this help message.
+
+Output:
+  Test results are saved in the ./tests/ directory unless --use-scratch-local is set.
+  Test results are saved in the ./tests/ directory unless --use-scratch-local is set.
+  A summary table is printed at the end showing aggregated statistics for each unique parameter combination.
+  Results saved under:
+  tests/<solver>/<problem>/<fe_deg>/<n_add_ref>/<n_procs>/<n_threads>/<simd>/test_N"
+  exit
 }
 
 # Argument Parsing
@@ -80,6 +78,7 @@ while [[ $# -gt 0 ]]; do
     case "$1" in
         --solver) shift; SOLVER=""; while [[ $# -gt 0 && "$1" != --* ]]; do SOLVER+="$1 "; shift; done;;
         --problem) shift; PROBLEM=""; while [[ $# -gt 0 && "$1" != --* ]]; do PROBLEM+="$1 "; shift; done;;
+        --fe_deg) shift; FE_DEG=""; while [[ $# -gt 0 && "$1" != --* ]]; do FE_DEG+="$1 "; shift; done;;
         --n_tests) N_TESTS="$2"; shift 2;; 
         --n_additional_refinements) shift; N_ADDITIONAL_REFINEMENTS=""; while [[ $# -gt 0 && "$1" != --* ]]; do N_ADDITIONAL_REFINEMENTS+="$1 "; shift; done;;
         --n_procs) shift; N_PROCS=""; while [[ $# -gt 0 && "$1" != --* ]]; do N_PROCS+="$1 "; shift; done;;
@@ -276,10 +275,11 @@ test_base_dir_for_run() {
     # directory so unrelated runs with other settings are never touched.
     local solver="$1"
     local problem="$2"
-    local n_additional_refinements="$3"
-    local n_procs="$4"
-    local n_threads="$5"
-    local simd="$6"
+    local fe_deg="$3"
+    local n_additional_refinements="$4"
+    local n_procs="$5"
+    local n_threads="$6"
+    local simd="$7"
     local solver_dir
 
     if [[ "$solver" == "mf" ]]; then
@@ -288,10 +288,15 @@ test_base_dir_for_run() {
         solver_dir="matrix_based"
     fi
 
-    printf '%s/%s/%s/%s/%s/%s/%s\n' \
+    # Directory hierarchy:
+    # tests/<solver>/<problem>/<fe_deg>/<n_add_ref>/<n_procs>/<n_threads>/<simd>
+    # FE degree is placed above refinement and parallel settings because it is
+    # part of the discretization, not a repetition or execution-shape detail.
+    printf '%s/%s/%s/%s/%s/%s/%s/%s\n' \
         "$TESTS_DIR" \
         "$solver_dir" \
         "$problem" \
+        "$fe_deg" \
         "$n_additional_refinements" \
         "$n_procs" \
         "$n_threads" \
@@ -381,34 +386,36 @@ for solver in $SOLVER; do
     echo "--- Solver: $solver ---"
     
     for problem in $PROBLEM; do
-        for n_additional_refinements in $N_ADDITIONAL_REFINEMENTS; do
-            for n_procs in $N_PROCS; do
-                for n_threads in $N_THREADS; do
-                    for simd in $SIMD; do
-                        for delta_t in $DELTA_T; do
-                            for max_iters in $MAX_ITERS; do
-                                for tol in $TOL; do
-                                    for ((i=0; i<N_TESTS; i++)); do
-                                        echo "RUN $i: solver=$solver problem=$problem n_additional_refinements=$n_additional_refinements n_procs=$n_procs n_threads=$n_threads simd=$simd max_iters=$max_iters tol=$tol"
+        for fe_deg in $FE_DEG; do
+            for n_additional_refinements in $N_ADDITIONAL_REFINEMENTS; do
+                for n_procs in $N_PROCS; do
+                    for n_threads in $N_THREADS; do
+                        for simd in $SIMD; do
+                            for delta_t in $DELTA_T; do
+                                for max_iters in $MAX_ITERS; do
+                                    for tol in $TOL; do
+                                        for ((i=0; i<N_TESTS; i++)); do
+                                            echo "RUN $i: solver=$solver problem=$problem fe_deg=$fe_deg n_additional_refinements=$n_additional_refinements n_procs=$n_procs n_threads=$n_threads simd=$simd max_iters=$max_iters tol=$tol"
 
-                                        if [[ "$solver" == "mf" ]]; then
-                                            # MATRIX-FREE
-                                            test_base_dir="$(test_base_dir_for_run "$solver" "$problem" "$n_additional_refinements" "$n_procs" "$n_threads" "$simd")"
-                                            case "$simd" in
-                                                0)  run_solver_command "run $i" "$test_base_dir" mpirun --report-bindings -n "$n_procs" --bind-to hwthread --map-by core:PE="$n_threads" ./matrix_free_no_simd "$n_threads" "$simd" "$problem" "$n_additional_refinements" "$delta_t" "$max_iters" "$tol";;
-                                                1)  run_solver_command "run $i" "$test_base_dir" mpirun --report-bindings -n "$n_procs" --bind-to hwthread --map-by core:PE="$n_threads" ./matrix_free_simd "$n_threads" "$simd" "$problem" "$n_additional_refinements" "$delta_t" "$max_iters" "$tol";; 
-                                                *) echo "Unknown simd value: $simd";;
-                                            esac
-                                        else
-                                            # MATRIX-BASED
-                                            case "$simd" in
-                                                0)
-                                                    test_base_dir="$(test_base_dir_for_run "$solver" "$problem" "$n_additional_refinements" "$n_procs" "$n_threads" "0")"
-                                                    run_solver_command "run $i" "$test_base_dir" mpirun --report-bindings -n "$n_procs" --bind-to hwthread --map-by core:PE="$n_threads" ./matrix_based "$n_threads" "$problem" "$n_additional_refinements" "$delta_t" "$max_iters" "$tol";;
-                                                1)  continue;;
-                                                *) echo "Unknown simd value: $simd";;
-                                            esac
-                                        fi
+                                            if [[ "$solver" == "mf" ]]; then
+                                                # MATRIX-FREE
+                                                test_base_dir="$(test_base_dir_for_run "$solver" "$problem" "$fe_deg" "$n_additional_refinements" "$n_procs" "$n_threads" "$simd")"
+                                                case "$simd" in
+                                                    0)  run_solver_command "run $i" "$test_base_dir" mpirun --report-bindings -n "$n_procs" --bind-to hwthread --map-by core:PE="$n_threads" ./matrix_free_no_simd "$n_threads" "$simd" "$problem" "$fe_deg" "$n_additional_refinements" "$delta_t" "$max_iters" "$tol";;
+                                                    1)  run_solver_command "run $i" "$test_base_dir" mpirun --report-bindings -n "$n_procs" --bind-to hwthread --map-by core:PE="$n_threads" ./matrix_free_simd "$n_threads" "$simd" "$problem" "$fe_deg" "$n_additional_refinements" "$delta_t" "$max_iters" "$tol";; 
+                                                    *) echo "Unknown simd value: $simd";;
+                                                esac
+                                            else
+                                                # MATRIX-BASED
+                                                case "$simd" in
+                                                    0)
+                                                        test_base_dir="$(test_base_dir_for_run "$solver" "$problem" "$fe_deg" "$n_additional_refinements" "$n_procs" "$n_threads" "0")"
+                                                        run_solver_command "run $i" "$test_base_dir" mpirun --report-bindings -n "$n_procs" --bind-to hwthread --map-by core:PE="$n_threads" ./matrix_based "$n_threads" "$problem" "$fe_deg" "$n_additional_refinements" "$delta_t" "$max_iters" "$tol";;
+                                                    1)  continue;;
+                                                    *) echo "Unknown simd value: $simd";;
+                                                esac
+                                            fi
+                                        done
                                     done
                                 done
                             done

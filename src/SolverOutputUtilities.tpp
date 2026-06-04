@@ -204,8 +204,8 @@ namespace MFSolver
     MPI_Barrier(mpi_communicator);
   }
 
-  template <int dim, int fe_degree>
-  void create_saving_directory_mb(ADR::ProblemData<dim, fe_degree> &problem,
+  template <int dim>
+  void create_saving_directory_mb(ADR::ProblemData<dim> &problem,
                                   MPI_Comm &mpi_communicator,
                                   std::string &output_dir)
   {
@@ -217,11 +217,14 @@ namespace MFSolver
     std::filesystem::path save_dir =
         get_tests_base_dir() /
         "matrix_based" /
+        // FE degree is a discretization parameter, so it sits beside the
+        // problem name and above mesh refinements and parallel execution shape.
+        problem.problem_name /
+        std::to_string(problem.fe_degree) /
         // The directory stores the command-line experiment parameter: the
         // extra refinements requested on top of the problem's built-in default.
         // The total refinement level is still kept in problem.refinement_level
         // and is what setup_system() uses to refine the mesh.
-        problem.problem_name /
         std::to_string(problem.n_additional_refinements) /
         // MPI ranks and threads describe the parallel execution shape.
         std::to_string(Utilities::MPI::n_mpi_processes(mpi_communicator)) /
@@ -233,8 +236,8 @@ namespace MFSolver
     create_saving_directory(save_dir, mpi_communicator, output_dir);
   }
 
-  template <int dim, int fe_degree>
-  void create_saving_directory_mf(ADR::ProblemData<dim, fe_degree> &problem,
+  template <int dim>
+  void create_saving_directory_mf(ADR::ProblemData<dim> &problem,
                                   const bool &simd_flag,
                                   std::string &output_dir)
   {
@@ -246,10 +249,13 @@ namespace MFSolver
     std::filesystem::path save_dir =
         get_tests_base_dir() /
         "matrix_free" /
+        // FE degree is part of the numerical discretization, not the run
+        // repetition, so separate it before refinement and parallel settings.
+        problem.problem_name /
+        std::to_string(problem.fe_degree) /
         // Store the additional refinement count, not the total mesh refinement.
         // This keeps the output tree aligned with run_extensive_tests.sh and
         // with plots.py/summarize_tests.py column names.
-        problem.problem_name /
         std::to_string(problem.n_additional_refinements) /
         // MPI ranks and threads identify the parallel execution shape.
         std::to_string(Utilities::MPI::n_mpi_processes(MPI_COMM_WORLD)) /
@@ -274,9 +280,9 @@ namespace MFSolver
     manifest_file << output_dir << '\n';
   }
 
-  template <int dim, int fe_degree>
+  template <int dim>
   void write_solver_log_file(const std::string &output_dir,
-                             const ADR::ProblemData<dim, fe_degree> &problem,
+                             const ADR::ProblemData<dim> &problem,
                              const std::vector<std::vector<double>> &conv_history,
                              const double total_time,
                              const double l2_error,

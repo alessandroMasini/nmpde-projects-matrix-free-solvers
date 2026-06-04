@@ -70,6 +70,7 @@ make -j 4
 ./run_extensive_tests.sh \
     --solver mb mf \
     --n_tests 1 \
+    --fe_deg 2 \
     --tol 0.001 \
     --n_procs 1 2 4 8 \
     --n_threads 1 2 \

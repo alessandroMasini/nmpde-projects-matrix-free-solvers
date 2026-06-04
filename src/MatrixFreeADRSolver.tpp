@@ -24,8 +24,8 @@
 
 namespace MFSolver
 {  
-    template <int dim, int fe_degree>
-    void MatrixFreeADRSolver<dim, fe_degree>::setup_system()
+    template <int dim>
+    void MatrixFreeADRSolver<dim>::setup_system()
     {
         dealii::Timer timer;
         setup_time = 0;
@@ -145,8 +145,8 @@ namespace MFSolver
                      << "s/" << timer.wall_time() << 's' << std::endl;
     }
 
-    template <int dim, int fe_degree>
-    void MatrixFreeADRSolver<dim, fe_degree>::assemble()
+    template <int dim>
+    void MatrixFreeADRSolver<dim>::assemble()
     {
         Timer timer;
 
@@ -167,7 +167,7 @@ namespace MFSolver
         AffineConstraints<double> no_constraints;
         no_constraints.close();
 
-        ADROperator<dim, fe_degree, double> inhomogeneous_operator;
+        ADROperator<dim, double> inhomogeneous_operator;
 
         typename MatrixFree<dim, double>::AdditionalData additional_data;
         additional_data.mapping_update_flags = update_gradients | update_JxW_values | update_quadrature_points;
@@ -188,7 +188,9 @@ namespace MFSolver
         inhomogeneous_operator.vmult(system_rhs, solution);
         system_rhs *= -1.0;
 
-        FEEvaluation<dim, fe_degree> phi(*inhomogeneous_operator.get_matrix_free());
+        // Use deal.II's dynamic-degree matrix-free evaluator. The FE_Q degree
+        // itself comes from ProblemData::fe_degree and is stored in MatrixFree.
+        FEEvaluation<dim, -1, 0, 1, double> phi(*inhomogeneous_operator.get_matrix_free());
 
         for (unsigned int cell = 0; cell < inhomogeneous_operator.get_matrix_free()->n_cell_batches(); ++cell)
         {
@@ -218,7 +220,9 @@ namespace MFSolver
 
         system_rhs.compress(VectorOperation::add);
 
-        FEFaceEvaluation<dim, fe_degree, fe_degree + 1, 1, double> face_phi(*system_matrix.get_matrix_free());
+        // Face terms use the same dynamic degree/quadrature convention as the
+        // cell evaluator above.
+        FEFaceEvaluation<dim, -1, 0, 1, double> face_phi(*system_matrix.get_matrix_free());
 
         for (unsigned int face = 0; face < system_matrix.get_matrix_free()->n_boundary_face_batches(); ++face)
         {
@@ -255,8 +259,8 @@ namespace MFSolver
                      << "s/" << timer.wall_time() << 's' << std::endl;
     }
 
-    template <int dim, int fe_degree>
-    void MatrixFreeADRSolver<dim, fe_degree>::solve()
+    template <int dim>
+    void MatrixFreeADRSolver<dim>::solve()
     {
         Timer timer;
 
@@ -333,8 +337,8 @@ namespace MFSolver
         time_details << "Time solve (CPU/wall) " << timer.cpu_time() << "s/" << timer.wall_time() << "s\n";
     }
 
-    template <int dim, int fe_degree>
-    void MatrixFreeADRSolver<dim, fe_degree>::output_results()
+    template <int dim>
+    void MatrixFreeADRSolver<dim>::output_results()
     {   
         Timer timer;
         // static unsigned int cycle = 0; // Using an internal counter since the method takes no arguments
@@ -360,9 +364,9 @@ namespace MFSolver
          * PVTU record, and log.txt describe one coherent run.
          */
         if (this->output_dir.empty())
-            create_saving_directory_mf<dim, fe_degree>(this->problem,
-                                                       this->simd_flag,
-                                                       this->output_dir);
+            create_saving_directory_mf<dim>(this->problem,
+                                            this->simd_flag,
+                                            this->output_dir);
 
         time_details << "Creating solution output (cpu/wall): " << timer.cpu_time() << "s/" << timer.wall_time() << "s" << std::endl;
         timer.restart();
@@ -375,8 +379,8 @@ namespace MFSolver
         time_details << "Writing solution output (cpu/wall): " << timer.cpu_time() << "s/" << timer.wall_time() << "s" << std::endl;
     }
 
-    template <int dim, int fe_degree>
-    void MatrixFreeADRSolver<dim, fe_degree>::compute_error()
+    template <int dim>
+    void MatrixFreeADRSolver<dim>::compute_error()
     {
         if (this->problem.exact_solution == nullptr) return;
 
@@ -424,8 +428,8 @@ namespace MFSolver
         pcout << "   L_infty Error vs Exact Solution: " << this->linfty_error << std::endl;
     }
 
-    template <int dim, int fe_degree>
-    void MatrixFreeADRSolver<dim, fe_degree>::run()
+    template <int dim>
+    void MatrixFreeADRSolver<dim>::run()
     {
         pcout << "===========================================" << std::endl;
         pcout << "   Matrix-Free ADR Solver                  " << std::endl;
@@ -519,8 +523,8 @@ namespace MFSolver
         this->end_time = MPI_Wtime();
     }
 
-    template <int dim, int fe_degree>
-    void MatrixFreeADRSolver<dim, fe_degree>::output_to_file()
+    template <int dim>
+    void MatrixFreeADRSolver<dim>::output_to_file()
     {
         // Only rank 0 should write to file.
         if (Utilities::MPI::this_mpi_process(MPI_COMM_WORLD) != 0)

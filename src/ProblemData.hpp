@@ -416,11 +416,12 @@ namespace ADR
      * This ensures that both the Matrix-Based and Matrix-Free solvers
      * solve the exact same mathematical problem.
      */
-    template <int dim, int fe_degree>
+    template <int dim>
     struct ProblemData
     {
         std::string mesh_filename; /**< Filename from which to load the mesh. */
         std::string problem_name;  /**< Name that the problem solution will saved with. */
+        unsigned int fe_degree = 1; /**< Degree of the FE_Q finite element used by both solver implementations. */
 
         unsigned int num_levels; /**< Number of multigrid levels in the V-cycle. */
 
@@ -462,7 +463,7 @@ namespace ADR
         /**
          * @brief Helper to initialize with some default test-case values
          */
-        static ProblemData<dim, fe_degree> standard_test_case()
+        static ProblemData<dim> standard_test_case(const unsigned int fe_degree)
         {
             MFSolver::DirichletBoundaries<dim> dirichlet_boundaries;
             for (int i = 0; i < 5; i++)
@@ -471,9 +472,10 @@ namespace ADR
             MFSolver::NeumannBoundaries<dim> neumann_boundaries;
             neumann_boundaries[5] = std::make_shared<ConstantRealFunction<dim>>(1.0);
 
-            ProblemData<dim, fe_degree> data{
+            ProblemData<dim> data{
                 .mesh_filename = "input.msh",
                 .problem_name = "standard",
+                .fe_degree = fe_degree,
                 .num_levels = 5,
 
                 .num_quadrature_points = fe_degree + 1,
@@ -500,7 +502,7 @@ namespace ADR
             return data;
         }
 
-        static ProblemData<dim, fe_degree> advanced_test_case()
+        static ProblemData<dim> advanced_test_case(const unsigned int fe_degree)
         {
             MFSolver::DirichletBoundaries<dim> dirichlet_boundaries;
             dirichlet_boundaries[0] = std::make_shared<ConstantRealFunction<dim>>(0.0); // Side 0: 0.0
@@ -513,9 +515,10 @@ namespace ADR
             neumann_boundaries[4] = std::make_shared<ConstantRealFunction<dim>>(0.0);
             neumann_boundaries[5] = std::make_shared<ConstantRealFunction<dim>>(0.0);
 
-            ProblemData<dim, fe_degree> data{
+            ProblemData<dim> data{
                 .mesh_filename = "input.msh",
                 .problem_name = "advanced",
+                .fe_degree = fe_degree,
                 .num_levels = 5,
 
                 .num_quadrature_points = fe_degree + 1,
@@ -543,7 +546,7 @@ namespace ADR
             return data;
         }
 
-        static ProblemData<dim, fe_degree> test_case_neumann_fix()
+        static ProblemData<dim> test_case_neumann_fix(const unsigned int fe_degree)
         {
             MFSolver::DirichletBoundaries<dim> dirichlet_boundaries;
             dirichlet_boundaries[0] = std::make_shared<ConstantRealFunction<dim>>(0.0);
@@ -555,9 +558,10 @@ namespace ADR
             neumann_boundaries[4] = std::make_shared<ConstantRealFunction<dim>>(0.0);
             neumann_boundaries[5] = std::make_shared<ConstantRealFunction<dim>>(0.0);
 
-            ProblemData<dim, fe_degree> data{
+            ProblemData<dim> data{
                 .mesh_filename = "input.msh",
                 .problem_name = "neumann",
+                .fe_degree = fe_degree,
                 .num_levels = 5,
                 .num_quadrature_points = fe_degree + 1,
                 .lv0_smoothing_range = 1.e-3,
@@ -578,7 +582,7 @@ namespace ADR
             return data;
         }
 
-        static ProblemData<dim, fe_degree> mms_test_case()
+        static ProblemData<dim> mms_test_case(const unsigned int fe_degree)
         {
             MFSolver::DirichletBoundaries<dim> dirichlet_boundaries;
             for (int i = 0; i < 2 * dim; i++)
@@ -586,9 +590,10 @@ namespace ADR
 
             MFSolver::NeumannBoundaries<dim> neumann_boundaries;
 
-            ProblemData<dim, fe_degree> data{
+            ProblemData<dim> data{
                 .mesh_filename = "none",
                 .problem_name = "mms",
+                .fe_degree = fe_degree,
                 .num_levels = 5,
                 .num_quadrature_points = fe_degree + 1,
                 .lv0_smoothing_range = 1.e-3,
@@ -614,7 +619,7 @@ namespace ADR
             return data;
         }
 
-        static ProblemData<dim, fe_degree> test_case_parabolic()
+        static ProblemData<dim> test_case_parabolic(const unsigned int fe_degree)
         {
             MFSolver::DirichletBoundaries<dim> dirichlet_boundaries;
             dirichlet_boundaries[0] = std::make_shared<ConstantRealFunction<dim>>(0.0); // Side 0: 0.0
@@ -626,9 +631,10 @@ namespace ADR
             neumann_boundaries[4] = std::make_shared<ConstantRealFunction<dim>>(0.0);
             neumann_boundaries[5] = std::make_shared<ConstantRealFunction<dim>>(0.0);
 
-            ProblemData<dim, fe_degree> data{
+            ProblemData<dim> data{
                 .mesh_filename = "input.msh",
                 .problem_name = "parabolic",
+                .fe_degree = fe_degree,
                 .num_levels = 5,
                 .num_quadrature_points = fe_degree + 1,
                 .lv0_smoothing_range = 1.e-3,
@@ -654,7 +660,7 @@ namespace ADR
             return data;
         }
 
-        static ProblemData<dim, fe_degree> test_case_comprehensive_transient()
+        static ProblemData<dim> test_case_comprehensive_transient(const unsigned int fe_degree)
         {
             // We want to test EVERYTHING: Diffusion, Advection, Reaction, mixed boundaries, and Time.
             MFSolver::DirichletBoundaries<dim> dirichlet_boundaries;
@@ -667,9 +673,10 @@ namespace ADR
             neumann_boundaries[4] = std::make_shared<ConstantRealFunction<dim>>(0.0); // Front - zero flux
             neumann_boundaries[5] = std::make_shared<ConstantRealFunction<dim>>(0.0); // Back - zero flux
 
-            ProblemData<dim, fe_degree> data{
+            ProblemData<dim> data{
                 .mesh_filename = "input.msh",
                 .problem_name = "transient",
+                .fe_degree = fe_degree,
                 .num_levels = 5,
                 .num_quadrature_points = fe_degree + 1,
                 .lv0_smoothing_range = 1.e-3,
@@ -695,7 +702,7 @@ namespace ADR
             return data;
         }
 
-        static ProblemData<dim, fe_degree> test_case_heated_wall()
+        static ProblemData<dim> test_case_heated_wall(const unsigned int fe_degree)
         {
             MFSolver::DirichletBoundaries<dim> dirichlet_boundaries;
             dirichlet_boundaries[0] = std::make_shared<ConstantRealFunction<dim>>(50.0);
@@ -707,9 +714,10 @@ namespace ADR
             neumann_boundaries[4] = std::make_shared<ConstantRealFunction<dim>>(0.0);
             neumann_boundaries[5] = std::make_shared<ConstantRealFunction<dim>>(0.0);
 
-            ProblemData<dim, fe_degree> data{
+            ProblemData<dim> data{
                 .mesh_filename = "input.msh",
                 .problem_name = "heated_wall",
+                .fe_degree = fe_degree,
                 .num_levels = 5,
                 .num_quadrature_points = fe_degree + 1,
                 .lv0_smoothing_range = 1.e-3,
@@ -735,7 +743,7 @@ namespace ADR
             return data;
         }
 
-        static ProblemData<dim, fe_degree> lab_02_poisson()
+        static ProblemData<dim> lab_02_poisson(const unsigned int fe_degree)
         {
             MFSolver::DirichletBoundaries<dim> dirichlet_boundaries;
             dirichlet_boundaries[0] = std::make_shared<SumReductionFunction<dim>>();
@@ -745,9 +753,10 @@ namespace ADR
             neumann_boundaries[2] = std::make_shared<NthCoordFunction<dim>>(1);
             neumann_boundaries[3] = std::make_shared<NthCoordFunction<dim>>(1);
 
-            ProblemData<dim, fe_degree> data{
+            ProblemData<dim> data{
                 .mesh_filename = "input.msh",
                 .problem_name = "lab_02",
+                .fe_degree = fe_degree,
                 .num_levels = 5,
 
                 .num_quadrature_points = fe_degree + 1,
@@ -774,7 +783,7 @@ namespace ADR
             return data;
         }
 
-        static ProblemData<dim, fe_degree> lab_03_dr_eq()
+        static ProblemData<dim> lab_03_dr_eq(const unsigned int fe_degree)
         {
             MFSolver::DirichletBoundaries<dim> dirichlet_boundaries;
             for (size_t i = 0; i < 6; ++i)
@@ -784,9 +793,10 @@ namespace ADR
 
             MFSolver::NeumannBoundaries<dim> neumann_boundaries;
 
-            ProblemData<dim, fe_degree> data{
+            ProblemData<dim> data{
                 .mesh_filename = "input.msh",
                 .problem_name = "lab_03",
+                .fe_degree = fe_degree,
                 .num_levels = 5,
 
                 .num_quadrature_points = fe_degree + 1,
@@ -813,7 +823,7 @@ namespace ADR
             return data;
         }
 
-        static ProblemData<dim, fe_degree> see_miro_for_problem_definition_andrea_knows()
+        static ProblemData<dim> see_miro_for_problem_definition_andrea_knows(const unsigned int fe_degree)
         {
             MFSolver::DirichletBoundaries<dim> dirichlet_boundaries;
             for (size_t i = 0; i < 4; ++i)
@@ -823,9 +833,10 @@ namespace ADR
 
             MFSolver::NeumannBoundaries<dim> neumann_boundaries;
 
-            ProblemData<dim, fe_degree> data{
+            ProblemData<dim> data{
                 .mesh_filename = "input.msh",
                 .problem_name = "andrea",
+                .fe_degree = fe_degree,
                 .num_levels = 5,
 
                 .num_quadrature_points = fe_degree + 1,

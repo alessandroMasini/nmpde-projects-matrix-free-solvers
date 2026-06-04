@@ -1,7 +1,7 @@
 namespace MFSolver
 {
-  template <int dim, int fe_degree>
-  void MatrixBasedADRSolver<dim, fe_degree>::setup_system()
+  template <int dim>
+  void MatrixBasedADRSolver<dim>::setup_system()
   {
     TimerOutput::Scope t(computing_timer, "setup");
 
@@ -109,8 +109,8 @@ namespace MFSolver
     mg_transfer.build(dof_handler);
   }
 
-  template <int dim, int fe_degree>
-  void MatrixBasedADRSolver<dim, fe_degree>::assemble_on_one_cell (
+  template <int dim>
+  void MatrixBasedADRSolver<dim>::assemble_on_one_cell (
     const typename DoFHandler<dim>::active_cell_iterator &cell,
     ScratchData<dim> &scratch,
     PerTaskData<dim> &data) {
@@ -256,8 +256,8 @@ namespace MFSolver
     cell->get_dof_indices(data.dof_indices);
   }
     
-  template <int dim, int fe_degree>
-  void MatrixBasedADRSolver<dim, fe_degree>::copy_local_to_global(const PerTaskData<dim> &data)
+  template <int dim>
+  void MatrixBasedADRSolver<dim>::copy_local_to_global(const PerTaskData<dim> &data)
   {
     /*
      * WorkStream guarantees that this copier is never executed concurrently
@@ -283,8 +283,8 @@ namespace MFSolver
                                            mg_matrices[data.cell_level]);
   }
 
-  template <int dim, int fe_degree>
-  void MatrixBasedADRSolver<dim, fe_degree>::assemble_multithreaded()
+  template <int dim>
+  void MatrixBasedADRSolver<dim>::assemble_multithreaded()
   {
     TimerOutput::Scope t(computing_timer, "assembly");
 
@@ -329,8 +329,8 @@ namespace MFSolver
           dof_handler.begin_active(),
           dof_handler.end(),
           *this,
-          &MatrixBasedADRSolver<dim, fe_degree>::assemble_on_one_cell,
-          &MatrixBasedADRSolver<dim, fe_degree>::copy_local_to_global,
+          &MatrixBasedADRSolver<dim>::assemble_on_one_cell,
+          &MatrixBasedADRSolver<dim>::copy_local_to_global,
           scratch_data,
           per_task_data);
     }
@@ -353,14 +353,14 @@ namespace MFSolver
     }
   }
 
-  template <int dim, int fe_degree>
-  void MatrixBasedADRSolver<dim, fe_degree>::assemble()
+  template <int dim>
+  void MatrixBasedADRSolver<dim>::assemble()
   {
     assemble_multithreaded();
   }
 
-  template <int dim, int fe_degree>
-  void MatrixBasedADRSolver<dim, fe_degree>::solve()
+  template <int dim>
+  void MatrixBasedADRSolver<dim>::solve()
   {
     TimerOutput::Scope t(computing_timer, "solve");
 
@@ -472,8 +472,8 @@ namespace MFSolver
     }
   }
 
-  template <int dim, int fe_degree>
-  void MatrixBasedADRSolver<dim, fe_degree>::output_results()
+  template <int dim>
+  void MatrixBasedADRSolver<dim>::output_results()
   {
     TimerOutput::Scope t(computing_timer, "output");
 
@@ -498,9 +498,9 @@ namespace MFSolver
      * together even for time-dependent problems.
      */
     if (this->output_dir.empty())
-      create_saving_directory_mb<dim, fe_degree>(this->problem,
-                                                 this->mpi_communicator,
-                                                 this->output_dir);
+      create_saving_directory_mb<dim>(this->problem,
+                                      this->mpi_communicator,
+                                      this->output_dir);
     
     // Every time step writes into the same reserved run folder. The time-step
     // number appears in the filename, not in the directory name.
@@ -508,8 +508,8 @@ namespace MFSolver
         this->output_dir, "/solution", this->timestep_number, mpi_communicator);
   }
 
-  template <int dim, int fe_degree>
-  void MatrixBasedADRSolver<dim, fe_degree>::run()
+  template <int dim>
+  void MatrixBasedADRSolver<dim>::run()
   {
     pcout << "Running with "
 #ifdef USE_PETSC_LA
@@ -578,8 +578,8 @@ namespace MFSolver
     pcout << std::endl;
   }
 
-  template <int dim, int fe_degree>
-  void MatrixBasedADRSolver<dim, fe_degree>::compute_error()
+  template <int dim>
+  void MatrixBasedADRSolver<dim>::compute_error()
   {
       if (this->problem.exact_solution == nullptr) return;
 
@@ -634,8 +634,8 @@ namespace MFSolver
       );
   }
 
-  template <int dim, int fe_degree>
-  void MatrixBasedADRSolver<dim, fe_degree>::output_to_file()
+  template <int dim>
+  void MatrixBasedADRSolver<dim>::output_to_file()
   {
     // Only rank 0 should write to file.
     if (Utilities::MPI::this_mpi_process(this->mpi_communicator) != 0)
