@@ -4,6 +4,7 @@
 #include <stdexcept>
 #include <functional>
 #include <memory>
+#include <set>
 #include <string>
 #include <fstream>
 #include <iostream>
@@ -615,6 +616,11 @@ namespace MFSolver
             ScratchData<dim> &scratch,
             PerTaskData<dim> &data);
         void copy_local_to_global(const PerTaskData<dim> &data);
+        void assemble_on_one_mg_cell(
+            const typename DoFHandler<dim>::level_cell_iterator &cell,
+            ScratchData<dim> &scratch,
+            PerTaskData<dim> &data);
+        void copy_mg_local_to_global(const PerTaskData<dim> &data);
         void assemble_multithreaded();
         void assemble() override;
         void solve() override;
@@ -644,6 +650,8 @@ namespace MFSolver
 
         // Multigrid
         MGLevelObject<LA::MPI::SparseMatrix> mg_matrices;
+        MGLevelObject<LA::MPI::SparseMatrix> mg_interface_matrices;
+        MGLevelObject<AffineConstraints<double>> mg_level_constraints;
         MGConstrainedDoFs mg_constrained_dofs;
         MGTransferPrebuilt<LA::MPI::Vector> mg_transfer;
 
