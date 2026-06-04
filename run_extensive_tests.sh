@@ -9,7 +9,7 @@ PROBLEM="advanced lab_02 lab_03 parabolic transient mms"
 FE_DEG="2"
 N_TESTS=5
 N_ADDITIONAL_REFINEMENTS="0 3 6"
-N_PROCS="1 2"
+N_RANKS="1 2"
 N_THREADS="1 2 4 8"
 SIMD="0 1"
 DELTA_T="0"
@@ -39,8 +39,8 @@ Options:
                                       Default: 5
   --n_additional_refinements <list>   List of additional global mesh refinements (on top of problem default).
                                       Default: "0 3 6"
-  --n_procs <list>                     List of numbers of processes to use.
-                                      Default: "1 2 4 8 16"
+  --n_ranks <list>                    List of MPI rank counts to use.
+                                      Default: "1 2"
   --n_threads <list>                  List of numbers of threads to use.
                                       Default: "1 4 8"
   --simd <list>                       List of values of SIMD to use.
@@ -69,7 +69,7 @@ Output:
   Test results are saved in the ./tests/ directory unless --use-scratch-local is set.
   A summary table is printed at the end showing aggregated statistics for each unique parameter combination.
   Results saved under:
-  tests/<solver>/<problem>/<fe_deg>/<n_add_ref>/<n_procs>/<n_threads>/<simd>/test_N"
+  tests/<solver>/<problem>/<fe_deg>/<n_add_ref>/<n_ranks>/<n_threads>/<simd>/test_N"
   exit
 }
 
@@ -81,7 +81,7 @@ while [[ $# -gt 0 ]]; do
         --fe_deg) shift; FE_DEG=""; while [[ $# -gt 0 && "$1" != --* ]]; do FE_DEG+="$1 "; shift; done;;
         --n_tests) N_TESTS="$2"; shift 2;; 
         --n_additional_refinements) shift; N_ADDITIONAL_REFINEMENTS=""; while [[ $# -gt 0 && "$1" != --* ]]; do N_ADDITIONAL_REFINEMENTS+="$1 "; shift; done;;
-        --n_procs) shift; N_PROCS=""; while [[ $# -gt 0 && "$1" != --* ]]; do N_PROCS+="$1 "; shift; done;;
+        --n_ranks) shift; N_RANKS=""; while [[ $# -gt 0 && "$1" != --* ]]; do N_RANKS+="$1 "; shift; done;;
         --n_threads) shift; N_THREADS=""; while [[ $# -gt 0 && "$1" != --* ]]; do N_THREADS+="$1 "; shift; done;;
         --simd) shift; SIMD=""; while [[ $# -gt 0 && "$1" != --* ]]; do SIMD+="$1 "; shift; done;;
         --delta_t) shift; DELTA_T=""; while [[ $# -gt 0 && "$1" != --* ]]; do DELTA_T+="$1 "; shift; done;;
@@ -277,7 +277,7 @@ test_base_dir_for_run() {
     local problem="$2"
     local fe_deg="$3"
     local n_additional_refinements="$4"
-    local n_procs="$5"
+    local n_ranks="$5"
     local n_threads="$6"
     local simd="$7"
     local solver_dir
@@ -289,7 +289,7 @@ test_base_dir_for_run() {
     fi
 
     # Directory hierarchy:
-    # tests/<solver>/<problem>/<fe_deg>/<n_add_ref>/<n_procs>/<n_threads>/<simd>
+    # tests/<solver>/<problem>/<fe_deg>/<n_add_ref>/<n_ranks>/<n_threads>/<simd>
     # FE degree is placed above refinement and parallel settings because it is
     # part of the discretization, not a repetition or execution-shape detail.
     printf '%s/%s/%s/%s/%s/%s/%s/%s\n' \
@@ -298,7 +298,7 @@ test_base_dir_for_run() {
         "$problem" \
         "$fe_deg" \
         "$n_additional_refinements" \
-        "$n_procs" \
+        "$n_ranks" \
         "$n_threads" \
         "$simd"
 }
@@ -388,29 +388,29 @@ for solver in $SOLVER; do
     for problem in $PROBLEM; do
         for fe_deg in $FE_DEG; do
             for n_additional_refinements in $N_ADDITIONAL_REFINEMENTS; do
-                for n_procs in $N_PROCS; do
+                for n_ranks in $N_RANKS; do
                     for n_threads in $N_THREADS; do
                         for simd in $SIMD; do
                             for delta_t in $DELTA_T; do
                                 for max_iters in $MAX_ITERS; do
                                     for tol in $TOL; do
                                         for ((i=0; i<N_TESTS; i++)); do
-                                            echo "RUN $i: solver=$solver problem=$problem fe_deg=$fe_deg n_additional_refinements=$n_additional_refinements n_procs=$n_procs n_threads=$n_threads simd=$simd max_iters=$max_iters tol=$tol"
+                                            echo "RUN $i: solver=$solver problem=$problem fe_deg=$fe_deg n_additional_refinements=$n_additional_refinements n_ranks=$n_ranks n_threads=$n_threads simd=$simd max_iters=$max_iters tol=$tol"
 
                                             if [[ "$solver" == "mf" ]]; then
                                                 # MATRIX-FREE
-                                                test_base_dir="$(test_base_dir_for_run "$solver" "$problem" "$fe_deg" "$n_additional_refinements" "$n_procs" "$n_threads" "$simd")"
+                                                test_base_dir="$(test_base_dir_for_run "$solver" "$problem" "$fe_deg" "$n_additional_refinements" "$n_ranks" "$n_threads" "$simd")"
                                                 case "$simd" in
-                                                    0)  run_solver_command "run $i" "$test_base_dir" mpirun --report-bindings -n "$n_procs" --bind-to hwthread --map-by core:PE="$n_threads" ./matrix_free_no_simd "$n_threads" "$simd" "$problem" "$fe_deg" "$n_additional_refinements" "$delta_t" "$max_iters" "$tol";;
-                                                    1)  run_solver_command "run $i" "$test_base_dir" mpirun --report-bindings -n "$n_procs" --bind-to hwthread --map-by core:PE="$n_threads" ./matrix_free_simd "$n_threads" "$simd" "$problem" "$fe_deg" "$n_additional_refinements" "$delta_t" "$max_iters" "$tol";; 
+                                                    0)  run_solver_command "run $i" "$test_base_dir" mpirun --report-bindings -n "$n_ranks" --bind-to hwthread --map-by core:PE="$n_threads" ./matrix_free_no_simd "$n_threads" "$simd" "$problem" "$fe_deg" "$n_additional_refinements" "$delta_t" "$max_iters" "$tol";;
+                                                    1)  run_solver_command "run $i" "$test_base_dir" mpirun --report-bindings -n "$n_ranks" --bind-to hwthread --map-by core:PE="$n_threads" ./matrix_free_simd "$n_threads" "$simd" "$problem" "$fe_deg" "$n_additional_refinements" "$delta_t" "$max_iters" "$tol";; 
                                                     *) echo "Unknown simd value: $simd";;
                                                 esac
                                             else
                                                 # MATRIX-BASED
                                                 case "$simd" in
                                                     0)
-                                                        test_base_dir="$(test_base_dir_for_run "$solver" "$problem" "$fe_deg" "$n_additional_refinements" "$n_procs" "$n_threads" "0")"
-                                                        run_solver_command "run $i" "$test_base_dir" mpirun --report-bindings -n "$n_procs" --bind-to hwthread --map-by core:PE="$n_threads" ./matrix_based "$n_threads" "$problem" "$fe_deg" "$n_additional_refinements" "$delta_t" "$max_iters" "$tol";;
+                                                        test_base_dir="$(test_base_dir_for_run "$solver" "$problem" "$fe_deg" "$n_additional_refinements" "$n_ranks" "$n_threads" "0")"
+                                                        run_solver_command "run $i" "$test_base_dir" mpirun --report-bindings -n "$n_ranks" --bind-to hwthread --map-by core:PE="$n_threads" ./matrix_based "$n_threads" "$problem" "$fe_deg" "$n_additional_refinements" "$delta_t" "$max_iters" "$tol";;
                                                     1)  continue;;
                                                     *) echo "Unknown simd value: $simd";;
                                                 esac

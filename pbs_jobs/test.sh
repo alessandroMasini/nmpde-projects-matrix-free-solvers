@@ -72,7 +72,7 @@ make -j 4
     --n_tests 1 \
     --fe_deg 2 \
     --tol 0.001 \
-    --n_procs 1 2 4 8 \
+    --n_ranks 1 2 4 8 \
     --n_threads 1 2 \
     --run-timeout-seconds 90 \
     --n_additional_refinements 2 \

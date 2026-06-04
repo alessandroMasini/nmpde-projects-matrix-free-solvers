@@ -14,9 +14,9 @@ from collections import defaultdict
 # -----------------------------------------------------------------------------
 
 FILE_COLUMNS = ["delta_t", "max_iter", "tol", "rel_t_step", "it_n", "err", "total_t", "l2_error", "h1_error", "linfty_error", "converged"]
-DIR_PARAMS = ["solver", "problem", "fe_deg", "n_additional_refinements", "n_procs", "n_threads", "simd"]
+DIR_PARAMS = ["solver", "problem", "fe_deg", "n_additional_refinements", "n_ranks", "n_threads", "simd"]
 
-X_PARAMS = ["delta_t", "fe_deg", "n_additional_refinements", "n_procs", "n_threads", "simd", "tol", "rel_t_step", "it_n"]
+X_PARAMS = ["delta_t", "fe_deg", "n_additional_refinements", "n_ranks", "n_threads", "simd", "tol", "rel_t_step", "it_n"]
 Y_PARAMS = ["it_n", "total_t", "l2_error", "h1_error", "linfty_error"]
 
 def legacy_fe_degree_for_solver(solver):
@@ -62,7 +62,7 @@ def comparison_name(key, value):
 
 def fixed_param_value(key, value):
     """Convert command-line fixed parameters to the type used internally."""
-    if key in ["fe_deg", "n_additional_refinements", "n_procs", "n_threads", "simd", "it_n", "max_iter", "converged"]:
+    if key in ["fe_deg", "n_additional_refinements", "n_ranks", "n_threads", "simd", "it_n", "max_iter", "converged"]:
         return int(value)
 
     if key in ["delta_t", "tol", "rel_t_step", "l2_error", "h1_error", "linfty_error"]:
@@ -153,14 +153,14 @@ def load_file_data(file_path):
 def extract_dir_params(path_parts):
     """Extract directory parameters from path parts."""
     # New layout:
-    # tests/{solver}/{problem}/{fe_deg}/{n_add_ref}/{n_procs}/{n_threads}/{simd}/test_N
+    # tests/{solver}/{problem}/{fe_deg}/{n_add_ref}/{n_ranks}/{n_threads}/{simd}/test_N
     try:
         return {
             "solver": path_parts[-7],
             "problem": path_parts[-6],
             "fe_deg": int(path_parts[-5]),
             "n_additional_refinements": int(path_parts[-4]),
-            "n_procs": int(path_parts[-3]),
+            "n_ranks": int(path_parts[-3]),
             "n_threads": int(path_parts[-2]),
             "simd": int(path_parts[-1]),
         }
@@ -168,14 +168,14 @@ def extract_dir_params(path_parts):
         pass
 
     # Legacy layout before fe_deg was a directory level:
-    # tests/{solver}/{problem}/{n_add_ref}/{n_procs}/{n_threads}/{simd}/test_N
+    # tests/{solver}/{problem}/{n_add_ref}/{n_ranks}/{n_threads}/{simd}/test_N
     solver = path_parts[-6]
     return {
         "solver": solver,
         "problem": path_parts[-5],
         "fe_deg": legacy_fe_degree_for_solver(solver),
         "n_additional_refinements": int(path_parts[-4]),
-        "n_procs": int(path_parts[-3]),
+        "n_ranks": int(path_parts[-3]),
         "n_threads": int(path_parts[-2]),
         "simd": int(path_parts[-1]),
     }
@@ -381,7 +381,7 @@ def plot_average_results(fixed_params, x, y, req_finished, compare, compare_valu
             xs = np.array(sorted(bucket.keys()))
 
             means = np.array([np.mean(bucket[xv]) for xv in xs])
-            if x in ["n_threads", "n_procs"]:
+            if x in ["n_threads", "n_ranks"]:
                 base_time[compare_value] = means[0]
             stds  = np.array([np.std(bucket[xv]) for xv in xs])
 
@@ -405,7 +405,7 @@ def plot_average_results(fixed_params, x, y, req_finished, compare, compare_valu
         xs = np.array(sorted(bucket.keys()))
 
         means = np.array([np.mean(bucket[xv]) for xv in xs])
-        if x in ["n_threads", "n_procs"]:
+        if x in ["n_threads", "n_ranks"]:
             base_time = means[0]
         stds  = np.array([np.std(bucket[xv]) for xv in xs])
 
@@ -422,18 +422,18 @@ def plot_average_results(fixed_params, x, y, req_finished, compare, compare_valu
     # Inserting optimal scaling line, if necessary
     if plot_theor:
         # Since the theoretical plotting line is considered by taking
-        # serial_time / (n_procs * n_threads), retrieve the parallel dimension
+        # serial_time / (n_ranks * n_threads), retrieve the parallel dimension
         # that is not currently on the x axis.
         divisor = 0
         if x == "n_threads":
-            divisor = last_dir_params["n_procs"]
-        elif x == "n_procs":
+            divisor = last_dir_params["n_ranks"]
+        elif x == "n_ranks":
             divisor = last_dir_params["n_threads"]
 
         if compare is not None:
             i = 0
             for compare_value, value_list in curves.items():
-                if compare == "n_threads" or compare == "n_procs":
+                if compare == "n_threads" or compare == "n_ranks":
                     divisor = int(compare_value)
                 if not value_list:
                     i += 1
@@ -652,8 +652,8 @@ if __name__ == "__main__":
         output_name += "comp_" + args.compare + "---"
 
     # Correctness checking for theoretical scaling
-    if bool(getattr(args, "scale_line")) and args.x not in ["n_procs", "n_threads"]:
-        print("Error, you can show a scaling plot only if you are plotting against the number of processes or threads")
+    if bool(getattr(args, "scale_line")) and args.x not in ["n_ranks", "n_threads"]:
+        print("Error, you can show a scaling plot only if you are plotting against the number of MPI ranks or threads")
         no_error = False
 
     if getattr(args, "finished") is not None and args.finished == 1:

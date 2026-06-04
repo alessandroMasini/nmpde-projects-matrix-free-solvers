@@ -43,7 +43,7 @@ make[1]: warning:  Clock skew detected.  Your build may be incomplete.
 make: warning:  Clock skew detected.  Your build may be incomplete.
 === Running tests ===
 --- Solver: mb ---
-RUN 0: solver=mb problem=advanced n_additional_refinements=3 n_procs=1 n_threads=1 simd=0 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=advanced n_additional_refinements=3 n_ranks=1 n_threads=1 simd=0 max_iters=1000 tol=0.001
 [cpu01.mate.polimi.it:889274] MCW rank 0 bound to socket 0[core 0[hwt 0]]: [B./../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 Running with PETSc on:
 1 MPI rank(s)
@@ -85,8 +85,8 @@ Finished solve
 +------------------------------------------+-----------+------------+------------+
 
 
-RUN 0: solver=mb problem=advanced n_additional_refinements=3 n_procs=1 n_threads=1 simd=1 max_iters=1000 tol=0.001
-RUN 0: solver=mb problem=advanced n_additional_refinements=3 n_procs=1 n_threads=2 simd=0 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=advanced n_additional_refinements=3 n_ranks=1 n_threads=1 simd=1 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=advanced n_additional_refinements=3 n_ranks=1 n_threads=2 simd=0 max_iters=1000 tol=0.001
 [cpu01.mate.polimi.it:894179] MCW rank 0 bound to socket 0[core 0[hwt 0-1]]: [BB/../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 Running with PETSc on:
 1 MPI rank(s)
@@ -128,8 +128,8 @@ Finished solve
 +------------------------------------------+-----------+------------+------------+
 
 
-RUN 0: solver=mb problem=advanced n_additional_refinements=3 n_procs=1 n_threads=2 simd=1 max_iters=1000 tol=0.001
-RUN 0: solver=mb problem=advanced n_additional_refinements=3 n_procs=2 n_threads=1 simd=0 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=advanced n_additional_refinements=3 n_ranks=1 n_threads=2 simd=1 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=advanced n_additional_refinements=3 n_ranks=2 n_threads=1 simd=0 max_iters=1000 tol=0.001
 [cpu01.mate.polimi.it:898684] MCW rank 0 bound to socket 0[core 0[hwt 0]]: [B./../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu01.mate.polimi.it:898684] MCW rank 1 bound to socket 0[core 1[hwt 0]]: [../B./../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 Running with PETSc on:
@@ -172,8 +172,8 @@ Finished solve
 +------------------------------------------+-----------+------------+------------+
 
 
-RUN 0: solver=mb problem=advanced n_additional_refinements=3 n_procs=2 n_threads=1 simd=1 max_iters=1000 tol=0.001
-RUN 0: solver=mb problem=advanced n_additional_refinements=3 n_procs=2 n_threads=2 simd=0 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=advanced n_additional_refinements=3 n_ranks=2 n_threads=1 simd=1 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=advanced n_additional_refinements=3 n_ranks=2 n_threads=2 simd=0 max_iters=1000 tol=0.001
 [cpu01.mate.polimi.it:901869] MCW rank 0 bound to socket 0[core 0[hwt 0-1]]: [BB/../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu01.mate.polimi.it:901869] MCW rank 1 bound to socket 0[core 1[hwt 0-1]]: [../BB/../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 Running with PETSc on:
@@ -216,8 +216,8 @@ Finished solve
 +------------------------------------------+-----------+------------+------------+
 
 
-RUN 0: solver=mb problem=advanced n_additional_refinements=3 n_procs=2 n_threads=2 simd=1 max_iters=1000 tol=0.001
-RUN 0: solver=mb problem=advanced n_additional_refinements=3 n_procs=4 n_threads=1 simd=0 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=advanced n_additional_refinements=3 n_ranks=2 n_threads=2 simd=1 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=advanced n_additional_refinements=3 n_ranks=4 n_threads=1 simd=0 max_iters=1000 tol=0.001
 [cpu01.mate.polimi.it:904166] MCW rank 0 bound to socket 0[core 0[hwt 0]]: [B./../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu01.mate.polimi.it:904166] MCW rank 1 bound to socket 0[core 1[hwt 0]]: [../B./../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu01.mate.polimi.it:904166] MCW rank 2 bound to socket 0[core 2[hwt 0]]: [../../B./../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
@@ -262,8 +262,8 @@ Finished solve
 +------------------------------------------+-----------+------------+------------+
 
 
-RUN 0: solver=mb problem=advanced n_additional_refinements=3 n_procs=4 n_threads=1 simd=1 max_iters=1000 tol=0.001
-RUN 0: solver=mb problem=advanced n_additional_refinements=3 n_procs=4 n_threads=2 simd=0 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=advanced n_additional_refinements=3 n_ranks=4 n_threads=1 simd=1 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=advanced n_additional_refinements=3 n_ranks=4 n_threads=2 simd=0 max_iters=1000 tol=0.001
 [cpu01.mate.polimi.it:905551] MCW rank 0 bound to socket 0[core 0[hwt 0-1]]: [BB/../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu01.mate.polimi.it:905551] MCW rank 1 bound to socket 0[core 1[hwt 0-1]]: [../BB/../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu01.mate.polimi.it:905551] MCW rank 2 bound to socket 0[core 2[hwt 0-1]]: [../../BB/../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
@@ -308,7 +308,7 @@ Finished solve
 +------------------------------------------+-----------+------------+------------+
 
 
-RUN 0: solver=mb problem=advanced n_additional_refinements=3 n_procs=4 n_threads=2 simd=1 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=advanced n_additional_refinements=3 n_ranks=4 n_threads=2 simd=1 max_iters=1000 tol=0.001
 
 All tests completed.
 
@@ -321,7 +321,7 @@ Aggregating results...
 ========================================================================================================================
 TEST SUMMARY
 ========================================================================================================================
-Solver         Problem           n_procs   n_threads    simd    n_add_ref      delta_t         it_n             err       conv      total_t     %err
+Solver         Problem           n_ranks   n_threads    simd    n_add_ref      delta_t         it_n             err       conv      total_t     %err
 ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 matrix_based   advanced                1           1       0            3     0.000000         4.00    3.843092e-04       1.00      86.9501     0.0%
 matrix_based   advanced                1           2       0            3     0.000000         4.00    3.843092e-04       1.00      84.6518     0.0%

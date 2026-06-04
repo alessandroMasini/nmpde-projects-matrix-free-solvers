@@ -8,7 +8,7 @@ Each test_N directory becomes one TestResult. Results with the same
 configuration key are then averaged into one table row.
 
 Table columns:
-  solver problem fe_deg n_procs n_threads simd n_add_ref delta_t
+  solver problem fe_deg n_ranks n_threads simd n_add_ref delta_t
   it_n err converged total_t %err
 
 Identical runs (same first 8 params) are aggregated with averages.
@@ -114,7 +114,7 @@ class TestResult:
     solver: str
     problem: str
     fe_deg: int
-    n_procs: int
+    n_ranks: int
     n_threads: int
     simd: int
     n_additional_refinements: int
@@ -130,7 +130,7 @@ class TestResult:
         """Return key for grouping repeated runs of the same configuration."""
         # test_N is deliberately excluded. Repeated test_N directories under
         # the same configuration are samples of the same experiment.
-        return (self.solver, self.problem, self.fe_deg, self.n_procs,
+        return (self.solver, self.problem, self.fe_deg, self.n_ranks,
                 self.n_threads, self.simd, self.n_additional_refinements,
                 self.delta_t)
 
@@ -287,11 +287,11 @@ def make_result_from_test_dir(tests_dir: Path, test_dir: Path) -> Optional[TestR
         return None
 
     if len(relative_parts) == 8:
-        solver, problem, fe_deg, n_add_ref, n_procs, n_threads, simd, test_name = relative_parts
+        solver, problem, fe_deg, n_add_ref, n_ranks, n_threads, simd, test_name = relative_parts
     elif len(relative_parts) == 7:
         # Legacy layout, before fe_deg became an explicit sweep parameter:
-        # tests/{solver}/{problem}/{n_add_ref}/{n_procs}/{n_threads}/{simd}/test_N
-        solver, problem, n_add_ref, n_procs, n_threads, simd, test_name = relative_parts
+        # tests/{solver}/{problem}/{n_add_ref}/{n_ranks}/{n_threads}/{simd}/test_N
+        solver, problem, n_add_ref, n_ranks, n_threads, simd, test_name = relative_parts
         fe_deg = str(legacy_fe_degree_for_solver(solver))
     else:
         return None
@@ -302,7 +302,7 @@ def make_result_from_test_dir(tests_dir: Path, test_dir: Path) -> Optional[TestR
     try:
         fe_degree = int(fe_deg)
         n_additional_refinements = int(n_add_ref)
-        n_procs_value = int(n_procs)
+        n_ranks_value = int(n_ranks)
         n_threads_value = int(n_threads)
         simd_value = int(simd)
     except ValueError:
@@ -312,7 +312,7 @@ def make_result_from_test_dir(tests_dir: Path, test_dir: Path) -> Optional[TestR
         solver=solver,
         problem=problem,
         fe_deg=fe_degree,
-        n_procs=n_procs_value,
+        n_ranks=n_ranks_value,
         n_threads=n_threads_value,
         simd=simd_value,
         n_additional_refinements=n_additional_refinements,
@@ -341,7 +341,7 @@ def collect_test_results(tests_dir: Path) -> List[TestResult]:
     results = []
 
     # New directory structure:
-    # tests/{solver}/{problem}/{fe_deg}/{n_add_ref}/{n_procs}/{n_threads}/{simd}/test_N/log.txt
+    # tests/{solver}/{problem}/{fe_deg}/{n_add_ref}/{n_ranks}/{n_threads}/{simd}/test_N/log.txt
     for test_dir in tests_dir.rglob("test_*"):
         if not test_dir.is_dir() or not test_dir.name.startswith('test_'):
             continue
@@ -446,39 +446,49 @@ def format_table(aggregated: Dict[Tuple, Dict]) -> str:
 
     lines = []
     col_widths = {
-        'solver': 14,
-        'problem': 14,
-        'fe_deg': 8,
-        'n_procs': 10,
-        'n_threads': 11,
-        'simd': 7,
-        'n_add_ref': 12,
-        'delta_t': 12,
-        'it_n': 12,
-        'err': 15,
-        'converged': 10,
-        'total_t': 12,
-        'err_pct': 8,
+        'solver': 2,
+        'problem': 9,
+        'fe_deg': 6,
+        'n_ranks': 5,
+        'n_threads': 7,
+        'simd': 1,
+        'n_add_ref': 3,
+        'delta_t': 6,
+        'it_n': 5,
+        'err': 9,
+        'converged': 4,
+        'total_t': 7,
+        'err_pct': 6,
     }
 
-    # Fixed column widths make repeated summaries easy to compare in a terminal
-    # or saved text file.
-    header = (
-        f"{'Solver':<{col_widths['solver']}} "
-        f"{'Problem':<{col_widths['problem']}} "
-        f"{'fe_deg':>{col_widths['fe_deg']}} "
-        f"{'n_procs':>{col_widths['n_procs']}} "
-        f"{'n_threads':>{col_widths['n_threads']}} "
-        f"{'simd':>{col_widths['simd']}} "
-        f"{'n_add_ref':>{col_widths['n_add_ref']}} "
-        f"{'delta_t':>{col_widths['delta_t']}} "
-        f"{'it_n':>{col_widths['it_n']}} "
-        f"{'err':>{col_widths['err']}} "
-        f"{'conv':>{col_widths['converged']}} "
-        f"{'total_t':>{col_widths['total_t']}} "
-        f"{'%err':>{col_widths['err_pct']}}"
-    )
-    separator = "─" * len(header)
+    def compact_solver_name(solver: str) -> str:
+        if solver == "matrix_based":
+            return "mb"
+        if solver == "matrix_free":
+            return "mf"
+        return solver
+
+    def table_row(cells: List[str]) -> str:
+        return "| " + " | ".join(cells) + " |"
+
+    # Short labels keep the table below a typical 100-column terminal while
+    # vertical separators keep columns readable after the widths are tightened.
+    header = table_row([
+        f"{'sv':<{col_widths['solver']}}",
+        f"{'problem':<{col_widths['problem']}}",
+        f"{'fe_deg':>{col_widths['fe_deg']}}",
+        f"{'ranks':>{col_widths['n_ranks']}}",
+        f"{'threads':>{col_widths['n_threads']}}",
+        f"{'s':>{col_widths['simd']}}",
+        f"{'ref':>{col_widths['n_add_ref']}}",
+        f"{'dt':>{col_widths['delta_t']}}",
+        f"{'it':>{col_widths['it_n']}}",
+        f"{'err':>{col_widths['err']}}",
+        f"{'conv':>{col_widths['converged']}}",
+        f"{'time':>{col_widths['total_t']}}",
+        f"{'%miss':>{col_widths['err_pct']}}",
+    ])
+    separator = "-" * len(header)
 
     lines.append(header)
     lines.append(separator)
@@ -486,24 +496,24 @@ def format_table(aggregated: Dict[Tuple, Dict]) -> str:
     # Sort by the full configuration key so repeated executions produce stable
     # output even if the filesystem returns directories in a different order.
     for key in sorted(aggregated.keys()):
-        solver, problem, fe_deg, n_procs, n_threads, simd, n_add_ref, delta_t = key
+        solver, problem, fe_deg, n_ranks, n_threads, simd, n_add_ref, delta_t = key
         stats = aggregated[key]
 
-        line = (
-            f"{solver:<{col_widths['solver']}} "
-            f"{problem:<{col_widths['problem']}} "
-            f"{fe_deg:>{col_widths['fe_deg']}} "
-            f"{n_procs:>{col_widths['n_procs']}} "
-            f"{n_threads:>{col_widths['n_threads']}} "
-            f"{simd:>{col_widths['simd']}} "
-            f"{n_add_ref:>{col_widths['n_add_ref']}} "
-            f"{delta_t:>{col_widths['delta_t']}.6f} "
-            f"{stats['it_n']:>{col_widths['it_n']}.2f} "
-            f"{stats['err']:>{col_widths['err']}.6e} "
-            f"{stats['converged']:>{col_widths['converged']}.2f} "
-            f"{stats['total_t']:>{col_widths['total_t']}.4f} "
-            f"{stats['missing_pct']:>{col_widths['err_pct']-1}.1f}%"
-        )
+        line = table_row([
+            f"{compact_solver_name(solver):<{col_widths['solver']}}",
+            f"{problem:<{col_widths['problem']}}",
+            f"{fe_deg:>{col_widths['fe_deg']}}",
+            f"{n_ranks:>{col_widths['n_ranks']}}",
+            f"{n_threads:>{col_widths['n_threads']}}",
+            f"{simd:>{col_widths['simd']}}",
+            f"{n_add_ref:>{col_widths['n_add_ref']}}",
+            f"{delta_t:>{col_widths['delta_t']}.1g}",
+            f"{stats['it_n']:>{col_widths['it_n']}.1f}",
+            f"{stats['err']:>{col_widths['err']}.2e}",
+            f"{stats['converged']:>{col_widths['converged']}.2f}",
+            f"{stats['total_t']:>{col_widths['total_t']}.2f}",
+            f"{stats['missing_pct']:>{col_widths['err_pct']-1}.1f}%",
+        ])
         lines.append(line)
 
     return "\n".join(lines)
@@ -581,11 +591,14 @@ def main():
     print("Aggregating results...")
     aggregated = aggregate_results(results)
 
-    print("\n" + "=" * 120)
+    table = format_table(aggregated)
+    banner_width = max(len(line) for line in table.splitlines())
+
+    print("\n" + "=" * banner_width)
     print("TEST SUMMARY")
-    print("=" * 120)
-    print(format_table(aggregated))
-    print("=" * 120)
+    print("=" * banner_width)
+    print(table)
+    print("=" * banner_width)
 
     return 0
 

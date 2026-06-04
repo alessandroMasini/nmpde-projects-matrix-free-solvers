@@ -47,7 +47,7 @@ make[1]: warning:  Clock skew detected.  Your build may be incomplete.
 make: warning:  Clock skew detected.  Your build may be incomplete.
 === Running tests ===
 --- Solver: mb ---
-RUN 0: solver=mb problem=advanced n_additional_refinements=2 n_procs=1 n_threads=1 simd=0 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=advanced n_additional_refinements=2 n_ranks=1 n_threads=1 simd=0 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:912361] MCW rank 0 bound to socket 0[core 0[hwt 0]]: [B./../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 Running with PETSc on:
 1 MPI rank(s)
@@ -89,8 +89,8 @@ Finished solve
 +------------------------------------------+-----------+------------+------------+
 
 
-RUN 0: solver=mb problem=advanced n_additional_refinements=2 n_procs=1 n_threads=1 simd=1 max_iters=1000 tol=0.001
-RUN 0: solver=mb problem=advanced n_additional_refinements=2 n_procs=1 n_threads=2 simd=0 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=advanced n_additional_refinements=2 n_ranks=1 n_threads=1 simd=1 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=advanced n_additional_refinements=2 n_ranks=1 n_threads=2 simd=0 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:912372] MCW rank 0 bound to socket 0[core 0[hwt 0-1]]: [BB/../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 Running with PETSc on:
 1 MPI rank(s)
@@ -132,8 +132,8 @@ Finished solve
 +------------------------------------------+-----------+------------+------------+
 
 
-RUN 0: solver=mb problem=advanced n_additional_refinements=2 n_procs=1 n_threads=2 simd=1 max_iters=1000 tol=0.001
-RUN 0: solver=mb problem=advanced n_additional_refinements=2 n_procs=2 n_threads=1 simd=0 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=advanced n_additional_refinements=2 n_ranks=1 n_threads=2 simd=1 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=advanced n_additional_refinements=2 n_ranks=2 n_threads=1 simd=0 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:912388] MCW rank 0 bound to socket 0[core 0[hwt 0]]: [B./../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:912388] MCW rank 1 bound to socket 0[core 1[hwt 0]]: [../B./../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 Running with PETSc on:
@@ -176,8 +176,8 @@ Finished solve
 +------------------------------------------+-----------+------------+------------+
 
 
-RUN 0: solver=mb problem=advanced n_additional_refinements=2 n_procs=2 n_threads=1 simd=1 max_iters=1000 tol=0.001
-RUN 0: solver=mb problem=advanced n_additional_refinements=2 n_procs=2 n_threads=2 simd=0 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=advanced n_additional_refinements=2 n_ranks=2 n_threads=1 simd=1 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=advanced n_additional_refinements=2 n_ranks=2 n_threads=2 simd=0 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:912402] MCW rank 0 bound to socket 0[core 0[hwt 0-1]]: [BB/../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:912402] MCW rank 1 bound to socket 0[core 1[hwt 0-1]]: [../BB/../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 Running with PETSc on:
@@ -220,8 +220,8 @@ Finished solve
 +------------------------------------------+-----------+------------+------------+
 
 
-RUN 0: solver=mb problem=advanced n_additional_refinements=2 n_procs=2 n_threads=2 simd=1 max_iters=1000 tol=0.001
-RUN 0: solver=mb problem=advanced n_additional_refinements=2 n_procs=4 n_threads=1 simd=0 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=advanced n_additional_refinements=2 n_ranks=2 n_threads=2 simd=1 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=advanced n_additional_refinements=2 n_ranks=4 n_threads=1 simd=0 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:912418] MCW rank 0 bound to socket 0[core 0[hwt 0]]: [B./../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:912418] MCW rank 1 bound to socket 0[core 1[hwt 0]]: [../B./../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:912418] MCW rank 2 bound to socket 0[core 2[hwt 0]]: [../../B./../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
@@ -266,8 +266,8 @@ Finished solve
 +------------------------------------------+-----------+------------+------------+
 
 
-RUN 0: solver=mb problem=advanced n_additional_refinements=2 n_procs=4 n_threads=1 simd=1 max_iters=1000 tol=0.001
-RUN 0: solver=mb problem=advanced n_additional_refinements=2 n_procs=4 n_threads=2 simd=0 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=advanced n_additional_refinements=2 n_ranks=4 n_threads=1 simd=1 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=advanced n_additional_refinements=2 n_ranks=4 n_threads=2 simd=0 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:912438] MCW rank 0 bound to socket 0[core 0[hwt 0-1]]: [BB/../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:912438] MCW rank 1 bound to socket 0[core 1[hwt 0-1]]: [../BB/../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:912438] MCW rank 2 bound to socket 0[core 2[hwt 0-1]]: [../../BB/../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
@@ -312,8 +312,8 @@ Finished solve
 +------------------------------------------+-----------+------------+------------+
 
 
-RUN 0: solver=mb problem=advanced n_additional_refinements=2 n_procs=4 n_threads=2 simd=1 max_iters=1000 tol=0.001
-RUN 0: solver=mb problem=advanced n_additional_refinements=2 n_procs=8 n_threads=1 simd=0 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=advanced n_additional_refinements=2 n_ranks=4 n_threads=2 simd=1 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=advanced n_additional_refinements=2 n_ranks=8 n_threads=1 simd=0 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:912463] MCW rank 0 bound to socket 0[core 0[hwt 0]]: [B./../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:912463] MCW rank 1 bound to socket 0[core 1[hwt 0]]: [../B./../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:912463] MCW rank 2 bound to socket 0[core 2[hwt 0]]: [../../B./../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
@@ -362,8 +362,8 @@ Finished solve
 +------------------------------------------+-----------+------------+------------+
 
 
-RUN 0: solver=mb problem=advanced n_additional_refinements=2 n_procs=8 n_threads=1 simd=1 max_iters=1000 tol=0.001
-RUN 0: solver=mb problem=advanced n_additional_refinements=2 n_procs=8 n_threads=2 simd=0 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=advanced n_additional_refinements=2 n_ranks=8 n_threads=1 simd=1 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=advanced n_additional_refinements=2 n_ranks=8 n_threads=2 simd=0 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:912495] MCW rank 0 bound to socket 0[core 0[hwt 0-1]]: [BB/../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:912495] MCW rank 1 bound to socket 0[core 1[hwt 0-1]]: [../BB/../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:912495] MCW rank 2 bound to socket 0[core 2[hwt 0-1]]: [../../BB/../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
@@ -412,8 +412,8 @@ Finished solve
 +------------------------------------------+-----------+------------+------------+
 
 
-RUN 0: solver=mb problem=advanced n_additional_refinements=2 n_procs=8 n_threads=2 simd=1 max_iters=1000 tol=0.001
-RUN 0: solver=mb problem=lab_02 n_additional_refinements=2 n_procs=1 n_threads=1 simd=0 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=advanced n_additional_refinements=2 n_ranks=8 n_threads=2 simd=1 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=lab_02 n_additional_refinements=2 n_ranks=1 n_threads=1 simd=0 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:912535] MCW rank 0 bound to socket 0[core 0[hwt 0]]: [B./../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 Running with PETSc on:
 1 MPI rank(s)
@@ -455,8 +455,8 @@ Finished solve
 +------------------------------------------+-----------+------------+------------+
 
 
-RUN 0: solver=mb problem=lab_02 n_additional_refinements=2 n_procs=1 n_threads=1 simd=1 max_iters=1000 tol=0.001
-RUN 0: solver=mb problem=lab_02 n_additional_refinements=2 n_procs=1 n_threads=2 simd=0 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=lab_02 n_additional_refinements=2 n_ranks=1 n_threads=1 simd=1 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=lab_02 n_additional_refinements=2 n_ranks=1 n_threads=2 simd=0 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:912546] MCW rank 0 bound to socket 0[core 0[hwt 0-1]]: [BB/../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 Running with PETSc on:
 1 MPI rank(s)
@@ -498,8 +498,8 @@ Finished solve
 +------------------------------------------+-----------+------------+------------+
 
 
-RUN 0: solver=mb problem=lab_02 n_additional_refinements=2 n_procs=1 n_threads=2 simd=1 max_iters=1000 tol=0.001
-RUN 0: solver=mb problem=lab_02 n_additional_refinements=2 n_procs=2 n_threads=1 simd=0 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=lab_02 n_additional_refinements=2 n_ranks=1 n_threads=2 simd=1 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=lab_02 n_additional_refinements=2 n_ranks=2 n_threads=1 simd=0 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:912558] MCW rank 0 bound to socket 0[core 0[hwt 0]]: [B./../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:912558] MCW rank 1 bound to socket 0[core 1[hwt 0]]: [../B./../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 Running with PETSc on:
@@ -542,8 +542,8 @@ Finished solve
 +------------------------------------------+-----------+------------+------------+
 
 
-RUN 0: solver=mb problem=lab_02 n_additional_refinements=2 n_procs=2 n_threads=1 simd=1 max_iters=1000 tol=0.001
-RUN 0: solver=mb problem=lab_02 n_additional_refinements=2 n_procs=2 n_threads=2 simd=0 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=lab_02 n_additional_refinements=2 n_ranks=2 n_threads=1 simd=1 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=lab_02 n_additional_refinements=2 n_ranks=2 n_threads=2 simd=0 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:912572] MCW rank 0 bound to socket 0[core 0[hwt 0-1]]: [BB/../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:912572] MCW rank 1 bound to socket 0[core 1[hwt 0-1]]: [../BB/../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 Running with PETSc on:
@@ -586,8 +586,8 @@ Finished solve
 +------------------------------------------+-----------+------------+------------+
 
 
-RUN 0: solver=mb problem=lab_02 n_additional_refinements=2 n_procs=2 n_threads=2 simd=1 max_iters=1000 tol=0.001
-RUN 0: solver=mb problem=lab_02 n_additional_refinements=2 n_procs=4 n_threads=1 simd=0 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=lab_02 n_additional_refinements=2 n_ranks=2 n_threads=2 simd=1 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=lab_02 n_additional_refinements=2 n_ranks=4 n_threads=1 simd=0 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:912588] MCW rank 0 bound to socket 0[core 0[hwt 0]]: [B./../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:912588] MCW rank 1 bound to socket 0[core 1[hwt 0]]: [../B./../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:912588] MCW rank 2 bound to socket 0[core 2[hwt 0]]: [../../B./../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
@@ -632,8 +632,8 @@ Finished solve
 +------------------------------------------+-----------+------------+------------+
 
 
-RUN 0: solver=mb problem=lab_02 n_additional_refinements=2 n_procs=4 n_threads=1 simd=1 max_iters=1000 tol=0.001
-RUN 0: solver=mb problem=lab_02 n_additional_refinements=2 n_procs=4 n_threads=2 simd=0 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=lab_02 n_additional_refinements=2 n_ranks=4 n_threads=1 simd=1 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=lab_02 n_additional_refinements=2 n_ranks=4 n_threads=2 simd=0 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:912608] MCW rank 0 bound to socket 0[core 0[hwt 0-1]]: [BB/../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:912608] MCW rank 1 bound to socket 0[core 1[hwt 0-1]]: [../BB/../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:912608] MCW rank 2 bound to socket 0[core 2[hwt 0-1]]: [../../BB/../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
@@ -678,8 +678,8 @@ Finished solve
 +------------------------------------------+-----------+------------+------------+
 
 
-RUN 0: solver=mb problem=lab_02 n_additional_refinements=2 n_procs=4 n_threads=2 simd=1 max_iters=1000 tol=0.001
-RUN 0: solver=mb problem=lab_02 n_additional_refinements=2 n_procs=8 n_threads=1 simd=0 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=lab_02 n_additional_refinements=2 n_ranks=4 n_threads=2 simd=1 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=lab_02 n_additional_refinements=2 n_ranks=8 n_threads=1 simd=0 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:912632] MCW rank 0 bound to socket 0[core 0[hwt 0]]: [B./../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:912632] MCW rank 1 bound to socket 0[core 1[hwt 0]]: [../B./../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:912632] MCW rank 2 bound to socket 0[core 2[hwt 0]]: [../../B./../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
@@ -728,8 +728,8 @@ Finished solve
 +------------------------------------------+-----------+------------+------------+
 
 
-RUN 0: solver=mb problem=lab_02 n_additional_refinements=2 n_procs=8 n_threads=1 simd=1 max_iters=1000 tol=0.001
-RUN 0: solver=mb problem=lab_02 n_additional_refinements=2 n_procs=8 n_threads=2 simd=0 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=lab_02 n_additional_refinements=2 n_ranks=8 n_threads=1 simd=1 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=lab_02 n_additional_refinements=2 n_ranks=8 n_threads=2 simd=0 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:912664] MCW rank 0 bound to socket 0[core 0[hwt 0-1]]: [BB/../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:912664] MCW rank 1 bound to socket 0[core 1[hwt 0-1]]: [../BB/../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:912664] MCW rank 2 bound to socket 0[core 2[hwt 0-1]]: [../../BB/../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
@@ -778,8 +778,8 @@ Finished solve
 +------------------------------------------+-----------+------------+------------+
 
 
-RUN 0: solver=mb problem=lab_02 n_additional_refinements=2 n_procs=8 n_threads=2 simd=1 max_iters=1000 tol=0.001
-RUN 0: solver=mb problem=lab_03 n_additional_refinements=2 n_procs=1 n_threads=1 simd=0 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=lab_02 n_additional_refinements=2 n_ranks=8 n_threads=2 simd=1 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=lab_03 n_additional_refinements=2 n_ranks=1 n_threads=1 simd=0 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:912704] MCW rank 0 bound to socket 0[core 0[hwt 0]]: [B./../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 Running with PETSc on:
 1 MPI rank(s)
@@ -821,8 +821,8 @@ Finished solve
 +------------------------------------------+-----------+------------+------------+
 
 
-RUN 0: solver=mb problem=lab_03 n_additional_refinements=2 n_procs=1 n_threads=1 simd=1 max_iters=1000 tol=0.001
-RUN 0: solver=mb problem=lab_03 n_additional_refinements=2 n_procs=1 n_threads=2 simd=0 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=lab_03 n_additional_refinements=2 n_ranks=1 n_threads=1 simd=1 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=lab_03 n_additional_refinements=2 n_ranks=1 n_threads=2 simd=0 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:912715] MCW rank 0 bound to socket 0[core 0[hwt 0-1]]: [BB/../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 Running with PETSc on:
 1 MPI rank(s)
@@ -864,8 +864,8 @@ Finished solve
 +------------------------------------------+-----------+------------+------------+
 
 
-RUN 0: solver=mb problem=lab_03 n_additional_refinements=2 n_procs=1 n_threads=2 simd=1 max_iters=1000 tol=0.001
-RUN 0: solver=mb problem=lab_03 n_additional_refinements=2 n_procs=2 n_threads=1 simd=0 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=lab_03 n_additional_refinements=2 n_ranks=1 n_threads=2 simd=1 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=lab_03 n_additional_refinements=2 n_ranks=2 n_threads=1 simd=0 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:912727] MCW rank 0 bound to socket 0[core 0[hwt 0]]: [B./../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:912727] MCW rank 1 bound to socket 0[core 1[hwt 0]]: [../B./../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 Running with PETSc on:
@@ -908,8 +908,8 @@ Finished solve
 +------------------------------------------+-----------+------------+------------+
 
 
-RUN 0: solver=mb problem=lab_03 n_additional_refinements=2 n_procs=2 n_threads=1 simd=1 max_iters=1000 tol=0.001
-RUN 0: solver=mb problem=lab_03 n_additional_refinements=2 n_procs=2 n_threads=2 simd=0 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=lab_03 n_additional_refinements=2 n_ranks=2 n_threads=1 simd=1 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=lab_03 n_additional_refinements=2 n_ranks=2 n_threads=2 simd=0 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:912741] MCW rank 0 bound to socket 0[core 0[hwt 0-1]]: [BB/../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:912741] MCW rank 1 bound to socket 0[core 1[hwt 0-1]]: [../BB/../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 Running with PETSc on:
@@ -952,8 +952,8 @@ Finished solve
 +------------------------------------------+-----------+------------+------------+
 
 
-RUN 0: solver=mb problem=lab_03 n_additional_refinements=2 n_procs=2 n_threads=2 simd=1 max_iters=1000 tol=0.001
-RUN 0: solver=mb problem=lab_03 n_additional_refinements=2 n_procs=4 n_threads=1 simd=0 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=lab_03 n_additional_refinements=2 n_ranks=2 n_threads=2 simd=1 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=lab_03 n_additional_refinements=2 n_ranks=4 n_threads=1 simd=0 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:912758] MCW rank 0 bound to socket 0[core 0[hwt 0]]: [B./../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:912758] MCW rank 1 bound to socket 0[core 1[hwt 0]]: [../B./../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:912758] MCW rank 2 bound to socket 0[core 2[hwt 0]]: [../../B./../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
@@ -998,8 +998,8 @@ Finished solve
 +------------------------------------------+-----------+------------+------------+
 
 
-RUN 0: solver=mb problem=lab_03 n_additional_refinements=2 n_procs=4 n_threads=1 simd=1 max_iters=1000 tol=0.001
-RUN 0: solver=mb problem=lab_03 n_additional_refinements=2 n_procs=4 n_threads=2 simd=0 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=lab_03 n_additional_refinements=2 n_ranks=4 n_threads=1 simd=1 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=lab_03 n_additional_refinements=2 n_ranks=4 n_threads=2 simd=0 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:912778] MCW rank 0 bound to socket 0[core 0[hwt 0-1]]: [BB/../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:912778] MCW rank 1 bound to socket 0[core 1[hwt 0-1]]: [../BB/../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:912778] MCW rank 2 bound to socket 0[core 2[hwt 0-1]]: [../../BB/../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
@@ -1044,8 +1044,8 @@ Finished solve
 +------------------------------------------+-----------+------------+------------+
 
 
-RUN 0: solver=mb problem=lab_03 n_additional_refinements=2 n_procs=4 n_threads=2 simd=1 max_iters=1000 tol=0.001
-RUN 0: solver=mb problem=lab_03 n_additional_refinements=2 n_procs=8 n_threads=1 simd=0 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=lab_03 n_additional_refinements=2 n_ranks=4 n_threads=2 simd=1 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=lab_03 n_additional_refinements=2 n_ranks=8 n_threads=1 simd=0 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:912802] MCW rank 0 bound to socket 0[core 0[hwt 0]]: [B./../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:912802] MCW rank 1 bound to socket 0[core 1[hwt 0]]: [../B./../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:912802] MCW rank 2 bound to socket 0[core 2[hwt 0]]: [../../B./../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
@@ -1094,8 +1094,8 @@ Finished solve
 +------------------------------------------+-----------+------------+------------+
 
 
-RUN 0: solver=mb problem=lab_03 n_additional_refinements=2 n_procs=8 n_threads=1 simd=1 max_iters=1000 tol=0.001
-RUN 0: solver=mb problem=lab_03 n_additional_refinements=2 n_procs=8 n_threads=2 simd=0 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=lab_03 n_additional_refinements=2 n_ranks=8 n_threads=1 simd=1 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=lab_03 n_additional_refinements=2 n_ranks=8 n_threads=2 simd=0 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:912835] MCW rank 0 bound to socket 0[core 0[hwt 0-1]]: [BB/../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:912835] MCW rank 1 bound to socket 0[core 1[hwt 0-1]]: [../BB/../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:912835] MCW rank 2 bound to socket 0[core 2[hwt 0-1]]: [../../BB/../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
@@ -1144,8 +1144,8 @@ Finished solve
 +------------------------------------------+-----------+------------+------------+
 
 
-RUN 0: solver=mb problem=lab_03 n_additional_refinements=2 n_procs=8 n_threads=2 simd=1 max_iters=1000 tol=0.001
-RUN 0: solver=mb problem=parabolic n_additional_refinements=2 n_procs=1 n_threads=1 simd=0 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=lab_03 n_additional_refinements=2 n_ranks=8 n_threads=2 simd=1 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=parabolic n_additional_refinements=2 n_ranks=1 n_threads=1 simd=0 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:912875] MCW rank 0 bound to socket 0[core 0[hwt 0]]: [B./../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 Running with PETSc on:
 1 MPI rank(s)
@@ -1223,8 +1223,8 @@ TIMESTEP 10
 +------------------------------------------+-----------+------------+------------+
 
 
-RUN 0: solver=mb problem=parabolic n_additional_refinements=2 n_procs=1 n_threads=1 simd=1 max_iters=1000 tol=0.001
-RUN 0: solver=mb problem=parabolic n_additional_refinements=2 n_procs=1 n_threads=2 simd=0 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=parabolic n_additional_refinements=2 n_ranks=1 n_threads=1 simd=1 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=parabolic n_additional_refinements=2 n_ranks=1 n_threads=2 simd=0 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:912889] MCW rank 0 bound to socket 0[core 0[hwt 0-1]]: [BB/../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 Running with PETSc on:
 1 MPI rank(s)
@@ -1302,8 +1302,8 @@ TIMESTEP 10
 +------------------------------------------+-----------+------------+------------+
 
 
-RUN 0: solver=mb problem=parabolic n_additional_refinements=2 n_procs=1 n_threads=2 simd=1 max_iters=1000 tol=0.001
-RUN 0: solver=mb problem=parabolic n_additional_refinements=2 n_procs=2 n_threads=1 simd=0 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=parabolic n_additional_refinements=2 n_ranks=1 n_threads=2 simd=1 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=parabolic n_additional_refinements=2 n_ranks=2 n_threads=1 simd=0 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:912902] MCW rank 0 bound to socket 0[core 0[hwt 0]]: [B./../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:912902] MCW rank 1 bound to socket 0[core 1[hwt 0]]: [../B./../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 Running with PETSc on:
@@ -1382,8 +1382,8 @@ TIMESTEP 10
 +------------------------------------------+-----------+------------+------------+
 
 
-RUN 0: solver=mb problem=parabolic n_additional_refinements=2 n_procs=2 n_threads=1 simd=1 max_iters=1000 tol=0.001
-RUN 0: solver=mb problem=parabolic n_additional_refinements=2 n_procs=2 n_threads=2 simd=0 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=parabolic n_additional_refinements=2 n_ranks=2 n_threads=1 simd=1 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=parabolic n_additional_refinements=2 n_ranks=2 n_threads=2 simd=0 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:912916] MCW rank 0 bound to socket 0[core 0[hwt 0-1]]: [BB/../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:912916] MCW rank 1 bound to socket 0[core 1[hwt 0-1]]: [../BB/../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 Running with PETSc on:
@@ -1462,8 +1462,8 @@ TIMESTEP 10
 +------------------------------------------+-----------+------------+------------+
 
 
-RUN 0: solver=mb problem=parabolic n_additional_refinements=2 n_procs=2 n_threads=2 simd=1 max_iters=1000 tol=0.001
-RUN 0: solver=mb problem=parabolic n_additional_refinements=2 n_procs=4 n_threads=1 simd=0 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=parabolic n_additional_refinements=2 n_ranks=2 n_threads=2 simd=1 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=parabolic n_additional_refinements=2 n_ranks=4 n_threads=1 simd=0 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:912937] MCW rank 0 bound to socket 0[core 0[hwt 0]]: [B./../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:912937] MCW rank 1 bound to socket 0[core 1[hwt 0]]: [../B./../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:912937] MCW rank 2 bound to socket 0[core 2[hwt 0]]: [../../B./../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
@@ -1544,8 +1544,8 @@ TIMESTEP 10
 +------------------------------------------+-----------+------------+------------+
 
 
-RUN 0: solver=mb problem=parabolic n_additional_refinements=2 n_procs=4 n_threads=1 simd=1 max_iters=1000 tol=0.001
-RUN 0: solver=mb problem=parabolic n_additional_refinements=2 n_procs=4 n_threads=2 simd=0 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=parabolic n_additional_refinements=2 n_ranks=4 n_threads=1 simd=1 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=parabolic n_additional_refinements=2 n_ranks=4 n_threads=2 simd=0 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:912957] MCW rank 0 bound to socket 0[core 0[hwt 0-1]]: [BB/../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:912957] MCW rank 1 bound to socket 0[core 1[hwt 0-1]]: [../BB/../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:912957] MCW rank 2 bound to socket 0[core 2[hwt 0-1]]: [../../BB/../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
@@ -1626,8 +1626,8 @@ TIMESTEP 10
 +------------------------------------------+-----------+------------+------------+
 
 
-RUN 0: solver=mb problem=parabolic n_additional_refinements=2 n_procs=4 n_threads=2 simd=1 max_iters=1000 tol=0.001
-RUN 0: solver=mb problem=parabolic n_additional_refinements=2 n_procs=8 n_threads=1 simd=0 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=parabolic n_additional_refinements=2 n_ranks=4 n_threads=2 simd=1 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=parabolic n_additional_refinements=2 n_ranks=8 n_threads=1 simd=0 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:912982] MCW rank 0 bound to socket 0[core 0[hwt 0]]: [B./../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:912982] MCW rank 1 bound to socket 0[core 1[hwt 0]]: [../B./../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:912982] MCW rank 2 bound to socket 0[core 2[hwt 0]]: [../../B./../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
@@ -2051,8 +2051,8 @@ a non-zero exit code. Per user-direction, the job has been aborted.
 --------------------------------------------------------------------------
 mpirun noticed that process rank 4 with PID 0 on node cpu02 exited on signal 6 (Aborted).
 --------------------------------------------------------------------------
-RUN 0: solver=mb problem=parabolic n_additional_refinements=2 n_procs=8 n_threads=1 simd=1 max_iters=1000 tol=0.001
-RUN 0: solver=mb problem=parabolic n_additional_refinements=2 n_procs=8 n_threads=2 simd=0 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=parabolic n_additional_refinements=2 n_ranks=8 n_threads=1 simd=1 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=parabolic n_additional_refinements=2 n_ranks=8 n_threads=2 simd=0 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:913022] MCW rank 0 bound to socket 0[core 0[hwt 0-1]]: [BB/../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:913022] MCW rank 1 bound to socket 0[core 1[hwt 0-1]]: [../BB/../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:913022] MCW rank 2 bound to socket 0[core 2[hwt 0-1]]: [../../BB/../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
@@ -2476,8 +2476,8 @@ a non-zero exit code. Per user-direction, the job has been aborted.
 --------------------------------------------------------------------------
 mpirun noticed that process rank 3 with PID 0 on node cpu02 exited on signal 6 (Aborted).
 --------------------------------------------------------------------------
-RUN 0: solver=mb problem=parabolic n_additional_refinements=2 n_procs=8 n_threads=2 simd=1 max_iters=1000 tol=0.001
-RUN 0: solver=mb problem=transient n_additional_refinements=2 n_procs=1 n_threads=1 simd=0 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=parabolic n_additional_refinements=2 n_ranks=8 n_threads=2 simd=1 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=transient n_additional_refinements=2 n_ranks=1 n_threads=1 simd=0 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:913070] MCW rank 0 bound to socket 0[core 0[hwt 0]]: [B./../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 Running with PETSc on:
 1 MPI rank(s)
@@ -2528,8 +2528,8 @@ TIMESTEP 10
 TIMESTEP 11
    Finished assemble
 Discarded run 0: exceeded 90s
-RUN 0: solver=mb problem=transient n_additional_refinements=2 n_procs=1 n_threads=1 simd=1 max_iters=1000 tol=0.001
-RUN 0: solver=mb problem=transient n_additional_refinements=2 n_procs=1 n_threads=2 simd=0 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=transient n_additional_refinements=2 n_ranks=1 n_threads=1 simd=1 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=transient n_additional_refinements=2 n_ranks=1 n_threads=2 simd=0 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:913089] MCW rank 0 bound to socket 0[core 0[hwt 0-1]]: [BB/../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 Running with PETSc on:
 1 MPI rank(s)
@@ -2580,8 +2580,8 @@ TIMESTEP 10
 TIMESTEP 11
    Finished assemble
 Discarded run 0: exceeded 90s
-RUN 0: solver=mb problem=transient n_additional_refinements=2 n_procs=1 n_threads=2 simd=1 max_iters=1000 tol=0.001
-RUN 0: solver=mb problem=transient n_additional_refinements=2 n_procs=2 n_threads=1 simd=0 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=transient n_additional_refinements=2 n_ranks=1 n_threads=2 simd=1 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=transient n_additional_refinements=2 n_ranks=2 n_threads=1 simd=0 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:913110] MCW rank 0 bound to socket 0[core 0[hwt 0]]: [B./../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:913110] MCW rank 1 bound to socket 0[core 1[hwt 0]]: [../B./../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 Running with PETSc on:
@@ -2665,8 +2665,8 @@ TIMESTEP 18
 TIMESTEP 19
    Finished assemble
 Discarded run 0: exceeded 90s
-RUN 0: solver=mb problem=transient n_additional_refinements=2 n_procs=2 n_threads=1 simd=1 max_iters=1000 tol=0.001
-RUN 0: solver=mb problem=transient n_additional_refinements=2 n_procs=2 n_threads=2 simd=0 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=transient n_additional_refinements=2 n_ranks=2 n_threads=1 simd=1 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=transient n_additional_refinements=2 n_ranks=2 n_threads=2 simd=0 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:913155] MCW rank 0 bound to socket 0[core 0[hwt 0-1]]: [BB/../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:913155] MCW rank 1 bound to socket 0[core 1[hwt 0-1]]: [../BB/../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 Running with PETSc on:
@@ -2754,8 +2754,8 @@ TIMESTEP 19
 TIMESTEP 20
    Finished assemble
 Discarded run 0: exceeded 90s
-RUN 0: solver=mb problem=transient n_additional_refinements=2 n_procs=2 n_threads=2 simd=1 max_iters=1000 tol=0.001
-RUN 0: solver=mb problem=transient n_additional_refinements=2 n_procs=4 n_threads=1 simd=0 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=transient n_additional_refinements=2 n_ranks=2 n_threads=2 simd=1 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=transient n_additional_refinements=2 n_ranks=4 n_threads=1 simd=0 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:913181] MCW rank 0 bound to socket 0[core 0[hwt 0]]: [B./../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:913181] MCW rank 1 bound to socket 0[core 1[hwt 0]]: [../B./../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:913181] MCW rank 2 bound to socket 0[core 2[hwt 0]]: [../../B./../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
@@ -3071,8 +3071,8 @@ a non-zero exit code. Per user-direction, the job has been aborted.
 --------------------------------------------------------------------------
 mpirun noticed that process rank 1 with PID 0 on node cpu02 exited on signal 6 (Aborted).
 --------------------------------------------------------------------------
-RUN 0: solver=mb problem=transient n_additional_refinements=2 n_procs=4 n_threads=1 simd=1 max_iters=1000 tol=0.001
-RUN 0: solver=mb problem=transient n_additional_refinements=2 n_procs=4 n_threads=2 simd=0 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=transient n_additional_refinements=2 n_ranks=4 n_threads=1 simd=1 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=transient n_additional_refinements=2 n_ranks=4 n_threads=2 simd=0 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:913207] MCW rank 0 bound to socket 0[core 0[hwt 0-1]]: [BB/../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:913207] MCW rank 1 bound to socket 0[core 1[hwt 0-1]]: [../BB/../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:913207] MCW rank 2 bound to socket 0[core 2[hwt 0-1]]: [../../BB/../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
@@ -3222,8 +3222,8 @@ TIMESTEP 34
 TIMESTEP 35
    Finished assemble
 Discarded run 0: exceeded 90s
-RUN 0: solver=mb problem=transient n_additional_refinements=2 n_procs=4 n_threads=2 simd=1 max_iters=1000 tol=0.001
-RUN 0: solver=mb problem=transient n_additional_refinements=2 n_procs=8 n_threads=1 simd=0 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=transient n_additional_refinements=2 n_ranks=4 n_threads=2 simd=1 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=transient n_additional_refinements=2 n_ranks=8 n_threads=1 simd=0 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:913251] MCW rank 0 bound to socket 0[core 0[hwt 0]]: [B./../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:913251] MCW rank 1 bound to socket 0[core 1[hwt 0]]: [../B./../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:913251] MCW rank 2 bound to socket 0[core 2[hwt 0]]: [../../B./../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
@@ -3647,8 +3647,8 @@ a non-zero exit code. Per user-direction, the job has been aborted.
 --------------------------------------------------------------------------
 mpirun noticed that process rank 0 with PID 0 on node cpu02 exited on signal 6 (Aborted).
 --------------------------------------------------------------------------
-RUN 0: solver=mb problem=transient n_additional_refinements=2 n_procs=8 n_threads=1 simd=1 max_iters=1000 tol=0.001
-RUN 0: solver=mb problem=transient n_additional_refinements=2 n_procs=8 n_threads=2 simd=0 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=transient n_additional_refinements=2 n_ranks=8 n_threads=1 simd=1 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=transient n_additional_refinements=2 n_ranks=8 n_threads=2 simd=0 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:913291] MCW rank 0 bound to socket 0[core 0[hwt 0-1]]: [BB/../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:913291] MCW rank 1 bound to socket 0[core 1[hwt 0-1]]: [../BB/../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:913291] MCW rank 2 bound to socket 0[core 2[hwt 0-1]]: [../../BB/../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
@@ -4072,8 +4072,8 @@ a non-zero exit code. Per user-direction, the job has been aborted.
 --------------------------------------------------------------------------
 mpirun noticed that process rank 7 with PID 0 on node cpu02 exited on signal 6 (Aborted).
 --------------------------------------------------------------------------
-RUN 0: solver=mb problem=transient n_additional_refinements=2 n_procs=8 n_threads=2 simd=1 max_iters=1000 tol=0.001
-RUN 0: solver=mb problem=mms n_additional_refinements=2 n_procs=1 n_threads=1 simd=0 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=transient n_additional_refinements=2 n_ranks=8 n_threads=2 simd=1 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=mms n_additional_refinements=2 n_ranks=1 n_threads=1 simd=0 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:913339] MCW rank 0 bound to socket 0[core 0[hwt 0]]: [B./../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 Running with PETSc on:
 1 MPI rank(s)
@@ -4118,8 +4118,8 @@ Finished solve
    H1 Error vs Exact Solution: 1.92382
    L_infty Error vs Exact Solution: 7.22485e-06
 
-RUN 0: solver=mb problem=mms n_additional_refinements=2 n_procs=1 n_threads=1 simd=1 max_iters=1000 tol=0.001
-RUN 0: solver=mb problem=mms n_additional_refinements=2 n_procs=1 n_threads=2 simd=0 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=mms n_additional_refinements=2 n_ranks=1 n_threads=1 simd=1 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=mms n_additional_refinements=2 n_ranks=1 n_threads=2 simd=0 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:913350] MCW rank 0 bound to socket 0[core 0[hwt 0-1]]: [BB/../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 Running with PETSc on:
 1 MPI rank(s)
@@ -4164,8 +4164,8 @@ Finished solve
    H1 Error vs Exact Solution: 1.92382
    L_infty Error vs Exact Solution: 7.22485e-06
 
-RUN 0: solver=mb problem=mms n_additional_refinements=2 n_procs=1 n_threads=2 simd=1 max_iters=1000 tol=0.001
-RUN 0: solver=mb problem=mms n_additional_refinements=2 n_procs=2 n_threads=1 simd=0 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=mms n_additional_refinements=2 n_ranks=1 n_threads=2 simd=1 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=mms n_additional_refinements=2 n_ranks=2 n_threads=1 simd=0 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:913366] MCW rank 0 bound to socket 0[core 0[hwt 0]]: [B./../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:913366] MCW rank 1 bound to socket 0[core 1[hwt 0]]: [../B./../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 Running with PETSc on:
@@ -4211,8 +4211,8 @@ Finished solve
    H1 Error vs Exact Solution: 1.92382
    L_infty Error vs Exact Solution: 7.22491e-06
 
-RUN 0: solver=mb problem=mms n_additional_refinements=2 n_procs=2 n_threads=1 simd=1 max_iters=1000 tol=0.001
-RUN 0: solver=mb problem=mms n_additional_refinements=2 n_procs=2 n_threads=2 simd=0 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=mms n_additional_refinements=2 n_ranks=2 n_threads=1 simd=1 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=mms n_additional_refinements=2 n_ranks=2 n_threads=2 simd=0 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:913380] MCW rank 0 bound to socket 0[core 0[hwt 0-1]]: [BB/../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:913380] MCW rank 1 bound to socket 0[core 1[hwt 0-1]]: [../BB/../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 Running with PETSc on:
@@ -4258,8 +4258,8 @@ Finished solve
    H1 Error vs Exact Solution: 1.92382
    L_infty Error vs Exact Solution: 7.22491e-06
 
-RUN 0: solver=mb problem=mms n_additional_refinements=2 n_procs=2 n_threads=2 simd=1 max_iters=1000 tol=0.001
-RUN 0: solver=mb problem=mms n_additional_refinements=2 n_procs=4 n_threads=1 simd=0 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=mms n_additional_refinements=2 n_ranks=2 n_threads=2 simd=1 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=mms n_additional_refinements=2 n_ranks=4 n_threads=1 simd=0 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:913396] MCW rank 0 bound to socket 0[core 0[hwt 0]]: [B./../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:913396] MCW rank 1 bound to socket 0[core 1[hwt 0]]: [../B./../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:913396] MCW rank 2 bound to socket 0[core 2[hwt 0]]: [../../B./../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
@@ -4307,8 +4307,8 @@ Finished solve
    H1 Error vs Exact Solution: 1.92382
    L_infty Error vs Exact Solution: 7.22817e-06
 
-RUN 0: solver=mb problem=mms n_additional_refinements=2 n_procs=4 n_threads=1 simd=1 max_iters=1000 tol=0.001
-RUN 0: solver=mb problem=mms n_additional_refinements=2 n_procs=4 n_threads=2 simd=0 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=mms n_additional_refinements=2 n_ranks=4 n_threads=1 simd=1 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=mms n_additional_refinements=2 n_ranks=4 n_threads=2 simd=0 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:913416] MCW rank 0 bound to socket 0[core 0[hwt 0-1]]: [BB/../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:913416] MCW rank 1 bound to socket 0[core 1[hwt 0-1]]: [../BB/../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:913416] MCW rank 2 bound to socket 0[core 2[hwt 0-1]]: [../../BB/../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
@@ -4356,8 +4356,8 @@ Finished solve
    H1 Error vs Exact Solution: 1.92382
    L_infty Error vs Exact Solution: 7.22817e-06
 
-RUN 0: solver=mb problem=mms n_additional_refinements=2 n_procs=4 n_threads=2 simd=1 max_iters=1000 tol=0.001
-RUN 0: solver=mb problem=mms n_additional_refinements=2 n_procs=8 n_threads=1 simd=0 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=mms n_additional_refinements=2 n_ranks=4 n_threads=2 simd=1 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=mms n_additional_refinements=2 n_ranks=8 n_threads=1 simd=0 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:913440] MCW rank 0 bound to socket 0[core 0[hwt 0]]: [B./../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:913440] MCW rank 1 bound to socket 0[core 1[hwt 0]]: [../B./../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:913440] MCW rank 2 bound to socket 0[core 2[hwt 0]]: [../../B./../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
@@ -4409,8 +4409,8 @@ Finished solve
    H1 Error vs Exact Solution: 1.92382
    L_infty Error vs Exact Solution: 7.21701e-06
 
-RUN 0: solver=mb problem=mms n_additional_refinements=2 n_procs=8 n_threads=1 simd=1 max_iters=1000 tol=0.001
-RUN 0: solver=mb problem=mms n_additional_refinements=2 n_procs=8 n_threads=2 simd=0 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=mms n_additional_refinements=2 n_ranks=8 n_threads=1 simd=1 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=mms n_additional_refinements=2 n_ranks=8 n_threads=2 simd=0 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:913472] MCW rank 0 bound to socket 0[core 0[hwt 0-1]]: [BB/../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:913472] MCW rank 1 bound to socket 0[core 1[hwt 0-1]]: [../BB/../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:913472] MCW rank 2 bound to socket 0[core 2[hwt 0-1]]: [../../BB/../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
@@ -4462,10 +4462,10 @@ Finished solve
    H1 Error vs Exact Solution: 1.92382
    L_infty Error vs Exact Solution: 7.21701e-06
 
-RUN 0: solver=mb problem=mms n_additional_refinements=2 n_procs=8 n_threads=2 simd=1 max_iters=1000 tol=0.001
+RUN 0: solver=mb problem=mms n_additional_refinements=2 n_ranks=8 n_threads=2 simd=1 max_iters=1000 tol=0.001
 
 --- Solver: mf ---
-RUN 0: solver=mf problem=advanced n_additional_refinements=2 n_procs=1 n_threads=1 simd=0 max_iters=1000 tol=0.001
+RUN 0: solver=mf problem=advanced n_additional_refinements=2 n_ranks=1 n_threads=1 simd=0 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:913512] MCW rank 0 bound to socket 0[core 0[hwt 0]]: [B./../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 ===========================================
    Matrix-Free ADR Solver                  
@@ -4489,7 +4489,7 @@ Time solve (CPU/wall) 0.34885s/0.50185s
    Outputting results...
 Creating solution output (cpu/wall): 0.050712s/0.0571183s
 Writing solution output (cpu/wall): 0.066676s/0.0726383s
-RUN 0: solver=mf problem=advanced n_additional_refinements=2 n_procs=1 n_threads=1 simd=1 max_iters=1000 tol=0.001
+RUN 0: solver=mf problem=advanced n_additional_refinements=2 n_ranks=1 n_threads=1 simd=1 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:913523] MCW rank 0 bound to socket 0[core 0[hwt 0]]: [B./../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 ===========================================
    Matrix-Free ADR Solver                  
@@ -4513,7 +4513,7 @@ Time solve (CPU/wall) 0.316785s/0.317751s
    Outputting results...
 Creating solution output (cpu/wall): 0.046211s/0.0501275s
 Writing solution output (cpu/wall): 0.067186s/0.0722176s
-RUN 0: solver=mf problem=advanced n_additional_refinements=2 n_procs=1 n_threads=2 simd=0 max_iters=1000 tol=0.001
+RUN 0: solver=mf problem=advanced n_additional_refinements=2 n_ranks=1 n_threads=2 simd=0 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:913534] MCW rank 0 bound to socket 0[core 0[hwt 0-1]]: [BB/../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 ===========================================
    Matrix-Free ADR Solver                  
@@ -4537,7 +4537,7 @@ Time solve (CPU/wall) 0.343112s/0.308427s
    Outputting results...
 Creating solution output (cpu/wall): 0.082641s/0.0498376s
 Writing solution output (cpu/wall): 0.109238s/0.0634455s
-RUN 0: solver=mf problem=advanced n_additional_refinements=2 n_procs=1 n_threads=2 simd=1 max_iters=1000 tol=0.001
+RUN 0: solver=mf problem=advanced n_additional_refinements=2 n_ranks=1 n_threads=2 simd=1 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:913546] MCW rank 0 bound to socket 0[core 0[hwt 0-1]]: [BB/../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 ===========================================
    Matrix-Free ADR Solver                  
@@ -4561,7 +4561,7 @@ Time solve (CPU/wall) 0.359573s/0.322821s
    Outputting results...
 Creating solution output (cpu/wall): 0.081485s/0.0481828s
 Writing solution output (cpu/wall): 0.104358s/0.0633992s
-RUN 0: solver=mf problem=advanced n_additional_refinements=2 n_procs=2 n_threads=1 simd=0 max_iters=1000 tol=0.001
+RUN 0: solver=mf problem=advanced n_additional_refinements=2 n_ranks=2 n_threads=1 simd=0 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:913558] MCW rank 0 bound to socket 0[core 0[hwt 0]]: [B./../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:913558] MCW rank 1 bound to socket 0[core 1[hwt 0]]: [../B./../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 ===========================================
@@ -4587,7 +4587,7 @@ Time solve (CPU/wall) 0.157225s/0.158074s
    Outputting results...
 Creating solution output (cpu/wall): 0.027087s/0.0281017s
 Writing solution output (cpu/wall): 0.033873s/0.0358662s
-RUN 0: solver=mf problem=advanced n_additional_refinements=2 n_procs=2 n_threads=1 simd=1 max_iters=1000 tol=0.001
+RUN 0: solver=mf problem=advanced n_additional_refinements=2 n_ranks=2 n_threads=1 simd=1 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:913572] MCW rank 0 bound to socket 0[core 0[hwt 0]]: [B./../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:913572] MCW rank 1 bound to socket 0[core 1[hwt 0]]: [../B./../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 ===========================================
@@ -4613,7 +4613,7 @@ Time solve (CPU/wall) 0.165806s/0.165867s
    Outputting results...
 Creating solution output (cpu/wall): 0.026447s/0.0281916s
 Writing solution output (cpu/wall): 0.03382s/0.0358157s
-RUN 0: solver=mf problem=advanced n_additional_refinements=2 n_procs=2 n_threads=2 simd=0 max_iters=1000 tol=0.001
+RUN 0: solver=mf problem=advanced n_additional_refinements=2 n_ranks=2 n_threads=2 simd=0 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:913586] MCW rank 0 bound to socket 0[core 0[hwt 0-1]]: [BB/../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:913586] MCW rank 1 bound to socket 0[core 1[hwt 0-1]]: [../BB/../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 ===========================================
@@ -4639,7 +4639,7 @@ Time solve (CPU/wall) 0.182732s/0.165347s
    Outputting results...
 Creating solution output (cpu/wall): 0.045494s/0.0292155s
 Writing solution output (cpu/wall): 0.055516s/0.032963s
-RUN 0: solver=mf problem=advanced n_additional_refinements=2 n_procs=2 n_threads=2 simd=1 max_iters=1000 tol=0.001
+RUN 0: solver=mf problem=advanced n_additional_refinements=2 n_ranks=2 n_threads=2 simd=1 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:913602] MCW rank 0 bound to socket 0[core 0[hwt 0-1]]: [BB/../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:913602] MCW rank 1 bound to socket 0[core 1[hwt 0-1]]: [../BB/../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 ===========================================
@@ -4665,7 +4665,7 @@ Time solve (CPU/wall) 0.191493s/0.172023s
    Outputting results...
 Creating solution output (cpu/wall): 0.04012s/0.026723s
 Writing solution output (cpu/wall): 0.053505s/0.0324338s
-RUN 0: solver=mf problem=advanced n_additional_refinements=2 n_procs=4 n_threads=1 simd=0 max_iters=1000 tol=0.001
+RUN 0: solver=mf problem=advanced n_additional_refinements=2 n_ranks=4 n_threads=1 simd=0 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:913618] MCW rank 0 bound to socket 0[core 0[hwt 0]]: [B./../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:913618] MCW rank 1 bound to socket 0[core 1[hwt 0]]: [../B./../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:913618] MCW rank 2 bound to socket 0[core 2[hwt 0]]: [../../B./../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
@@ -4695,7 +4695,7 @@ Time solve (CPU/wall) 0.085586s/0.0869475s
    Outputting results...
 Creating solution output (cpu/wall): 0.015127s/0.0161598s
 Writing solution output (cpu/wall): 0.017424s/0.0193546s
-RUN 0: solver=mf problem=advanced n_additional_refinements=2 n_procs=4 n_threads=1 simd=1 max_iters=1000 tol=0.001
+RUN 0: solver=mf problem=advanced n_additional_refinements=2 n_ranks=4 n_threads=1 simd=1 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:913638] MCW rank 0 bound to socket 0[core 0[hwt 0]]: [B./../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:913638] MCW rank 1 bound to socket 0[core 1[hwt 0]]: [../B./../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:913638] MCW rank 2 bound to socket 0[core 2[hwt 0]]: [../../B./../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
@@ -4725,7 +4725,7 @@ Time solve (CPU/wall) 0.089325s/0.0893768s
    Outputting results...
 Creating solution output (cpu/wall): 0.015116s/0.0160153s
 Writing solution output (cpu/wall): 0.018708s/0.0197582s
-RUN 0: solver=mf problem=advanced n_additional_refinements=2 n_procs=4 n_threads=2 simd=0 max_iters=1000 tol=0.001
+RUN 0: solver=mf problem=advanced n_additional_refinements=2 n_ranks=4 n_threads=2 simd=0 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:913658] MCW rank 0 bound to socket 0[core 0[hwt 0-1]]: [BB/../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:913658] MCW rank 1 bound to socket 0[core 1[hwt 0-1]]: [../BB/../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:913658] MCW rank 2 bound to socket 0[core 2[hwt 0-1]]: [../../BB/../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
@@ -4755,7 +4755,7 @@ Time solve (CPU/wall) 0.107092s/0.0919165s
    Outputting results...
 Creating solution output (cpu/wall): 0.024319s/0.0161487s
 Writing solution output (cpu/wall): 0.030271s/0.01781s
-RUN 0: solver=mf problem=advanced n_additional_refinements=2 n_procs=4 n_threads=2 simd=1 max_iters=1000 tol=0.001
+RUN 0: solver=mf problem=advanced n_additional_refinements=2 n_ranks=4 n_threads=2 simd=1 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:913682] MCW rank 0 bound to socket 0[core 0[hwt 0-1]]: [BB/../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:913682] MCW rank 1 bound to socket 0[core 1[hwt 0-1]]: [../BB/../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:913682] MCW rank 2 bound to socket 0[core 2[hwt 0-1]]: [../../BB/../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
@@ -4785,7 +4785,7 @@ Time solve (CPU/wall) 0.110087s/0.0967876s
    Outputting results...
 Creating solution output (cpu/wall): 0.022501s/0.015829s
 Writing solution output (cpu/wall): 0.029351s/0.0177822s
-RUN 0: solver=mf problem=advanced n_additional_refinements=2 n_procs=8 n_threads=1 simd=0 max_iters=1000 tol=0.001
+RUN 0: solver=mf problem=advanced n_additional_refinements=2 n_ranks=8 n_threads=1 simd=0 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:913706] MCW rank 0 bound to socket 0[core 0[hwt 0]]: [B./../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:913706] MCW rank 1 bound to socket 0[core 1[hwt 0]]: [../B./../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:913706] MCW rank 2 bound to socket 0[core 2[hwt 0]]: [../../B./../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
@@ -4823,7 +4823,7 @@ Time solve (CPU/wall) 0.048854s/0.049855s
    Outputting results...
 Creating solution output (cpu/wall): 0.009378s/0.00938883s
 Writing solution output (cpu/wall): 0.009613s/0.0106231s
-RUN 0: solver=mf problem=advanced n_additional_refinements=2 n_procs=8 n_threads=1 simd=1 max_iters=1000 tol=0.001
+RUN 0: solver=mf problem=advanced n_additional_refinements=2 n_ranks=8 n_threads=1 simd=1 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:913739] MCW rank 0 bound to socket 0[core 0[hwt 0]]: [B./../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:913739] MCW rank 1 bound to socket 0[core 1[hwt 0]]: [../B./../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:913739] MCW rank 2 bound to socket 0[core 2[hwt 0]]: [../../B./../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
@@ -4861,7 +4861,7 @@ Time solve (CPU/wall) 0.049808s/0.0502201s
    Outputting results...
 Creating solution output (cpu/wall): 0.009354s/0.00936519s
 Writing solution output (cpu/wall): 0.009492s/0.0104619s
-RUN 0: solver=mf problem=advanced n_additional_refinements=2 n_procs=8 n_threads=2 simd=0 max_iters=1000 tol=0.001
+RUN 0: solver=mf problem=advanced n_additional_refinements=2 n_ranks=8 n_threads=2 simd=0 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:913771] MCW rank 0 bound to socket 0[core 0[hwt 0-1]]: [BB/../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:913771] MCW rank 1 bound to socket 0[core 1[hwt 0-1]]: [../BB/../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:913771] MCW rank 2 bound to socket 0[core 2[hwt 0-1]]: [../../BB/../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
@@ -4899,7 +4899,7 @@ Time solve (CPU/wall) 0.064408s/0.0550297s
    Outputting results...
 Creating solution output (cpu/wall): 0.013918s/0.00954629s
 Writing solution output (cpu/wall): 0.013287s/0.0099399s
-RUN 0: solver=mf problem=advanced n_additional_refinements=2 n_procs=8 n_threads=2 simd=1 max_iters=1000 tol=0.001
+RUN 0: solver=mf problem=advanced n_additional_refinements=2 n_ranks=8 n_threads=2 simd=1 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:913811] MCW rank 0 bound to socket 0[core 0[hwt 0-1]]: [BB/../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:913811] MCW rank 1 bound to socket 0[core 1[hwt 0-1]]: [../BB/../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:913811] MCW rank 2 bound to socket 0[core 2[hwt 0-1]]: [../../BB/../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
@@ -4937,7 +4937,7 @@ Time solve (CPU/wall) 0.064639s/0.0565209s
    Outputting results...
 Creating solution output (cpu/wall): 0.012655s/0.00933325s
 Writing solution output (cpu/wall): 0.016181s/0.00983096s
-RUN 0: solver=mf problem=lab_02 n_additional_refinements=2 n_procs=1 n_threads=1 simd=0 max_iters=1000 tol=0.001
+RUN 0: solver=mf problem=lab_02 n_additional_refinements=2 n_ranks=1 n_threads=1 simd=0 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:913851] MCW rank 0 bound to socket 0[core 0[hwt 0]]: [B./../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 ===========================================
    Matrix-Free ADR Solver                  
@@ -4961,7 +4961,7 @@ Time solve (CPU/wall) 0.009s/0.0121901s
    Outputting results...
 Creating solution output (cpu/wall): 0.001739s/0.00275051s
 Writing solution output (cpu/wall): 0.002091s/0.0021299s
-RUN 0: solver=mf problem=lab_02 n_additional_refinements=2 n_procs=1 n_threads=1 simd=1 max_iters=1000 tol=0.001
+RUN 0: solver=mf problem=lab_02 n_additional_refinements=2 n_ranks=1 n_threads=1 simd=1 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:913862] MCW rank 0 bound to socket 0[core 0[hwt 0]]: [B./../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 ===========================================
    Matrix-Free ADR Solver                  
@@ -4985,7 +4985,7 @@ Time solve (CPU/wall) 0.005102s/0.00514778s
    Outputting results...
 Creating solution output (cpu/wall): 0.000543s/0.00141866s
 Writing solution output (cpu/wall): 0.001431s/0.00155645s
-RUN 0: solver=mf problem=lab_02 n_additional_refinements=2 n_procs=1 n_threads=2 simd=0 max_iters=1000 tol=0.001
+RUN 0: solver=mf problem=lab_02 n_additional_refinements=2 n_ranks=1 n_threads=2 simd=0 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:913873] MCW rank 0 bound to socket 0[core 0[hwt 0-1]]: [BB/../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 ===========================================
    Matrix-Free ADR Solver                  
@@ -5009,7 +5009,7 @@ Time solve (CPU/wall) 0.00539s/0.00613163s
    Outputting results...
 Creating solution output (cpu/wall): 0.002348s/0.00158562s
 Writing solution output (cpu/wall): 0.002674s/0.00149152s
-RUN 0: solver=mf problem=lab_02 n_additional_refinements=2 n_procs=1 n_threads=2 simd=1 max_iters=1000 tol=0.001
+RUN 0: solver=mf problem=lab_02 n_additional_refinements=2 n_ranks=1 n_threads=2 simd=1 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:913885] MCW rank 0 bound to socket 0[core 0[hwt 0-1]]: [BB/../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 ===========================================
    Matrix-Free ADR Solver                  
@@ -5033,7 +5033,7 @@ Time solve (CPU/wall) 0.008448s/0.0060291s
    Outputting results...
 Creating solution output (cpu/wall): 0.001159s/0.00148372s
 Writing solution output (cpu/wall): 0.002412s/0.0014525s
-RUN 0: solver=mf problem=lab_02 n_additional_refinements=2 n_procs=2 n_threads=1 simd=0 max_iters=1000 tol=0.001
+RUN 0: solver=mf problem=lab_02 n_additional_refinements=2 n_ranks=2 n_threads=1 simd=0 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:913897] MCW rank 0 bound to socket 0[core 0[hwt 0]]: [B./../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:913897] MCW rank 1 bound to socket 0[core 1[hwt 0]]: [../B./../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 ===========================================
@@ -5059,7 +5059,7 @@ Time solve (CPU/wall) 0.004383s/0.00438838s
    Outputting results...
 Creating solution output (cpu/wall): 0.000214s/0.00118333s
 Writing solution output (cpu/wall): 0.001161s/0.00120295s
-RUN 0: solver=mf problem=lab_02 n_additional_refinements=2 n_procs=2 n_threads=1 simd=1 max_iters=1000 tol=0.001
+RUN 0: solver=mf problem=lab_02 n_additional_refinements=2 n_ranks=2 n_threads=1 simd=1 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:913911] MCW rank 0 bound to socket 0[core 0[hwt 0]]: [B./../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:913911] MCW rank 1 bound to socket 0[core 1[hwt 0]]: [../B./../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 ===========================================
@@ -5085,7 +5085,7 @@ Time solve (CPU/wall) 0.003487s/0.00443492s
    Outputting results...
 Creating solution output (cpu/wall): 0.001097s/0.00113693s
 Writing solution output (cpu/wall): 0.000409s/0.00122467s
-RUN 0: solver=mf problem=lab_02 n_additional_refinements=2 n_procs=2 n_threads=2 simd=0 max_iters=1000 tol=0.001
+RUN 0: solver=mf problem=lab_02 n_additional_refinements=2 n_ranks=2 n_threads=2 simd=0 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:913925] MCW rank 0 bound to socket 0[core 0[hwt 0-1]]: [BB/../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:913925] MCW rank 1 bound to socket 0[core 1[hwt 0-1]]: [../BB/../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 ===========================================
@@ -5111,7 +5111,7 @@ Time solve (CPU/wall) 0.004518s/0.004422s
    Outputting results...
 Creating solution output (cpu/wall): 4e-06s/0.00128349s
 Writing solution output (cpu/wall): 0.002067s/0.00122686s
-RUN 0: solver=mf problem=lab_02 n_additional_refinements=2 n_procs=2 n_threads=2 simd=1 max_iters=1000 tol=0.001
+RUN 0: solver=mf problem=lab_02 n_additional_refinements=2 n_ranks=2 n_threads=2 simd=1 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:913941] MCW rank 0 bound to socket 0[core 0[hwt 0-1]]: [BB/../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:913941] MCW rank 1 bound to socket 0[core 1[hwt 0-1]]: [../BB/../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 ===========================================
@@ -5137,7 +5137,7 @@ Time solve (CPU/wall) 0.004584s/0.00454269s
    Outputting results...
 Creating solution output (cpu/wall): 0.001535s/0.00121152s
 Writing solution output (cpu/wall): 0.001069s/0.00126964s
-RUN 0: solver=mf problem=lab_02 n_additional_refinements=2 n_procs=4 n_threads=1 simd=0 max_iters=1000 tol=0.001
+RUN 0: solver=mf problem=lab_02 n_additional_refinements=2 n_ranks=4 n_threads=1 simd=0 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:913957] MCW rank 0 bound to socket 0[core 0[hwt 0]]: [B./../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:913957] MCW rank 1 bound to socket 0[core 1[hwt 0]]: [../B./../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:913957] MCW rank 2 bound to socket 0[core 2[hwt 0]]: [../../B./../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
@@ -5167,7 +5167,7 @@ Time solve (CPU/wall) 0.004125s/0.00412832s
    Outputting results...
 Creating solution output (cpu/wall): 0.001063s/0.00119369s
 Writing solution output (cpu/wall): 0.00095s/0.000956326s
-RUN 0: solver=mf problem=lab_02 n_additional_refinements=2 n_procs=4 n_threads=1 simd=1 max_iters=1000 tol=0.001
+RUN 0: solver=mf problem=lab_02 n_additional_refinements=2 n_ranks=4 n_threads=1 simd=1 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:913977] MCW rank 0 bound to socket 0[core 0[hwt 0]]: [B./../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:913977] MCW rank 1 bound to socket 0[core 1[hwt 0]]: [../B./../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:913977] MCW rank 2 bound to socket 0[core 2[hwt 0]]: [../../B./../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
@@ -5197,7 +5197,7 @@ Time solve (CPU/wall) 0.004072s/0.00412609s
    Outputting results...
 Creating solution output (cpu/wall): 0.000206s/0.000975673s
 Writing solution output (cpu/wall): 0.000993s/0.00100547s
-RUN 0: solver=mf problem=lab_02 n_additional_refinements=2 n_procs=4 n_threads=2 simd=0 max_iters=1000 tol=0.001
+RUN 0: solver=mf problem=lab_02 n_additional_refinements=2 n_ranks=4 n_threads=2 simd=0 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:913997] MCW rank 0 bound to socket 0[core 0[hwt 0-1]]: [BB/../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:913997] MCW rank 1 bound to socket 0[core 1[hwt 0-1]]: [../BB/../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:913997] MCW rank 2 bound to socket 0[core 2[hwt 0-1]]: [../../BB/../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
@@ -5227,7 +5227,7 @@ Time solve (CPU/wall) 0.003148s/0.0040793s
    Outputting results...
 Creating solution output (cpu/wall): 0.001465s/0.0012562s
 Writing solution output (cpu/wall): 0.000879s/0.000931764s
-RUN 0: solver=mf problem=lab_02 n_additional_refinements=2 n_procs=4 n_threads=2 simd=1 max_iters=1000 tol=0.001
+RUN 0: solver=mf problem=lab_02 n_additional_refinements=2 n_ranks=4 n_threads=2 simd=1 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:914021] MCW rank 0 bound to socket 0[core 0[hwt 0-1]]: [BB/../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:914021] MCW rank 1 bound to socket 0[core 1[hwt 0-1]]: [../BB/../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:914021] MCW rank 2 bound to socket 0[core 2[hwt 0-1]]: [../../BB/../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
@@ -5257,7 +5257,7 @@ Time solve (CPU/wall) 0.004282s/0.00416368s
    Outputting results...
 Creating solution output (cpu/wall): 0.001401s/0.00104642s
 Writing solution output (cpu/wall): 0.000986s/0.000936054s
-RUN 0: solver=mf problem=lab_02 n_additional_refinements=2 n_procs=8 n_threads=1 simd=0 max_iters=1000 tol=0.001
+RUN 0: solver=mf problem=lab_02 n_additional_refinements=2 n_ranks=8 n_threads=1 simd=0 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:914045] MCW rank 0 bound to socket 0[core 0[hwt 0]]: [B./../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:914045] MCW rank 1 bound to socket 0[core 1[hwt 0]]: [../B./../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:914045] MCW rank 2 bound to socket 0[core 2[hwt 0]]: [../../B./../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
@@ -5295,7 +5295,7 @@ Time solve (CPU/wall) 0.003149s/0.00420212s
    Outputting results...
 Creating solution output (cpu/wall): 0.000999s/0.00101049s
 Writing solution output (cpu/wall): 0.000871s/0.000876993s
-RUN 0: solver=mf problem=lab_02 n_additional_refinements=2 n_procs=8 n_threads=1 simd=1 max_iters=1000 tol=0.001
+RUN 0: solver=mf problem=lab_02 n_additional_refinements=2 n_ranks=8 n_threads=1 simd=1 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:914077] MCW rank 0 bound to socket 0[core 0[hwt 0]]: [B./../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:914077] MCW rank 1 bound to socket 0[core 1[hwt 0]]: [../B./../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:914077] MCW rank 2 bound to socket 0[core 2[hwt 0]]: [../../B./../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
@@ -5333,7 +5333,7 @@ Time solve (CPU/wall) 0.003083s/0.00408763s
    Outputting results...
 Creating solution output (cpu/wall): 0.000906s/0.000912479s
 Writing solution output (cpu/wall): 0s/0.000873402s
-RUN 0: solver=mf problem=lab_02 n_additional_refinements=2 n_procs=8 n_threads=2 simd=0 max_iters=1000 tol=0.001
+RUN 0: solver=mf problem=lab_02 n_additional_refinements=2 n_ranks=8 n_threads=2 simd=0 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:914109] MCW rank 0 bound to socket 0[core 0[hwt 0-1]]: [BB/../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:914109] MCW rank 1 bound to socket 0[core 1[hwt 0-1]]: [../BB/../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:914109] MCW rank 2 bound to socket 0[core 2[hwt 0-1]]: [../../BB/../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
@@ -5371,7 +5371,7 @@ Time solve (CPU/wall) 0.004406s/0.00429888s
    Outputting results...
 Creating solution output (cpu/wall): 0.001319s/0.00105621s
 Writing solution output (cpu/wall): 0s/0.000829118s
-RUN 0: solver=mf problem=lab_02 n_additional_refinements=2 n_procs=8 n_threads=2 simd=1 max_iters=1000 tol=0.001
+RUN 0: solver=mf problem=lab_02 n_additional_refinements=2 n_ranks=8 n_threads=2 simd=1 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:914149] MCW rank 0 bound to socket 0[core 0[hwt 0-1]]: [BB/../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:914149] MCW rank 1 bound to socket 0[core 1[hwt 0-1]]: [../BB/../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:914149] MCW rank 2 bound to socket 0[core 2[hwt 0-1]]: [../../BB/../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
@@ -5409,7 +5409,7 @@ Time solve (CPU/wall) 0.004324s/0.00419879s
    Outputting results...
 Creating solution output (cpu/wall): 0.001185s/0.00093468s
 Writing solution output (cpu/wall): 0.000717s/0.00082267s
-RUN 0: solver=mf problem=lab_03 n_additional_refinements=2 n_procs=1 n_threads=1 simd=0 max_iters=1000 tol=0.001
+RUN 0: solver=mf problem=lab_03 n_additional_refinements=2 n_ranks=1 n_threads=1 simd=0 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:914189] MCW rank 0 bound to socket 0[core 0[hwt 0]]: [B./../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 ===========================================
    Matrix-Free ADR Solver                  
@@ -5433,7 +5433,7 @@ Time solve (CPU/wall) 0.385171s/0.385301s
    Outputting results...
 Creating solution output (cpu/wall): 0.047766s/0.0506355s
 Writing solution output (cpu/wall): 0.068773s/0.0727561s
-RUN 0: solver=mf problem=lab_03 n_additional_refinements=2 n_procs=1 n_threads=1 simd=1 max_iters=1000 tol=0.001
+RUN 0: solver=mf problem=lab_03 n_additional_refinements=2 n_ranks=1 n_threads=1 simd=1 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:914200] MCW rank 0 bound to socket 0[core 0[hwt 0]]: [B./../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 ===========================================
    Matrix-Free ADR Solver                  
@@ -5457,7 +5457,7 @@ Time solve (CPU/wall) 0.401937s/0.403934s
    Outputting results...
 Creating solution output (cpu/wall): 0.047657s/0.050631s
 Writing solution output (cpu/wall): 0.068787s/0.0727736s
-RUN 0: solver=mf problem=lab_03 n_additional_refinements=2 n_procs=1 n_threads=2 simd=0 max_iters=1000 tol=0.001
+RUN 0: solver=mf problem=lab_03 n_additional_refinements=2 n_ranks=1 n_threads=2 simd=0 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:914211] MCW rank 0 bound to socket 0[core 0[hwt 0-1]]: [BB/../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 ===========================================
    Matrix-Free ADR Solver                  
@@ -5481,7 +5481,7 @@ Time solve (CPU/wall) 0.434945s/0.391021s
    Outputting results...
 Creating solution output (cpu/wall): 0.080432s/0.0500345s
 Writing solution output (cpu/wall): 0.11422s/0.0647102s
-RUN 0: solver=mf problem=lab_03 n_additional_refinements=2 n_procs=1 n_threads=2 simd=1 max_iters=1000 tol=0.001
+RUN 0: solver=mf problem=lab_03 n_additional_refinements=2 n_ranks=1 n_threads=2 simd=1 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:914223] MCW rank 0 bound to socket 0[core 0[hwt 0-1]]: [BB/../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 ===========================================
    Matrix-Free ADR Solver                  
@@ -5505,7 +5505,7 @@ Time solve (CPU/wall) 0.4592s/0.414144s
    Outputting results...
 Creating solution output (cpu/wall): 0.080805s/0.048618s
 Writing solution output (cpu/wall): 0.117267s/0.0646163s
-RUN 0: solver=mf problem=lab_03 n_additional_refinements=2 n_procs=2 n_threads=1 simd=0 max_iters=1000 tol=0.001
+RUN 0: solver=mf problem=lab_03 n_additional_refinements=2 n_ranks=2 n_threads=1 simd=0 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:914235] MCW rank 0 bound to socket 0[core 0[hwt 0]]: [B./../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:914235] MCW rank 1 bound to socket 0[core 1[hwt 0]]: [../B./../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 ===========================================
@@ -5531,7 +5531,7 @@ Time solve (CPU/wall) 0.1995s/0.200849s
    Outputting results...
 Creating solution output (cpu/wall): 0.027966s/0.028975s
 Writing solution output (cpu/wall): 0.033513s/0.0374626s
-RUN 0: solver=mf problem=lab_03 n_additional_refinements=2 n_procs=2 n_threads=1 simd=1 max_iters=1000 tol=0.001
+RUN 0: solver=mf problem=lab_03 n_additional_refinements=2 n_ranks=2 n_threads=1 simd=1 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:914249] MCW rank 0 bound to socket 0[core 0[hwt 0]]: [B./../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:914249] MCW rank 1 bound to socket 0[core 1[hwt 0]]: [../B./../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 ===========================================
@@ -5557,7 +5557,7 @@ Time solve (CPU/wall) 0.208499s/0.209793s
    Outputting results...
 Creating solution output (cpu/wall): 0.027687s/0.0290302s
 Writing solution output (cpu/wall): 0.035443s/0.0373945s
-RUN 0: solver=mf problem=lab_03 n_additional_refinements=2 n_procs=2 n_threads=2 simd=0 max_iters=1000 tol=0.001
+RUN 0: solver=mf problem=lab_03 n_additional_refinements=2 n_ranks=2 n_threads=2 simd=0 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:914263] MCW rank 0 bound to socket 0[core 0[hwt 0-1]]: [BB/../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:914263] MCW rank 1 bound to socket 0[core 1[hwt 0-1]]: [../BB/../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 ===========================================
@@ -5583,7 +5583,7 @@ Time solve (CPU/wall) 0.234836s/0.206706s
    Outputting results...
 Creating solution output (cpu/wall): 0.043306s/0.0282663s
 Writing solution output (cpu/wall): 0.058163s/0.0335259s
-RUN 0: solver=mf problem=lab_03 n_additional_refinements=2 n_procs=2 n_threads=2 simd=1 max_iters=1000 tol=0.001
+RUN 0: solver=mf problem=lab_03 n_additional_refinements=2 n_ranks=2 n_threads=2 simd=1 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:914279] MCW rank 0 bound to socket 0[core 0[hwt 0-1]]: [BB/../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:914279] MCW rank 1 bound to socket 0[core 1[hwt 0-1]]: [../BB/../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 ===========================================
@@ -5609,7 +5609,7 @@ Time solve (CPU/wall) 0.247203s/0.222488s
    Outputting results...
 Creating solution output (cpu/wall): 0.044423s/0.0278005s
 Writing solution output (cpu/wall): 0.061655s/0.0336318s
-RUN 0: solver=mf problem=lab_03 n_additional_refinements=2 n_procs=4 n_threads=1 simd=0 max_iters=1000 tol=0.001
+RUN 0: solver=mf problem=lab_03 n_additional_refinements=2 n_ranks=4 n_threads=1 simd=0 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:914295] MCW rank 0 bound to socket 0[core 0[hwt 0]]: [B./../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:914295] MCW rank 1 bound to socket 0[core 1[hwt 0]]: [../B./../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:914295] MCW rank 2 bound to socket 0[core 2[hwt 0]]: [../../B./../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
@@ -5639,7 +5639,7 @@ Time solve (CPU/wall) 0.107428s/0.109865s
    Outputting results...
 Creating solution output (cpu/wall): 0.016226s/0.0162366s
 Writing solution output (cpu/wall): 0.019426s/0.0194371s
-RUN 0: solver=mf problem=lab_03 n_additional_refinements=2 n_procs=4 n_threads=1 simd=1 max_iters=1000 tol=0.001
+RUN 0: solver=mf problem=lab_03 n_additional_refinements=2 n_ranks=4 n_threads=1 simd=1 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:914315] MCW rank 0 bound to socket 0[core 0[hwt 0]]: [B./../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:914315] MCW rank 1 bound to socket 0[core 1[hwt 0]]: [../B./../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:914315] MCW rank 2 bound to socket 0[core 2[hwt 0]]: [../../B./../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
@@ -5669,7 +5669,7 @@ Time solve (CPU/wall) 0.110528s/0.112746s
    Outputting results...
 Creating solution output (cpu/wall): 0.015314s/0.0163557s
 Writing solution output (cpu/wall): 0.018916s/0.019904s
-RUN 0: solver=mf problem=lab_03 n_additional_refinements=2 n_procs=4 n_threads=2 simd=0 max_iters=1000 tol=0.001
+RUN 0: solver=mf problem=lab_03 n_additional_refinements=2 n_ranks=4 n_threads=2 simd=0 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:914335] MCW rank 0 bound to socket 0[core 0[hwt 0-1]]: [BB/../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:914335] MCW rank 1 bound to socket 0[core 1[hwt 0-1]]: [../BB/../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:914335] MCW rank 2 bound to socket 0[core 2[hwt 0-1]]: [../../BB/../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
@@ -5699,7 +5699,7 @@ Time solve (CPU/wall) 0.133111s/0.117546s
    Outputting results...
 Creating solution output (cpu/wall): 0.025405s/0.0161977s
 Writing solution output (cpu/wall): 0.030181s/0.0180385s
-RUN 0: solver=mf problem=lab_03 n_additional_refinements=2 n_procs=4 n_threads=2 simd=1 max_iters=1000 tol=0.001
+RUN 0: solver=mf problem=lab_03 n_additional_refinements=2 n_ranks=4 n_threads=2 simd=1 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:914359] MCW rank 0 bound to socket 0[core 0[hwt 0-1]]: [BB/../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:914359] MCW rank 1 bound to socket 0[core 1[hwt 0-1]]: [../BB/../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:914359] MCW rank 2 bound to socket 0[core 2[hwt 0-1]]: [../../BB/../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
@@ -5729,7 +5729,7 @@ Time solve (CPU/wall) 0.132719s/0.121438s
    Outputting results...
 Creating solution output (cpu/wall): 0.023745s/0.0158246s
 Writing solution output (cpu/wall): 0.03314s/0.0181232s
-RUN 0: solver=mf problem=lab_03 n_additional_refinements=2 n_procs=8 n_threads=1 simd=0 max_iters=1000 tol=0.001
+RUN 0: solver=mf problem=lab_03 n_additional_refinements=2 n_ranks=8 n_threads=1 simd=0 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:914383] MCW rank 0 bound to socket 0[core 0[hwt 0]]: [B./../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:914383] MCW rank 1 bound to socket 0[core 1[hwt 0]]: [../B./../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:914383] MCW rank 2 bound to socket 0[core 2[hwt 0]]: [../../B./../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
@@ -5767,7 +5767,7 @@ Time solve (CPU/wall) 0.062925s/0.0639727s
    Outputting results...
 Creating solution output (cpu/wall): 0.008728s/0.00968961s
 Writing solution output (cpu/wall): 0.009624s/0.0105674s
-RUN 0: solver=mf problem=lab_03 n_additional_refinements=2 n_procs=8 n_threads=1 simd=1 max_iters=1000 tol=0.001
+RUN 0: solver=mf problem=lab_03 n_additional_refinements=2 n_ranks=8 n_threads=1 simd=1 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:914415] MCW rank 0 bound to socket 0[core 0[hwt 0]]: [B./../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:914415] MCW rank 1 bound to socket 0[core 1[hwt 0]]: [../B./../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:914415] MCW rank 2 bound to socket 0[core 2[hwt 0]]: [../../B./../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
@@ -5805,7 +5805,7 @@ Time solve (CPU/wall) 0.061852s/0.0621933s
    Outputting results...
 Creating solution output (cpu/wall): 0.009283s/0.00967794s
 Writing solution output (cpu/wall): 0.009848s/0.0108331s
-RUN 0: solver=mf problem=lab_03 n_additional_refinements=2 n_procs=8 n_threads=2 simd=0 max_iters=1000 tol=0.001
+RUN 0: solver=mf problem=lab_03 n_additional_refinements=2 n_ranks=8 n_threads=2 simd=0 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:914447] MCW rank 0 bound to socket 0[core 0[hwt 0-1]]: [BB/../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:914447] MCW rank 1 bound to socket 0[core 1[hwt 0-1]]: [../BB/../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:914447] MCW rank 2 bound to socket 0[core 2[hwt 0-1]]: [../../BB/../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
@@ -5843,7 +5843,7 @@ Time solve (CPU/wall) 0.081243s/0.0692191s
    Outputting results...
 Creating solution output (cpu/wall): 0.013004s/0.0096194s
 Writing solution output (cpu/wall): 0.016794s/0.0100483s
-RUN 0: solver=mf problem=lab_03 n_additional_refinements=2 n_procs=8 n_threads=2 simd=1 max_iters=1000 tol=0.001
+RUN 0: solver=mf problem=lab_03 n_additional_refinements=2 n_ranks=8 n_threads=2 simd=1 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:914487] MCW rank 0 bound to socket 0[core 0[hwt 0-1]]: [BB/../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:914487] MCW rank 1 bound to socket 0[core 1[hwt 0-1]]: [../BB/../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:914487] MCW rank 2 bound to socket 0[core 2[hwt 0-1]]: [../../BB/../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
@@ -5881,7 +5881,7 @@ Time solve (CPU/wall) 0.082921s/0.070654s
    Outputting results...
 Creating solution output (cpu/wall): 0.014562s/0.00939696s
 Writing solution output (cpu/wall): 0.016665s/0.00999887s
-RUN 0: solver=mf problem=parabolic n_additional_refinements=2 n_procs=1 n_threads=1 simd=0 max_iters=1000 tol=0.001
+RUN 0: solver=mf problem=parabolic n_additional_refinements=2 n_ranks=1 n_threads=1 simd=0 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:914527] MCW rank 0 bound to socket 0[core 0[hwt 0]]: [B./../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 ===========================================
    Matrix-Free ADR Solver                  
@@ -6019,7 +6019,7 @@ Time solve (CPU/wall) 0.360917s/0.362931s
 Creating solution output (cpu/wall): 0.048414s/0.0524205s
 Writing solution output (cpu/wall): 0.067536s/0.0715686s
 ===========================================
-RUN 0: solver=mf problem=parabolic n_additional_refinements=2 n_procs=1 n_threads=1 simd=1 max_iters=1000 tol=0.001
+RUN 0: solver=mf problem=parabolic n_additional_refinements=2 n_ranks=1 n_threads=1 simd=1 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:914538] MCW rank 0 bound to socket 0[core 0[hwt 0]]: [B./../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 ===========================================
    Matrix-Free ADR Solver                  
@@ -6157,7 +6157,7 @@ Time solve (CPU/wall) 0.379178s/0.384318s
 Creating solution output (cpu/wall): 0.047582s/0.0516139s
 Writing solution output (cpu/wall): 0.067789s/0.0717933s
 ===========================================
-RUN 0: solver=mf problem=parabolic n_additional_refinements=2 n_procs=1 n_threads=2 simd=0 max_iters=1000 tol=0.001
+RUN 0: solver=mf problem=parabolic n_additional_refinements=2 n_ranks=1 n_threads=2 simd=0 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:914550] MCW rank 0 bound to socket 0[core 0[hwt 0-1]]: [BB/../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 ===========================================
    Matrix-Free ADR Solver                  
@@ -6295,7 +6295,7 @@ Time solve (CPU/wall) 0.404195s/0.364851s
 Creating solution output (cpu/wall): 0.081764s/0.049093s
 Writing solution output (cpu/wall): 0.112566s/0.0588936s
 ===========================================
-RUN 0: solver=mf problem=parabolic n_additional_refinements=2 n_procs=1 n_threads=2 simd=1 max_iters=1000 tol=0.001
+RUN 0: solver=mf problem=parabolic n_additional_refinements=2 n_ranks=1 n_threads=2 simd=1 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:914562] MCW rank 0 bound to socket 0[core 0[hwt 0-1]]: [BB/../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 ===========================================
    Matrix-Free ADR Solver                  
@@ -6433,7 +6433,7 @@ Time solve (CPU/wall) 0.432674s/0.388161s
 Creating solution output (cpu/wall): 0.07795s/0.0477003s
 Writing solution output (cpu/wall): 0.112463s/0.0588121s
 ===========================================
-RUN 0: solver=mf problem=parabolic n_additional_refinements=2 n_procs=2 n_threads=1 simd=0 max_iters=1000 tol=0.001
+RUN 0: solver=mf problem=parabolic n_additional_refinements=2 n_ranks=2 n_threads=1 simd=0 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:914575] MCW rank 0 bound to socket 0[core 0[hwt 0]]: [B./../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:914575] MCW rank 1 bound to socket 0[core 1[hwt 0]]: [../B./../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 ===========================================
@@ -6583,7 +6583,7 @@ Time solve (CPU/wall) 0.188125s/0.188243s
 Creating solution output (cpu/wall): 0.024772s/0.0288087s
 Writing solution output (cpu/wall): 0.033164s/0.0351364s
 ===========================================
-RUN 0: solver=mf problem=parabolic n_additional_refinements=2 n_procs=2 n_threads=1 simd=1 max_iters=1000 tol=0.001
+RUN 0: solver=mf problem=parabolic n_additional_refinements=2 n_ranks=2 n_threads=1 simd=1 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:914589] MCW rank 0 bound to socket 0[core 0[hwt 0]]: [B./../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:914589] MCW rank 1 bound to socket 0[core 1[hwt 0]]: [../B./../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 ===========================================
@@ -6733,7 +6733,7 @@ Time solve (CPU/wall) 0.196979s/0.196989s
 Creating solution output (cpu/wall): 0.025285s/0.0283048s
 Writing solution output (cpu/wall): 0.031869s/0.0348767s
 ===========================================
-RUN 0: solver=mf problem=parabolic n_additional_refinements=2 n_procs=2 n_threads=2 simd=0 max_iters=1000 tol=0.001
+RUN 0: solver=mf problem=parabolic n_additional_refinements=2 n_ranks=2 n_threads=2 simd=0 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:914603] MCW rank 0 bound to socket 0[core 0[hwt 0-1]]: [BB/../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:914603] MCW rank 1 bound to socket 0[core 1[hwt 0-1]]: [../BB/../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 ===========================================
@@ -6883,7 +6883,7 @@ Time solve (CPU/wall) 0.22422s/0.195848s
 Creating solution output (cpu/wall): 0.044525s/0.0278304s
 Writing solution output (cpu/wall): 0.058683s/0.0303414s
 ===========================================
-RUN 0: solver=mf problem=parabolic n_additional_refinements=2 n_procs=2 n_threads=2 simd=1 max_iters=1000 tol=0.001
+RUN 0: solver=mf problem=parabolic n_additional_refinements=2 n_ranks=2 n_threads=2 simd=1 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:914619] MCW rank 0 bound to socket 0[core 0[hwt 0-1]]: [BB/../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:914619] MCW rank 1 bound to socket 0[core 1[hwt 0-1]]: [../BB/../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 ===========================================
@@ -7033,7 +7033,7 @@ Time solve (CPU/wall) 0.231148s/0.208369s
 Creating solution output (cpu/wall): 0.041954s/0.026174s
 Writing solution output (cpu/wall): 0.058144s/0.0300933s
 ===========================================
-RUN 0: solver=mf problem=parabolic n_additional_refinements=2 n_procs=4 n_threads=1 simd=0 max_iters=1000 tol=0.001
+RUN 0: solver=mf problem=parabolic n_additional_refinements=2 n_ranks=4 n_threads=1 simd=0 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:914635] MCW rank 0 bound to socket 0[core 0[hwt 0]]: [B./../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:914635] MCW rank 1 bound to socket 0[core 1[hwt 0]]: [../B./../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:914635] MCW rank 2 bound to socket 0[core 2[hwt 0]]: [../../B./../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
@@ -7207,7 +7207,7 @@ Time solve (CPU/wall) 0.103061s/0.103159s
 Creating solution output (cpu/wall): 0.015333s/0.0153448s
 Writing solution output (cpu/wall): 0.018377s/0.0193861s
 ===========================================
-RUN 0: solver=mf problem=parabolic n_additional_refinements=2 n_procs=4 n_threads=1 simd=1 max_iters=1000 tol=0.001
+RUN 0: solver=mf problem=parabolic n_additional_refinements=2 n_ranks=4 n_threads=1 simd=1 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:914655] MCW rank 0 bound to socket 0[core 0[hwt 0]]: [B./../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:914655] MCW rank 1 bound to socket 0[core 1[hwt 0]]: [../B./../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:914655] MCW rank 2 bound to socket 0[core 2[hwt 0]]: [../../B./../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
@@ -7381,7 +7381,7 @@ Time solve (CPU/wall) 0.107559s/0.107593s
 Creating solution output (cpu/wall): 0.01524s/0.0162267s
 Writing solution output (cpu/wall): 0.01848s/0.0195129s
 ===========================================
-RUN 0: solver=mf problem=parabolic n_additional_refinements=2 n_procs=4 n_threads=2 simd=0 max_iters=1000 tol=0.001
+RUN 0: solver=mf problem=parabolic n_additional_refinements=2 n_ranks=4 n_threads=2 simd=0 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:914675] MCW rank 0 bound to socket 0[core 0[hwt 0-1]]: [BB/../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:914675] MCW rank 1 bound to socket 0[core 1[hwt 0-1]]: [../BB/../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:914675] MCW rank 2 bound to socket 0[core 2[hwt 0-1]]: [../../BB/../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
@@ -7555,7 +7555,7 @@ Time solve (CPU/wall) 0.126248s/0.110053s
 Creating solution output (cpu/wall): 0.023276s/0.0153985s
 Writing solution output (cpu/wall): 0.030367s/0.0162294s
 ===========================================
-RUN 0: solver=mf problem=parabolic n_additional_refinements=2 n_procs=4 n_threads=2 simd=1 max_iters=1000 tol=0.001
+RUN 0: solver=mf problem=parabolic n_additional_refinements=2 n_ranks=4 n_threads=2 simd=1 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:914699] MCW rank 0 bound to socket 0[core 0[hwt 0-1]]: [BB/../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:914699] MCW rank 1 bound to socket 0[core 1[hwt 0-1]]: [../BB/../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:914699] MCW rank 2 bound to socket 0[core 2[hwt 0-1]]: [../../BB/../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
@@ -7729,7 +7729,7 @@ Time solve (CPU/wall) 0.132826s/0.116439s
 Creating solution output (cpu/wall): 0.024052s/0.0146949s
 Writing solution output (cpu/wall): 0.029558s/0.0162725s
 ===========================================
-RUN 0: solver=mf problem=parabolic n_additional_refinements=2 n_procs=8 n_threads=1 simd=0 max_iters=1000 tol=0.001
+RUN 0: solver=mf problem=parabolic n_additional_refinements=2 n_ranks=8 n_threads=1 simd=0 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:914723] MCW rank 0 bound to socket 0[core 0[hwt 0]]: [B./../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:914723] MCW rank 1 bound to socket 0[core 1[hwt 0]]: [../B./../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:914723] MCW rank 2 bound to socket 0[core 2[hwt 0]]: [../../B./../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
@@ -7951,7 +7951,7 @@ Time solve (CPU/wall) 0.057735s/0.0597261s
 Creating solution output (cpu/wall): 0.008876s/0.00888821s
 Writing solution output (cpu/wall): 0.01037s/0.0103906s
 ===========================================
-RUN 0: solver=mf problem=parabolic n_additional_refinements=2 n_procs=8 n_threads=1 simd=1 max_iters=1000 tol=0.001
+RUN 0: solver=mf problem=parabolic n_additional_refinements=2 n_ranks=8 n_threads=1 simd=1 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:914755] MCW rank 0 bound to socket 0[core 0[hwt 0]]: [B./../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:914755] MCW rank 1 bound to socket 0[core 1[hwt 0]]: [../B./../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:914755] MCW rank 2 bound to socket 0[core 2[hwt 0]]: [../../B./../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
@@ -8173,7 +8173,7 @@ Time solve (CPU/wall) 0.059428s/0.0594354s
 Creating solution output (cpu/wall): 0.007913s/0.00892551s
 Writing solution output (cpu/wall): 0.010291s/0.010302s
 ===========================================
-RUN 0: solver=mf problem=parabolic n_additional_refinements=2 n_procs=8 n_threads=2 simd=0 max_iters=1000 tol=0.001
+RUN 0: solver=mf problem=parabolic n_additional_refinements=2 n_ranks=8 n_threads=2 simd=0 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:914787] MCW rank 0 bound to socket 0[core 0[hwt 0-1]]: [BB/../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:914787] MCW rank 1 bound to socket 0[core 1[hwt 0-1]]: [../BB/../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:914787] MCW rank 2 bound to socket 0[core 2[hwt 0-1]]: [../../BB/../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
@@ -8395,7 +8395,7 @@ Time solve (CPU/wall) 0.078255s/0.0660289s
 Creating solution output (cpu/wall): 0.014192s/0.00889711s
 Writing solution output (cpu/wall): 0.016361s/0.00902596s
 ===========================================
-RUN 0: solver=mf problem=parabolic n_additional_refinements=2 n_procs=8 n_threads=2 simd=1 max_iters=1000 tol=0.001
+RUN 0: solver=mf problem=parabolic n_additional_refinements=2 n_ranks=8 n_threads=2 simd=1 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:914827] MCW rank 0 bound to socket 0[core 0[hwt 0-1]]: [BB/../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:914827] MCW rank 1 bound to socket 0[core 1[hwt 0-1]]: [../BB/../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:914827] MCW rank 2 bound to socket 0[core 2[hwt 0-1]]: [../../BB/../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
@@ -8617,7 +8617,7 @@ Time solve (CPU/wall) 0.078476s/0.0667626s
 Creating solution output (cpu/wall): 0.01279s/0.0087974s
 Writing solution output (cpu/wall): 0.017247s/0.0089506s
 ===========================================
-RUN 0: solver=mf problem=transient n_additional_refinements=2 n_procs=1 n_threads=1 simd=0 max_iters=1000 tol=0.001
+RUN 0: solver=mf problem=transient n_additional_refinements=2 n_ranks=1 n_threads=1 simd=0 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:914867] MCW rank 0 bound to socket 0[core 0[hwt 0]]: [B./../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 ===========================================
    Matrix-Free ADR Solver                  
@@ -9734,7 +9734,7 @@ Time solve (CPU/wall) 0.370355s/0.370429s
 Creating solution output (cpu/wall): 0.048856s/0.0523508s
 Writing solution output (cpu/wall): 0.069243s/0.0732586s
 ===========================================
-RUN 0: solver=mf problem=transient n_additional_refinements=2 n_procs=1 n_threads=1 simd=1 max_iters=1000 tol=0.001
+RUN 0: solver=mf problem=transient n_additional_refinements=2 n_ranks=1 n_threads=1 simd=1 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:914880] MCW rank 0 bound to socket 0[core 0[hwt 0]]: [B./../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 ===========================================
    Matrix-Free ADR Solver                  
@@ -10816,7 +10816,7 @@ Solved in 3 iterations.
 Time solve (CPU/wall) 0.392902s/0.393093s
    Outputting results...
 Discarded run 0: exceeded 90s
-RUN 0: solver=mf problem=transient n_additional_refinements=2 n_procs=1 n_threads=2 simd=0 max_iters=1000 tol=0.001
+RUN 0: solver=mf problem=transient n_additional_refinements=2 n_ranks=1 n_threads=2 simd=0 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:914905] MCW rank 0 bound to socket 0[core 0[hwt 0-1]]: [BB/../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 ===========================================
    Matrix-Free ADR Solver                  
@@ -11933,7 +11933,7 @@ Time solve (CPU/wall) 0.416376s/0.371462s
 Creating solution output (cpu/wall): 0.079689s/0.0478323s
 Writing solution output (cpu/wall): 0.119375s/0.0612277s
 ===========================================
-RUN 0: solver=mf problem=transient n_additional_refinements=2 n_procs=1 n_threads=2 simd=1 max_iters=1000 tol=0.001
+RUN 0: solver=mf problem=transient n_additional_refinements=2 n_ranks=1 n_threads=2 simd=1 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:914921] MCW rank 0 bound to socket 0[core 0[hwt 0-1]]: [BB/../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 ===========================================
    Matrix-Free ADR Solver                  
@@ -13023,7 +13023,7 @@ Boundary face batches: 3072
 Assemble right hand side   (CPU/wall) 0.426945s/0.412475s
    Solving...
 Discarded run 0: exceeded 90s
-RUN 0: solver=mf problem=transient n_additional_refinements=2 n_procs=2 n_threads=1 simd=0 max_iters=1000 tol=0.001
+RUN 0: solver=mf problem=transient n_additional_refinements=2 n_ranks=2 n_threads=1 simd=0 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:914941] MCW rank 0 bound to socket 0[core 0[hwt 0]]: [B./../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:914941] MCW rank 1 bound to socket 0[core 1[hwt 0]]: [../B./../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 ===========================================
@@ -14241,7 +14241,7 @@ Time solve (CPU/wall) 0.193298s/0.193353s
 Creating solution output (cpu/wall): 0.02669s/0.0267011s
 Writing solution output (cpu/wall): 0.034774s/0.0358312s
 ===========================================
-RUN 0: solver=mf problem=transient n_additional_refinements=2 n_procs=2 n_threads=1 simd=1 max_iters=1000 tol=0.001
+RUN 0: solver=mf problem=transient n_additional_refinements=2 n_ranks=2 n_threads=1 simd=1 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:914956] MCW rank 0 bound to socket 0[core 0[hwt 0]]: [B./../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:914956] MCW rank 1 bound to socket 0[core 1[hwt 0]]: [../B./../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 ===========================================
@@ -15459,7 +15459,7 @@ Time solve (CPU/wall) 0.201866s/0.202975s
 Creating solution output (cpu/wall): 0.026334s/0.0263474s
 Writing solution output (cpu/wall): 0.034762s/0.0357704s
 ===========================================
-RUN 0: solver=mf problem=transient n_additional_refinements=2 n_procs=2 n_threads=2 simd=0 max_iters=1000 tol=0.001
+RUN 0: solver=mf problem=transient n_additional_refinements=2 n_ranks=2 n_threads=2 simd=0 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:914974] MCW rank 0 bound to socket 0[core 0[hwt 0-1]]: [BB/../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:914974] MCW rank 1 bound to socket 0[core 1[hwt 0-1]]: [../BB/../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 ===========================================
@@ -16677,7 +16677,7 @@ Time solve (CPU/wall) 0.223834s/0.20048s
 Creating solution output (cpu/wall): 0.044548s/0.0258203s
 Writing solution output (cpu/wall): 0.061789s/0.0313105s
 ===========================================
-RUN 0: solver=mf problem=transient n_additional_refinements=2 n_procs=2 n_threads=2 simd=1 max_iters=1000 tol=0.001
+RUN 0: solver=mf problem=transient n_additional_refinements=2 n_ranks=2 n_threads=2 simd=1 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:914993] MCW rank 0 bound to socket 0[core 0[hwt 0-1]]: [BB/../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:914993] MCW rank 1 bound to socket 0[core 1[hwt 0-1]]: [../BB/../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 ===========================================
@@ -17895,7 +17895,7 @@ Time solve (CPU/wall) 0.237659s/0.210802s
 Creating solution output (cpu/wall): 0.044172s/0.0262802s
 Writing solution output (cpu/wall): 0.059302s/0.031025s
 ===========================================
-RUN 0: solver=mf problem=transient n_additional_refinements=2 n_procs=4 n_threads=1 simd=0 max_iters=1000 tol=0.001
+RUN 0: solver=mf problem=transient n_additional_refinements=2 n_ranks=4 n_threads=1 simd=0 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:915009] MCW rank 0 bound to socket 0[core 0[hwt 0]]: [B./../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:915009] MCW rank 1 bound to socket 0[core 1[hwt 0]]: [../B./../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:915009] MCW rank 2 bound to socket 0[core 2[hwt 0]]: [../../B./../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
@@ -19315,7 +19315,7 @@ Time solve (CPU/wall) 0.106339s/0.106347s
 Creating solution output (cpu/wall): 0.014961s/0.0149723s
 Writing solution output (cpu/wall): 0.019108s/0.0191176s
 ===========================================
-RUN 0: solver=mf problem=transient n_additional_refinements=2 n_procs=4 n_threads=1 simd=1 max_iters=1000 tol=0.001
+RUN 0: solver=mf problem=transient n_additional_refinements=2 n_ranks=4 n_threads=1 simd=1 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:915030] MCW rank 0 bound to socket 0[core 0[hwt 0]]: [B./../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:915030] MCW rank 1 bound to socket 0[core 1[hwt 0]]: [../B./../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:915030] MCW rank 2 bound to socket 0[core 2[hwt 0]]: [../../B./../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
@@ -20735,7 +20735,7 @@ Time solve (CPU/wall) 0.108564s/0.109677s
 Creating solution output (cpu/wall): 0.014913s/0.0149232s
 Writing solution output (cpu/wall): 0.019154s/0.0191677s
 ===========================================
-RUN 0: solver=mf problem=transient n_additional_refinements=2 n_procs=4 n_threads=2 simd=0 max_iters=1000 tol=0.001
+RUN 0: solver=mf problem=transient n_additional_refinements=2 n_ranks=4 n_threads=2 simd=0 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:915050] MCW rank 0 bound to socket 0[core 0[hwt 0-1]]: [BB/../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:915050] MCW rank 1 bound to socket 0[core 1[hwt 0-1]]: [../BB/../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:915050] MCW rank 2 bound to socket 0[core 2[hwt 0-1]]: [../../BB/../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
@@ -22155,7 +22155,7 @@ Time solve (CPU/wall) 0.136882s/0.120596s
 Creating solution output (cpu/wall): 0.025684s/0.0155384s
 Writing solution output (cpu/wall): 0.031554s/0.0170553s
 ===========================================
-RUN 0: solver=mf problem=transient n_additional_refinements=2 n_procs=4 n_threads=2 simd=1 max_iters=1000 tol=0.001
+RUN 0: solver=mf problem=transient n_additional_refinements=2 n_ranks=4 n_threads=2 simd=1 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:915075] MCW rank 0 bound to socket 0[core 0[hwt 0-1]]: [BB/../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:915075] MCW rank 1 bound to socket 0[core 1[hwt 0-1]]: [../BB/../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:915075] MCW rank 2 bound to socket 0[core 2[hwt 0-1]]: [../../BB/../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
@@ -23575,7 +23575,7 @@ Time solve (CPU/wall) 0.136236s/0.121052s
 Creating solution output (cpu/wall): 0.022903s/0.0143782s
 Writing solution output (cpu/wall): 0.032089s/0.0168525s
 ===========================================
-RUN 0: solver=mf problem=transient n_additional_refinements=2 n_procs=8 n_threads=1 simd=0 max_iters=1000 tol=0.001
+RUN 0: solver=mf problem=transient n_additional_refinements=2 n_ranks=8 n_threads=1 simd=0 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:915099] MCW rank 0 bound to socket 0[core 0[hwt 0]]: [B./../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:915099] MCW rank 1 bound to socket 0[core 1[hwt 0]]: [../B./../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:915099] MCW rank 2 bound to socket 0[core 2[hwt 0]]: [../../B./../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
@@ -25399,7 +25399,7 @@ Time solve (CPU/wall) 0.058185s/0.060197s
 Creating solution output (cpu/wall): 0.009027s/0.00903747s
 Writing solution output (cpu/wall): 0.009109s/0.0101053s
 ===========================================
-RUN 0: solver=mf problem=transient n_additional_refinements=2 n_procs=8 n_threads=1 simd=1 max_iters=1000 tol=0.001
+RUN 0: solver=mf problem=transient n_additional_refinements=2 n_ranks=8 n_threads=1 simd=1 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:915131] MCW rank 0 bound to socket 0[core 0[hwt 0]]: [B./../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:915131] MCW rank 1 bound to socket 0[core 1[hwt 0]]: [../B./../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:915131] MCW rank 2 bound to socket 0[core 2[hwt 0]]: [../../B./../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
@@ -27223,7 +27223,7 @@ Time solve (CPU/wall) 0.060911s/0.0609191s
 Creating solution output (cpu/wall): 0.008893s/0.00890524s
 Writing solution output (cpu/wall): 0.009241s/0.0102313s
 ===========================================
-RUN 0: solver=mf problem=transient n_additional_refinements=2 n_procs=8 n_threads=2 simd=0 max_iters=1000 tol=0.001
+RUN 0: solver=mf problem=transient n_additional_refinements=2 n_ranks=8 n_threads=2 simd=0 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:915164] MCW rank 0 bound to socket 0[core 0[hwt 0-1]]: [BB/../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:915164] MCW rank 1 bound to socket 0[core 1[hwt 0-1]]: [../BB/../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:915164] MCW rank 2 bound to socket 0[core 2[hwt 0-1]]: [../../BB/../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
@@ -29047,7 +29047,7 @@ Time solve (CPU/wall) 0.079495s/0.0678779s
 Creating solution output (cpu/wall): 0.014366s/0.00905402s
 Writing solution output (cpu/wall): 0.017999s/0.00920383s
 ===========================================
-RUN 0: solver=mf problem=transient n_additional_refinements=2 n_procs=8 n_threads=2 simd=1 max_iters=1000 tol=0.001
+RUN 0: solver=mf problem=transient n_additional_refinements=2 n_ranks=8 n_threads=2 simd=1 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:915204] MCW rank 0 bound to socket 0[core 0[hwt 0-1]]: [BB/../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:915204] MCW rank 1 bound to socket 0[core 1[hwt 0-1]]: [../BB/../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:915204] MCW rank 2 bound to socket 0[core 2[hwt 0-1]]: [../../BB/../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
@@ -30871,7 +30871,7 @@ Time solve (CPU/wall) 0.081709s/0.0717428s
 Creating solution output (cpu/wall): 0.013152s/0.00911502s
 Writing solution output (cpu/wall): 0.017825s/0.00913826s
 ===========================================
-RUN 0: solver=mf problem=mms n_additional_refinements=2 n_procs=1 n_threads=1 simd=0 max_iters=1000 tol=0.001
+RUN 0: solver=mf problem=mms n_additional_refinements=2 n_ranks=1 n_threads=1 simd=0 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:915244] MCW rank 0 bound to socket 0[core 0[hwt 0]]: [B./../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 ===========================================
    Matrix-Free ADR Solver                  
@@ -30901,7 +30901,7 @@ Writing solution output (cpu/wall): 0.069733s/0.0717337s
    L2 Error vs Exact Solution: 2.78742e-06
    H1 Error vs Exact Solution: 1.92382
    L_infty Error vs Exact Solution: 7.30704e-06
-RUN 0: solver=mf problem=mms n_additional_refinements=2 n_procs=1 n_threads=1 simd=1 max_iters=1000 tol=0.001
+RUN 0: solver=mf problem=mms n_additional_refinements=2 n_ranks=1 n_threads=1 simd=1 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:915255] MCW rank 0 bound to socket 0[core 0[hwt 0]]: [B./../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 ===========================================
    Matrix-Free ADR Solver                  
@@ -30931,7 +30931,7 @@ Writing solution output (cpu/wall): 0.0678s/0.0717913s
    L2 Error vs Exact Solution: 2.78749e-06
    H1 Error vs Exact Solution: 1.92382
    L_infty Error vs Exact Solution: 7.37051e-06
-RUN 0: solver=mf problem=mms n_additional_refinements=2 n_procs=1 n_threads=2 simd=0 max_iters=1000 tol=0.001
+RUN 0: solver=mf problem=mms n_additional_refinements=2 n_ranks=1 n_threads=2 simd=0 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:915266] MCW rank 0 bound to socket 0[core 0[hwt 0-1]]: [BB/../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 ===========================================
    Matrix-Free ADR Solver                  
@@ -30961,7 +30961,7 @@ Writing solution output (cpu/wall): 0.109802s/0.0643089s
    L2 Error vs Exact Solution: 2.78735e-06
    H1 Error vs Exact Solution: 1.92382
    L_infty Error vs Exact Solution: 7.30485e-06
-RUN 0: solver=mf problem=mms n_additional_refinements=2 n_procs=1 n_threads=2 simd=1 max_iters=1000 tol=0.001
+RUN 0: solver=mf problem=mms n_additional_refinements=2 n_ranks=1 n_threads=2 simd=1 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:915278] MCW rank 0 bound to socket 0[core 0[hwt 0-1]]: [BB/../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 ===========================================
    Matrix-Free ADR Solver                  
@@ -30991,7 +30991,7 @@ Writing solution output (cpu/wall): 0.113337s/0.0644547s
    L2 Error vs Exact Solution: 2.7876e-06
    H1 Error vs Exact Solution: 1.92382
    L_infty Error vs Exact Solution: 7.38405e-06
-RUN 0: solver=mf problem=mms n_additional_refinements=2 n_procs=2 n_threads=1 simd=0 max_iters=1000 tol=0.001
+RUN 0: solver=mf problem=mms n_additional_refinements=2 n_ranks=2 n_threads=1 simd=0 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:915290] MCW rank 0 bound to socket 0[core 0[hwt 0]]: [B./../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:915290] MCW rank 1 bound to socket 0[core 1[hwt 0]]: [../B./../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 ===========================================
@@ -31023,7 +31023,7 @@ Writing solution output (cpu/wall): 0.034407s/0.0363496s
    L2 Error vs Exact Solution: 2.78738e-06
    H1 Error vs Exact Solution: 1.92382
    L_infty Error vs Exact Solution: 7.34122e-06
-RUN 0: solver=mf problem=mms n_additional_refinements=2 n_procs=2 n_threads=1 simd=1 max_iters=1000 tol=0.001
+RUN 0: solver=mf problem=mms n_additional_refinements=2 n_ranks=2 n_threads=1 simd=1 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:915304] MCW rank 0 bound to socket 0[core 0[hwt 0]]: [B./../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:915304] MCW rank 1 bound to socket 0[core 1[hwt 0]]: [../B./../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 ===========================================
@@ -31055,7 +31055,7 @@ Writing solution output (cpu/wall): 0.03408s/0.0361103s
    L2 Error vs Exact Solution: 2.78764e-06
    H1 Error vs Exact Solution: 1.92382
    L_infty Error vs Exact Solution: 7.33961e-06
-RUN 0: solver=mf problem=mms n_additional_refinements=2 n_procs=2 n_threads=2 simd=0 max_iters=1000 tol=0.001
+RUN 0: solver=mf problem=mms n_additional_refinements=2 n_ranks=2 n_threads=2 simd=0 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:915318] MCW rank 0 bound to socket 0[core 0[hwt 0-1]]: [BB/../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:915318] MCW rank 1 bound to socket 0[core 1[hwt 0-1]]: [../BB/../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 ===========================================
@@ -31087,7 +31087,7 @@ Writing solution output (cpu/wall): 0.055977s/0.0324706s
    L2 Error vs Exact Solution: 2.78747e-06
    H1 Error vs Exact Solution: 1.92382
    L_infty Error vs Exact Solution: 7.31366e-06
-RUN 0: solver=mf problem=mms n_additional_refinements=2 n_procs=2 n_threads=2 simd=1 max_iters=1000 tol=0.001
+RUN 0: solver=mf problem=mms n_additional_refinements=2 n_ranks=2 n_threads=2 simd=1 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:915334] MCW rank 0 bound to socket 0[core 0[hwt 0-1]]: [BB/../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:915334] MCW rank 1 bound to socket 0[core 1[hwt 0-1]]: [../BB/../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 ===========================================
@@ -31119,7 +31119,7 @@ Writing solution output (cpu/wall): 0.057231s/0.0331171s
    L2 Error vs Exact Solution: 2.7876e-06
    H1 Error vs Exact Solution: 1.92382
    L_infty Error vs Exact Solution: 7.36851e-06
-RUN 0: solver=mf problem=mms n_additional_refinements=2 n_procs=4 n_threads=1 simd=0 max_iters=1000 tol=0.001
+RUN 0: solver=mf problem=mms n_additional_refinements=2 n_ranks=4 n_threads=1 simd=0 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:915350] MCW rank 0 bound to socket 0[core 0[hwt 0]]: [B./../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:915350] MCW rank 1 bound to socket 0[core 1[hwt 0]]: [../B./../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:915350] MCW rank 2 bound to socket 0[core 2[hwt 0]]: [../../B./../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
@@ -31155,7 +31155,7 @@ Writing solution output (cpu/wall): 0.018983s/0.0199855s
    L2 Error vs Exact Solution: 2.78745e-06
    H1 Error vs Exact Solution: 1.92382
    L_infty Error vs Exact Solution: 7.31372e-06
-RUN 0: solver=mf problem=mms n_additional_refinements=2 n_procs=4 n_threads=1 simd=1 max_iters=1000 tol=0.001
+RUN 0: solver=mf problem=mms n_additional_refinements=2 n_ranks=4 n_threads=1 simd=1 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:915370] MCW rank 0 bound to socket 0[core 0[hwt 0]]: [B./../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:915370] MCW rank 1 bound to socket 0[core 1[hwt 0]]: [../B./../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:915370] MCW rank 2 bound to socket 0[core 2[hwt 0]]: [../../B./../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
@@ -31191,7 +31191,7 @@ Writing solution output (cpu/wall): 0.018739s/0.0197259s
    L2 Error vs Exact Solution: 2.78752e-06
    H1 Error vs Exact Solution: 1.92382
    L_infty Error vs Exact Solution: 7.31837e-06
-RUN 0: solver=mf problem=mms n_additional_refinements=2 n_procs=4 n_threads=2 simd=0 max_iters=1000 tol=0.001
+RUN 0: solver=mf problem=mms n_additional_refinements=2 n_ranks=4 n_threads=2 simd=0 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:915390] MCW rank 0 bound to socket 0[core 0[hwt 0-1]]: [BB/../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:915390] MCW rank 1 bound to socket 0[core 1[hwt 0-1]]: [../BB/../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:915390] MCW rank 2 bound to socket 0[core 2[hwt 0-1]]: [../../BB/../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
@@ -31227,7 +31227,7 @@ Writing solution output (cpu/wall): 0.032767s/0.0179822s
    L2 Error vs Exact Solution: 2.78745e-06
    H1 Error vs Exact Solution: 1.92382
    L_infty Error vs Exact Solution: 7.31372e-06
-RUN 0: solver=mf problem=mms n_additional_refinements=2 n_procs=4 n_threads=2 simd=1 max_iters=1000 tol=0.001
+RUN 0: solver=mf problem=mms n_additional_refinements=2 n_ranks=4 n_threads=2 simd=1 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:915414] MCW rank 0 bound to socket 0[core 0[hwt 0-1]]: [BB/../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:915414] MCW rank 1 bound to socket 0[core 1[hwt 0-1]]: [../BB/../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:915414] MCW rank 2 bound to socket 0[core 2[hwt 0-1]]: [../../BB/../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
@@ -31263,7 +31263,7 @@ Writing solution output (cpu/wall): 0.030805s/0.0179204s
    L2 Error vs Exact Solution: 2.78757e-06
    H1 Error vs Exact Solution: 1.92382
    L_infty Error vs Exact Solution: 7.34416e-06
-RUN 0: solver=mf problem=mms n_additional_refinements=2 n_procs=8 n_threads=1 simd=0 max_iters=1000 tol=0.001
+RUN 0: solver=mf problem=mms n_additional_refinements=2 n_ranks=8 n_threads=1 simd=0 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:915438] MCW rank 0 bound to socket 0[core 0[hwt 0]]: [B./../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:915438] MCW rank 1 bound to socket 0[core 1[hwt 0]]: [../B./../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:915438] MCW rank 2 bound to socket 0[core 2[hwt 0]]: [../../B./../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
@@ -31307,7 +31307,7 @@ Writing solution output (cpu/wall): 0.00882s/0.0108119s
    L2 Error vs Exact Solution: 2.78744e-06
    H1 Error vs Exact Solution: 1.92382
    L_infty Error vs Exact Solution: 7.32735e-06
-RUN 0: solver=mf problem=mms n_additional_refinements=2 n_procs=8 n_threads=1 simd=1 max_iters=1000 tol=0.001
+RUN 0: solver=mf problem=mms n_additional_refinements=2 n_ranks=8 n_threads=1 simd=1 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:915470] MCW rank 0 bound to socket 0[core 0[hwt 0]]: [B./../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:915470] MCW rank 1 bound to socket 0[core 1[hwt 0]]: [../B./../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:915470] MCW rank 2 bound to socket 0[core 2[hwt 0]]: [../../B./../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
@@ -31351,7 +31351,7 @@ Writing solution output (cpu/wall): 0.009608s/0.0106122s
    L2 Error vs Exact Solution: 2.78761e-06
    H1 Error vs Exact Solution: 1.92382
    L_infty Error vs Exact Solution: 7.39178e-06
-RUN 0: solver=mf problem=mms n_additional_refinements=2 n_procs=8 n_threads=2 simd=0 max_iters=1000 tol=0.001
+RUN 0: solver=mf problem=mms n_additional_refinements=2 n_ranks=8 n_threads=2 simd=0 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:915502] MCW rank 0 bound to socket 0[core 0[hwt 0-1]]: [BB/../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:915502] MCW rank 1 bound to socket 0[core 1[hwt 0-1]]: [../BB/../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:915502] MCW rank 2 bound to socket 0[core 2[hwt 0-1]]: [../../BB/../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
@@ -31395,7 +31395,7 @@ Writing solution output (cpu/wall): 0.015646s/0.0098686s
    L2 Error vs Exact Solution: 2.78744e-06
    H1 Error vs Exact Solution: 1.92382
    L_infty Error vs Exact Solution: 7.33964e-06
-RUN 0: solver=mf problem=mms n_additional_refinements=2 n_procs=8 n_threads=2 simd=1 max_iters=1000 tol=0.001
+RUN 0: solver=mf problem=mms n_additional_refinements=2 n_ranks=8 n_threads=2 simd=1 max_iters=1000 tol=0.001
 [cpu02.mate.polimi.it:915542] MCW rank 0 bound to socket 0[core 0[hwt 0-1]]: [BB/../../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:915542] MCW rank 1 bound to socket 0[core 1[hwt 0-1]]: [../BB/../../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
 [cpu02.mate.polimi.it:915542] MCW rank 2 bound to socket 0[core 2[hwt 0-1]]: [../../BB/../../../../../../../../../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
@@ -31451,7 +31451,7 @@ Aggregating results...
 ========================================================================================================================
 TEST SUMMARY
 ========================================================================================================================
-Solver         Problem           n_procs   n_threads    simd    n_add_ref      delta_t         it_n             err       conv      total_t     %err
+Solver         Problem           n_ranks   n_threads    simd    n_add_ref      delta_t         it_n             err       conv      total_t     %err
 ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 matrix_based   advanced                1           1       0            2     0.000000         3.00    2.105413e-03       1.00       8.6396     0.0%
 matrix_based   advanced                1           2       0            2     0.000000         3.00    2.105413e-03       1.00       7.8282     0.0%
