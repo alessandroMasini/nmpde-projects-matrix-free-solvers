@@ -256,14 +256,9 @@ namespace MFSolver
      * The solver can assemble once for steady problems and many times for
      * transient problems. Start every assembly from a clean algebraic state.
      */
-    {
-      TimerOutput::Scope t(computing_timer, "assembly: zero algebraic objects");
-      system_matrix = 0;
-      system_rhs = 0;
-    }
+    system_matrix = 0;
+    system_rhs = 0;
 
-    TimerOutput::Scope workstream_setup_timer(computing_timer,
-                                              "assembly: workstream setup");
     const QGauss<dim> quadrature_formula(this->problem.num_quadrature_points);
     const QGauss<dim - 1> quadrature_boundary(
         this->problem.num_quadrature_points);
@@ -276,8 +271,6 @@ namespace MFSolver
                                       update_quadrature_points | update_JxW_values,
                                   update_values |
                                       update_quadrature_points | update_JxW_values);
-    workstream_setup_timer.stop();
-
     /*
      * WorkStream runs assemble_on_one_cell() in parallel with private scratch
      * and copy buffers, then runs copy_local_to_global() sequentially. This is
@@ -285,28 +278,22 @@ namespace MFSolver
      * expensive quadrature loop is parallel, while the non-thread-safe sparse
      * matrix/vector insertion is serialized by the framework.
      */
-    {
-      TimerOutput::Scope t(computing_timer, "assembly: workstream run");
-      WorkStream::run(
-          dof_handler.begin_active(),
-          dof_handler.end(),
-          *this,
-          &MatrixBasedADRSolver<dim>::assemble_on_one_cell,
-          &MatrixBasedADRSolver<dim>::copy_local_to_global,
-          scratch_data,
-          per_task_data);
-    }
+    WorkStream::run(
+        dof_handler.begin_active(),
+        dof_handler.end(),
+        *this,
+        &MatrixBasedADRSolver<dim>::assemble_on_one_cell,
+        &MatrixBasedADRSolver<dim>::copy_local_to_global,
+        scratch_data,
+        per_task_data);
 
     /*
      * PETSc accumulates off-process entries lazily. Compression is collective
      * over MPI ranks and must happen after all local WorkStream copy operations
      * have finished.
      */
-    {
-      TimerOutput::Scope t(computing_timer, "assembly: compress system");
-      system_matrix.compress(VectorOperation::add);
-      system_rhs.compress(VectorOperation::add);
-    }
+    system_matrix.compress(VectorOperation::add);
+    system_rhs.compress(VectorOperation::add);
   }
 
   template <int dim>
@@ -314,71 +301,35 @@ namespace MFSolver
   {
     TimerOutput::Scope t(computing_timer, "solve");
 
-    {
-      TimerOutput::Scope t(computing_timer, "solve: solution reinit");
-      completely_distributed_solution.reinit(locally_owned_dofs,
-                                             mpi_communicator);
-    }
+    completely_distributed_solution.reinit(locally_owned_dofs,
+                                            mpi_communicator);
 
-    double solver_tolerance = 0.0;
-    {
-      TimerOutput::Scope t(computing_timer, "solve: rhs l2 norm");
-      solver_tolerance =
-          this->problem.solver_tolerance_factor * system_rhs.l2_norm();
-    }
+    // Solver and preconditioner
+    SolverControl solver_control(this->problem.solver_max_iterations,
+                                  this->problem.solver_tolerance_factor * system_rhs.l2_norm());
+    SolverGMRES<LA::MPI::Vector> solver(solver_control);
+    solver_control.enable_history_data();
 
-    /*
-     * Keep the multigrid and GMRES objects in one lexical scope so the
-     * preconditioner remains alive for the complete Krylov solve, while still
-     * timing the expensive construction steps separately.
-     */
-    {
-      // Solver and preconditioner
-      SolverControl solver_control(this->problem.solver_max_iterations,
-                                   solver_tolerance);
-      SolverGMRES<LA::MPI::Vector> solver(solver_control);
-      {
-        TimerOutput::Scope t(computing_timer, "solve: gmres initialize");
-        solver_control.enable_history_data();
-      }
+    // AMG test
+    LA::MPI::PreconditionAMG::AdditionalData data;
+    data.symmetric_operator = true;
+    LA::MPI::PreconditionAMG preconditioner_amg;
+    preconditioner_amg.initialize(system_matrix, data);
 
-      // AMG test
-      LA::MPI::PreconditionAMG::AdditionalData data;
-      data.symmetric_operator = true;
-      LA::MPI::PreconditionAMG preconditioner_amg;
-      {
-        TimerOutput::Scope t(computing_timer, "solve: amg initialize");
-        preconditioner_amg.initialize(system_matrix, data);
-      }
+    solver.solve(system_matrix,
+                  completely_distributed_solution,
+                  system_rhs,
+                  preconditioner_amg);
 
-      {
-        TimerOutput::Scope t(computing_timer, "solve: gmres iterations");
-        solver.solve(system_matrix,
-                     completely_distributed_solution,
-                     system_rhs,
-                     preconditioner_amg);
-      }
+    this->conv_history.emplace_back(solver_control.get_history_data());
+    converged = (solver_control.last_check() ==
+                  SolverControl::State::success);
+    pcout << "   Solved in " << solver_control.last_step()
+          << " iterations." << std::endl;
 
-      {
-        TimerOutput::Scope t(computing_timer, "solve: convergence bookkeeping");
-        this->conv_history.emplace_back(solver_control.get_history_data());
-        converged = (solver_control.last_check() ==
-                     SolverControl::State::success);
-        pcout << "   Solved in " << solver_control.last_step()
-              << " iterations." << std::endl;
-      }
-    }
 
-    {
-      TimerOutput::Scope t(computing_timer, "solve: constraints distribute");
-      constraints.distribute(completely_distributed_solution);
-    }
-
-    {
-      TimerOutput::Scope t(computing_timer,
-                           "solve: copy to locally relevant solution");
-      locally_relevant_solution = completely_distributed_solution;
-    }
+    constraints.distribute(completely_distributed_solution);
+    locally_relevant_solution = completely_distributed_solution;
   }
 
   template <int dim>
