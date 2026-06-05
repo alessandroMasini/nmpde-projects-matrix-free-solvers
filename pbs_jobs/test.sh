@@ -74,11 +74,11 @@ make -j 4
     --tol 0.001 \
     --n_ranks 1 2 4 8 \
     --n_threads 1 2 \
-    --run-timeout-seconds 90 \
+    --run_timeout_seconds 90 \
     --n_additional_refinements 2 \
-    --use-scratch-local \
-    --scratch-local-root "$SCRATCH_LOCAL_ROOT" \
-    --scratch-global-root "$SCRATCH_GLOBAL_ROOT"
+    --use_scratch_local \
+    --scratch_local_root "$SCRATCH_LOCAL_ROOT" \
+    --scratch_global_root "$SCRATCH_GLOBAL_ROOT"
 '
 
 echo "PBS job finished at $(date)"

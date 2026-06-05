@@ -41,7 +41,6 @@ namespace MFSolver
     triangulation.refine_global(this->problem.refinement_level);
 
     dof_handler.distribute_dofs(fe);
-    dof_handler.distribute_mg_dofs();
 
     pcout << "   Number of active cells:       "
           << triangulation.n_global_active_cells() << std::endl
@@ -84,102 +83,6 @@ namespace MFSolver
                          locally_owned_dofs,
                          dsp,
                          mpi_communicator);
-
-    /*
-     * Multigrid has its own vector spaces: each level owns a separate set of
-     * level DoFs, and those DoFs are distributed by level_subdomain_id(), not
-     * by the active-cell subdomain_id(). The setup mirrors deal.II step-50:
-     * build distributed sparsity patterns on locally relevant level DoFs and
-     * keep one homogeneous constraint object per level for boundary and
-     * refinement-edge entries.
-     */
-    const unsigned int n_levels = triangulation.n_global_levels();
-
-    mg_matrices.resize(0, n_levels - 1);
-    mg_matrices.clear_elements();
-    mg_interface_matrices.resize(0, n_levels - 1);
-    mg_interface_matrices.clear_elements();
-    mg_level_constraints.resize(0, n_levels - 1);
-
-    std::set<types::boundary_id> dirichlet_boundary_ids;
-    for (const auto &[boundary_id, function] : this->problem.dirichlet_boundaries)
-    {
-      (void)function;
-      dirichlet_boundary_ids.insert(boundary_id);
-    }
-
-    mg_constrained_dofs.clear();
-    mg_constrained_dofs.initialize(dof_handler);
-    mg_constrained_dofs.make_zero_boundary_constraints(dof_handler,
-                                                       dirichlet_boundary_ids);
-
-    for (unsigned int level = 0; level < n_levels; ++level)
-    {
-      const IndexSet locally_relevant_level_dofs =
-          DoFTools::extract_locally_relevant_level_dofs(dof_handler, level);
-
-      /*
-       * deal.II 9.5 AffineConstraints only stores lines in the supplied
-       * IndexSet. The membership checks below keep this rank from adding a
-       * line for a level DoF that is not locally relevant here.
-       */
-      mg_level_constraints[level].reinit(locally_relevant_level_dofs);
-      for (const types::global_dof_index dof_index :
-           mg_constrained_dofs.get_refinement_edge_indices(level))
-        if (locally_relevant_level_dofs.is_element(dof_index))
-          mg_level_constraints[level].add_line(dof_index);
-      for (const types::global_dof_index dof_index :
-           mg_constrained_dofs.get_boundary_indices(level))
-        if (locally_relevant_level_dofs.is_element(dof_index))
-          mg_level_constraints[level].add_line(dof_index);
-      mg_level_constraints[level].close();
-
-      /*
-       * PETSc needs a distributed sparsity pattern for every level matrix.
-       * Without distribute_sparsity_pattern(), off-rank level couplings are
-       * not communicated correctly and the resulting GMG hierarchy becomes
-       * rank-count dependent.
-       */
-      DynamicSparsityPattern level_dsp(locally_relevant_level_dofs);
-      MGTools::make_sparsity_pattern(dof_handler, level_dsp, level);
-      level_dsp.compress();
-      SparsityTools::distribute_sparsity_pattern(
-          level_dsp,
-          dof_handler.locally_owned_mg_dofs(level),
-          mpi_communicator,
-          locally_relevant_level_dofs);
-
-      mg_matrices[level].reinit(dof_handler.locally_owned_mg_dofs(level),
-                                dof_handler.locally_owned_mg_dofs(level),
-                                level_dsp,
-                                mpi_communicator);
-
-      /*
-       * The current driver uses global refinement, where these matrices stay
-       * empty. Keeping them nevertheless follows step-50 and makes the MG
-       * preconditioner correct if adaptive refinement is reintroduced later.
-       */
-      DynamicSparsityPattern interface_dsp(locally_relevant_level_dofs);
-      MGTools::make_interface_sparsity_pattern(dof_handler,
-                                               mg_constrained_dofs,
-                                               interface_dsp,
-                                               level);
-      interface_dsp.compress();
-      SparsityTools::distribute_sparsity_pattern(
-          interface_dsp,
-          dof_handler.locally_owned_mg_dofs(level),
-          mpi_communicator,
-          locally_relevant_level_dofs);
-
-      mg_interface_matrices[level].reinit(
-          dof_handler.locally_owned_mg_dofs(level),
-          dof_handler.locally_owned_mg_dofs(level),
-          interface_dsp,
-          mpi_communicator);
-    }
-
-    mg_transfer.initialize_constraints(mg_constrained_dofs);
-    mg_transfer.build(dof_handler);
   }
 
   template <int dim>
@@ -197,7 +100,6 @@ namespace MFSolver
      */
     data.cell_matrix = 0.;
     data.cell_rhs = 0.;
-    data.cell_level = numbers::invalid_unsigned_int;
     data.cell_is_locally_owned = false;
 
     /*
@@ -210,8 +112,6 @@ namespace MFSolver
       return;
 
     data.cell_is_locally_owned = true;
-    data.cell_level = cell->level();
-
     scratch.fe_values.reinit(cell);
 
     /*
@@ -345,141 +245,10 @@ namespace MFSolver
                                            data.dof_indices,
                                            system_matrix,
                                            system_rhs);
-
-    /*
-     * Do not assemble multigrid matrices here. Active-cell DoF indices belong
-     * to the fine system vector, while level matrices need level DoF indices
-     * obtained from get_mg_dof_indices() on all cells in the hierarchy.
-     */
   }
 
   template <int dim>
-  void MatrixBasedADRSolver<dim>::assemble_on_one_mg_cell(
-    const typename DoFHandler<dim>::level_cell_iterator &cell,
-    ScratchData<dim> &scratch,
-    PerTaskData<dim> &data)
-  {
-    const unsigned int dofs_per_cell = fe.n_dofs_per_cell();
-    const unsigned int n_q_points = scratch.fe_values.n_quadrature_points;
-
-    /*
-     * The same PerTaskData type is reused for active and level assembly, so
-     * all fields that the copier reads must be reset before every cell. Here
-     * cell_rhs is unused, but zeroing it keeps the copy buffer in a defined
-     * state if this object is later reused by the active assembly pass.
-     */
-    data.cell_matrix = 0.;
-    data.cell_rhs = 0.;
-    data.cell_level = numbers::invalid_unsigned_int;
-    data.cell_is_locally_owned = false;
-
-    /*
-     * For multigrid, ownership follows the level partition
-     * level_subdomain_id(), not active-cell ownership. This is the important
-     * distributed-MG distinction from the fine system assembly.
-     */
-    if (cell->level_subdomain_id() != triangulation.locally_owned_subdomain())
-      return;
-
-    data.cell_is_locally_owned = true;
-    data.cell_level = cell->level();
-
-    scratch.fe_values.reinit(cell);
-
-    for (unsigned int q = 0; q < n_q_points; ++q)
-    {
-      const Point<dim> &quadrature_point =
-          scratch.fe_values.quadrature_point(q);
-      const double mu_loc = this->problem.mu->value(quadrature_point);
-      const Tensor<1, dim, double> b_loc =
-          this->problem.beta->value(quadrature_point);
-      const double b_div =
-          this->problem.beta->divergence(quadrature_point);
-      const double k_loc = this->problem.gamma->value(quadrature_point);
-      const double dx = scratch.fe_values.JxW(q);
-
-      for (unsigned int i = 0; i < dofs_per_cell; ++i)
-      {
-        const double phi_i = scratch.fe_values.shape_value(i, q);
-
-        for (unsigned int j = 0; j < dofs_per_cell; ++j)
-        {
-          const double phi_j = scratch.fe_values.shape_value(j, q);
-
-          /*
-           * The level operator must match the fine-system operator used in
-           * this timestep. For transient runs that means adding the same mass
-           * matrix contribution M / dt; only the old-solution RHS term is
-           * excluded because preconditioners assemble operators, not loads.
-           */
-          if (this->problem.is_time_dependent)
-            data.cell_matrix(i, j) +=
-                (1.0 / this->problem.delta_t) * phi_i * phi_j * dx;
-
-          data.cell_matrix(i, j) +=
-              mu_loc *
-              scratch.fe_values.shape_grad(i, q) *
-              scratch.fe_values.shape_grad(j, q) *
-              dx;
-
-          data.cell_matrix(i, j) +=
-              b_loc *
-              scratch.fe_values.shape_grad(j, q) *
-              phi_i *
-              dx;
-
-          data.cell_matrix(i, j) +=
-              (k_loc + b_div) * phi_i * phi_j * dx;
-        }
-      }
-    }
-
-    /*
-     * These are level-vector DoF numbers, not active-vector DoF numbers.
-     * Scattering them into mg_matrices is only valid after this call.
-     */
-    cell->get_mg_dof_indices(data.dof_indices);
-  }
-
-  template <int dim>
-  void MatrixBasedADRSolver<dim>::copy_mg_local_to_global(
-    const PerTaskData<dim> &data)
-  {
-    if (!data.cell_is_locally_owned)
-      return;
-
-    const unsigned int level = data.cell_level;
-
-    /*
-     * Per-level constraints encode homogeneous Dirichlet conditions and
-     * refinement-edge constraints for the level space. They are intentionally
-     * separate from the fine-system constraints, which may also contain
-     * inhomogeneous boundary values and hanging-node constraints.
-     */
-    mg_level_constraints[level].distribute_local_to_global(data.cell_matrix,
-                                                           data.dof_indices,
-                                                           mg_matrices[level]);
-
-    /*
-     * Interface matrices are required by deal.II's local-smoothing GMG
-     * algorithm on adaptively refined meshes. They are zero for the current
-     * globally refined tests, but assembling them here keeps the code aligned
-     * with tutorial step-50 instead of silently becoming wrong once adaptive
-     * refinement is used.
-     */
-    const unsigned int dofs_per_cell = fe.n_dofs_per_cell();
-    for (unsigned int i = 0; i < dofs_per_cell; ++i)
-      for (unsigned int j = 0; j < dofs_per_cell; ++j)
-        if (mg_constrained_dofs.is_interface_matrix_entry(level,
-                                                          data.dof_indices[i],
-                                                          data.dof_indices[j]))
-          mg_interface_matrices[level].add(data.dof_indices[i],
-                                           data.dof_indices[j],
-                                           data.cell_matrix(i, j));
-  }
-
-  template <int dim>
-  void MatrixBasedADRSolver<dim>::assemble_multithreaded()
+  void MatrixBasedADRSolver<dim>::assemble()
   {
     TimerOutput::Scope t(computing_timer, "assembly");
 
@@ -491,11 +260,6 @@ namespace MFSolver
       TimerOutput::Scope t(computing_timer, "assembly: zero algebraic objects");
       system_matrix = 0;
       system_rhs = 0;
-      for (unsigned int l = 0; l < triangulation.n_global_levels(); ++l)
-      {
-        mg_matrices[l] = 0;
-        mg_interface_matrices[l] = 0;
-      }
     }
 
     TimerOutput::Scope workstream_setup_timer(computing_timer,
@@ -534,24 +298,6 @@ namespace MFSolver
     }
 
     /*
-     * Assemble the multigrid hierarchy in a second pass over level cells.
-     * The active pass above cannot be reused: on globally refined meshes it
-     * only visits the finest level, and even on adaptive meshes it produces
-     * active DoF indices instead of level DoF indices.
-     */
-    {
-      TimerOutput::Scope t(computing_timer, "assembly: mg workstream run");
-      WorkStream::run(
-          dof_handler.begin_mg(),
-          dof_handler.end_mg(),
-          *this,
-          &MatrixBasedADRSolver<dim>::assemble_on_one_mg_cell,
-          &MatrixBasedADRSolver<dim>::copy_mg_local_to_global,
-          scratch_data,
-          per_task_data);
-    }
-
-    /*
      * PETSc accumulates off-process entries lazily. Compression is collective
      * over MPI ranks and must happen after all local WorkStream copy operations
      * have finished.
@@ -561,21 +307,6 @@ namespace MFSolver
       system_matrix.compress(VectorOperation::add);
       system_rhs.compress(VectorOperation::add);
     }
-
-    {
-      TimerOutput::Scope t(computing_timer, "assembly: compress mg matrices");
-      for (unsigned int l = 0; l < triangulation.n_global_levels(); ++l)
-      {
-        mg_matrices[l].compress(VectorOperation::add);
-        mg_interface_matrices[l].compress(VectorOperation::add);
-      }
-    }
-  }
-
-  template <int dim>
-  void MatrixBasedADRSolver<dim>::assemble()
-  {
-    assemble_multithreaded();
   }
 
   template <int dim>
@@ -602,39 +333,6 @@ namespace MFSolver
      * timing the expensive construction steps separately.
      */
     {
-      // Smoother
-      MGSmootherPrecondition<LA::MPI::SparseMatrix,
-                             PETScWrappers::PreconditionJacobi,
-                             LA::MPI::Vector>
-          mg_smoother;
-      {
-        TimerOutput::Scope t(computing_timer,
-                             "solve: mg smoother initialize");
-        mg_smoother.initialize(mg_matrices);
-        mg_smoother.set_steps(2);
-      }
-
-      MGCoarseGridApplySmoother<LA::MPI::Vector> mg_coarse;
-      mg::Matrix<LA::MPI::Vector> mg_matrix(mg_matrices);
-      mg::Matrix<LA::MPI::Vector> mg_interface_in(mg_interface_matrices);
-      mg::Matrix<LA::MPI::Vector> mg_interface_out(mg_interface_matrices);
-      {
-        TimerOutput::Scope t(computing_timer,
-                             "solve: coarse smoother initialize");
-        mg_coarse.initialize(mg_smoother);
-      }
-
-      // Multigrid
-      Multigrid<LA::MPI::Vector> mg(mg_matrix,
-                                    mg_coarse,
-                                    mg_transfer,
-                                    mg_smoother,
-                                    mg_smoother);
-      mg.set_edge_matrices(mg_interface_out, mg_interface_in);
-
-      PreconditionMG<dim, LA::MPI::Vector, MGTransferPrebuilt<LA::MPI::Vector>>
-          preconditioner(dof_handler, mg, mg_transfer);
-
       // Solver and preconditioner
       SolverControl solver_control(this->problem.solver_max_iterations,
                                    solver_tolerance);
@@ -644,12 +342,21 @@ namespace MFSolver
         solver_control.enable_history_data();
       }
 
+      // AMG test
+      LA::MPI::PreconditionAMG::AdditionalData data;
+      data.symmetric_operator = true;
+      LA::MPI::PreconditionAMG preconditioner_amg;
+      {
+        TimerOutput::Scope t(computing_timer, "solve: amg initialize");
+        preconditioner_amg.initialize(system_matrix, data);
+      }
+
       {
         TimerOutput::Scope t(computing_timer, "solve: gmres iterations");
         solver.solve(system_matrix,
                      completely_distributed_solution,
                      system_rhs,
-                     preconditioner);
+                     preconditioner_amg);
       }
 
       {
@@ -731,7 +438,7 @@ namespace MFSolver
       this->start_time = MPI_Wtime();
       setup_system();
       pcout << "Finished setup" << std::endl;
-      assemble_multithreaded();
+      assemble();
       pcout << "Finished assemble" << std::endl;
       solve();
       pcout << "Finished solve" << std::endl;
@@ -754,7 +461,7 @@ namespace MFSolver
         ++this->timestep_number;
 
         pcout << "TIMESTEP " << this->timestep_number << std::endl;
-        assemble_multithreaded();
+        assemble();
         pcout << "   Finished assemble" << std::endl;
         solve();
         pcout << "   Finished solve" << std::endl;

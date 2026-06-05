@@ -4,7 +4,6 @@
 #include <stdexcept>
 #include <functional>
 #include <memory>
-#include <set>
 #include <string>
 #include <fstream>
 #include <iostream>
@@ -590,8 +589,7 @@ namespace MFSolver
               triangulation(mpi_communicator,
                             typename Triangulation<dim>::MeshSmoothing(
                                 Triangulation<dim>::smoothing_on_refinement |
-                                Triangulation<dim>::smoothing_on_coarsening),
-                            parallel::distributed::Triangulation<dim>::construct_multigrid_hierarchy),
+                                Triangulation<dim>::smoothing_on_coarsening)),
               fe(_problem.fe_degree),
               dof_handler(triangulation),
               mapping(),
@@ -616,12 +614,6 @@ namespace MFSolver
             ScratchData<dim> &scratch,
             PerTaskData<dim> &data);
         void copy_local_to_global(const PerTaskData<dim> &data);
-        void assemble_on_one_mg_cell(
-            const typename DoFHandler<dim>::level_cell_iterator &cell,
-            ScratchData<dim> &scratch,
-            PerTaskData<dim> &data);
-        void copy_mg_local_to_global(const PerTaskData<dim> &data);
-        void assemble_multithreaded();
         void assemble() override;
         void solve() override;
         void output_results() override;
@@ -642,18 +634,10 @@ namespace MFSolver
 
         LA::MPI::SparseMatrix system_matrix;
 
-        // TODO: use the correct vector type
         LA::MPI::Vector completely_distributed_solution;
         LA::MPI::Vector locally_relevant_solution;
         LA::MPI::Vector system_rhs;
         LA::MPI::Vector old_solution;
-
-        // Multigrid
-        MGLevelObject<LA::MPI::SparseMatrix> mg_matrices;
-        MGLevelObject<LA::MPI::SparseMatrix> mg_interface_matrices;
-        MGLevelObject<AffineConstraints<double>> mg_level_constraints;
-        MGConstrainedDoFs mg_constrained_dofs;
-        MGTransferPrebuilt<LA::MPI::Vector> mg_transfer;
 
         ConditionalOStream pcout;
         TimerOutput computing_timer;

@@ -51,22 +51,22 @@ Options:
                                       Default: "100"
   --tol <list>                        List of tolerances (per time step).
                                       Default: "1e-6 1-8 1e-10 1e-12"
-  --run-timeout-seconds <int>         Discard a single run if it lasts longer
+  --run_timeout_seconds <int>         Discard a single run if it lasts longer
                                       than this many seconds. Use 0 to disable.
                                       Default: 60
-  --use-scratch-local                 Write tests to /scratch_local and copy
+  --use_scratch_local                 Write tests to /scratch_local and copy
                                       the completed tests folder to
                                       /scratch_global at the end.
-  --scratch-local-root <path>         Root used with --use-scratch-local.
+  --scratch_local_root <path>         Root used with --use_scratch_local.
                                       Default: /scratch_local/$USER/<repo>
-  --scratch-global-root <path>        Copy destination root used with
-                                      --use-scratch-local.
+  --scratch_global_root <path>        Copy destination root used with
+                                      --use_scratch_local.
                                       Default: /scratch_global/$USER/<repo>
   --help                              Show this help message.
 
 Output:
-  Test results are saved in the ./tests/ directory unless --use-scratch-local is set.
-  Test results are saved in the ./tests/ directory unless --use-scratch-local is set.
+  Test results are saved in the ./tests/ directory unless --use_scratch_local is set.
+  Test results are saved in the ./tests/ directory unless --use_scratch_local is set.
   A summary table is printed at the end showing aggregated statistics for each unique parameter combination.
   Results saved under:
   tests/<solver>/<problem>/<fe_deg>/<n_add_ref>/<n_ranks>/<n_threads>/<simd>/test_N"
@@ -87,10 +87,10 @@ while [[ $# -gt 0 ]]; do
         --delta_t) shift; DELTA_T=""; while [[ $# -gt 0 && "$1" != --* ]]; do DELTA_T+="$1 "; shift; done;;
         --max_iters) shift; MAX_ITERS=""; while [[ $# -gt 0 && "$1" != --* ]]; do MAX_ITERS+="$1 "; shift; done;;
         --tol) shift; TOL=""; while [[ $# -gt 0 && "$1" != --* ]]; do TOL+="$1 "; shift; done;;
-        --run-timeout-seconds) RUN_TIMEOUT_SECONDS="$2"; shift 2;;
-        --use-scratch-local) USE_SCRATCH_LOCAL=1; shift;;
-        --scratch-local-root) SCRATCH_LOCAL_ROOT="$2"; USE_SCRATCH_LOCAL=1; shift 2;;
-        --scratch-global-root) SCRATCH_GLOBAL_ROOT="$2"; USE_SCRATCH_LOCAL=1; shift 2;;
+        --run_timeout_seconds) RUN_TIMEOUT_SECONDS="$2"; shift 2;;
+        --use_scratch_local) USE_SCRATCH_LOCAL=1; shift;;
+        --scratch_local_root) SCRATCH_LOCAL_ROOT="$2"; USE_SCRATCH_LOCAL=1; shift 2;;
+        --scratch_global_root) SCRATCH_GLOBAL_ROOT="$2"; USE_SCRATCH_LOCAL=1; shift 2;;
         --help) show_help;; 
         *) 
             echo "Unknown parameter: $1"
@@ -99,12 +99,12 @@ while [[ $# -gt 0 ]]; do
 done
 
 if ! [[ "$RUN_TIMEOUT_SECONDS" =~ ^[0-9]+$ ]]; then
-    echo "Error: --run-timeout-seconds must be a non-negative integer" >&2
+    echo "Error: --run_timeout_seconds must be a non-negative integer" >&2
     exit 2
 fi
 
 if [[ "$RUN_TIMEOUT_SECONDS" -gt 0 ]] && ! command -v timeout >/dev/null 2>&1; then
-    echo "Error: --run-timeout-seconds requires the timeout command" >&2
+    echo "Error: --run_timeout_seconds requires the timeout command" >&2
     exit 2
 fi
 
