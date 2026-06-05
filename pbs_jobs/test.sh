@@ -45,7 +45,8 @@ mkdir -p "$SCRATCH_LOCAL_ROOT/apptainer_tmp" "$SCRATCH_LOCAL_ROOT/apptainer_cach
 export APPTAINER_TMPDIR="$SCRATCH_LOCAL_ROOT/apptainer_tmp"
 export APPTAINER_CACHEDIR="$SCRATCH_LOCAL_ROOT/apptainer_cache"
 
-CONTAINER_DIR="/work/$USER_NAME/containers"
+# This line needs to remain hard-coded since containers are physically in this location
+CONTAINER_DIR="/work/u11172853/containers"
 DEFAULT_CONTAINER="$CONTAINER_DIR/amsc_mk_2025.sif"
 AVX512_CONTAINER="$CONTAINER_DIR/dealii-avx512.sif"
 CONTAINER_BIND="/scratch_local,/scratch_global"
