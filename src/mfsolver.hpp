@@ -511,6 +511,7 @@ namespace MFSolver
         std::vector<types::global_dof_index> dof_indices;
         unsigned int cell_level = numbers::invalid_unsigned_int;
         bool cell_is_locally_owned = false;
+        bool assemble_matrix = true;
 
         PerTaskData (const FiniteElement<dim> &fe)
                     :
@@ -534,7 +535,8 @@ namespace MFSolver
             cell_rhs(data.cell_rhs.size()),
             dof_indices(data.dof_indices.size()),
             cell_level(numbers::invalid_unsigned_int),
-            cell_is_locally_owned(false)
+            cell_is_locally_owned(false),
+            assemble_matrix(data.assemble_matrix)
             {}
     };
 
@@ -649,6 +651,8 @@ namespace MFSolver
         bool converged = false;
         // const double theta = 1.0;
 
+        bool assemble_matrix_flag = true;
+        std::shared_ptr<LA::MPI::PreconditionAMG> preconditioner_amg;
     };
 };
 

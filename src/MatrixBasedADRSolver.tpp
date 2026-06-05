@@ -98,7 +98,8 @@ namespace MFSolver
      * copier may inspect, including the skip flag, before returning control to
      * the framework.
      */
-    data.cell_matrix = 0.;
+    if (data.assemble_matrix)
+      data.cell_matrix = 0.;
     data.cell_rhs = 0.;
     data.cell_is_locally_owned = false;
 
@@ -141,34 +142,37 @@ namespace MFSolver
       {
         const double phi_i = scratch.fe_values.shape_value(i, q);
 
-        for (unsigned int j = 0; j < dofs_per_cell; ++j)
+        if (data.assemble_matrix)
         {
-          const double phi_j = scratch.fe_values.shape_value(j, q);
+          for (unsigned int j = 0; j < dofs_per_cell; ++j)
+          {
+            const double phi_j = scratch.fe_values.shape_value(j, q);
 
-          /*
-           * Mass term.
-           */
-          if (this->problem.is_time_dependent)
+            /*
+             * Mass term.
+             */
+            if (this->problem.is_time_dependent)
+              data.cell_matrix(i, j) +=
+                  (1.0 / this->problem.delta_t) * phi_i * phi_j * dx;
+
+            // Diffusion: mu grad(phi_i) . grad(phi_j).
             data.cell_matrix(i, j) +=
-                (1.0 / this->problem.delta_t) * phi_i * phi_j * dx;
+                mu_loc *
+                scratch.fe_values.shape_grad(i, q) *
+                scratch.fe_values.shape_grad(j, q) *
+                dx;
 
-          // Diffusion: mu grad(phi_i) . grad(phi_j).
-          data.cell_matrix(i, j) +=
-              mu_loc *
-              scratch.fe_values.shape_grad(i, q) *
-              scratch.fe_values.shape_grad(j, q) *
-              dx;
+            // Advection part beta . grad(phi_j), tested against phi_i.
+            data.cell_matrix(i, j) +=
+                b_loc *
+                scratch.fe_values.shape_grad(j, q) *
+                phi_i *
+                dx;
 
-          // Advection part beta . grad(phi_j), tested against phi_i.
-          data.cell_matrix(i, j) +=
-              b_loc *
-              scratch.fe_values.shape_grad(j, q) *
-              phi_i *
-              dx;
-
-          // Reaction plus div(beta) term from the conservative formulation.
-          data.cell_matrix(i, j) +=
-              (k_loc + b_div) * phi_i * phi_j * dx;
+            // Reaction plus div(beta) term from the conservative formulation.
+            data.cell_matrix(i, j) +=
+                (k_loc + b_div) * phi_i * phi_j * dx;
+          }
         }
 
         if (this->problem.is_time_dependent)
@@ -240,11 +244,20 @@ namespace MFSolver
     if (!data.cell_is_locally_owned)
       return;
 
-    constraints.distribute_local_to_global(data.cell_matrix,
-                                           data.cell_rhs,
-                                           data.dof_indices,
-                                           system_matrix,
-                                           system_rhs);
+    if (data.assemble_matrix)
+    {
+      constraints.distribute_local_to_global(data.cell_matrix,
+                                             data.cell_rhs,
+                                             data.dof_indices,
+                                             system_matrix,
+                                             system_rhs);
+    }
+    else
+    {
+      constraints.distribute_local_to_global(data.cell_rhs,
+                                             data.dof_indices,
+                                             system_rhs);
+    }
   }
 
   template <int dim>
@@ -256,7 +269,8 @@ namespace MFSolver
      * The solver can assemble once for steady problems and many times for
      * transient problems. Start every assembly from a clean algebraic state.
      */
-    system_matrix = 0;
+    if (this->assemble_matrix_flag)
+      system_matrix = 0;
     system_rhs = 0;
 
     const QGauss<dim> quadrature_formula(this->problem.num_quadrature_points);
@@ -264,6 +278,7 @@ namespace MFSolver
         this->problem.num_quadrature_points);
 
     PerTaskData<dim> per_task_data(fe);
+    per_task_data.assemble_matrix = this->assemble_matrix_flag;
     ScratchData<dim> scratch_data(fe,
                                   quadrature_formula,
                                   quadrature_boundary,
@@ -311,15 +326,18 @@ namespace MFSolver
     solver_control.enable_history_data();
 
     // AMG test
-    LA::MPI::PreconditionAMG::AdditionalData data;
-    data.symmetric_operator = true;
-    LA::MPI::PreconditionAMG preconditioner_amg;
-    preconditioner_amg.initialize(system_matrix, data);
+    if (!this->preconditioner_amg || this->assemble_matrix_flag)
+    {
+      LA::MPI::PreconditionAMG::AdditionalData data;
+      data.symmetric_operator = true;
+      this->preconditioner_amg = std::make_shared<LA::MPI::PreconditionAMG>();
+      this->preconditioner_amg->initialize(system_matrix, data);
+    }
 
     solver.solve(system_matrix,
                   completely_distributed_solution,
                   system_rhs,
-                  preconditioner_amg);
+                  *(this->preconditioner_amg));
 
     this->conv_history.emplace_back(solver_control.get_history_data());
     converged = (solver_control.last_check() ==
@@ -412,6 +430,7 @@ namespace MFSolver
         ++this->timestep_number;
 
         pcout << "TIMESTEP " << this->timestep_number << std::endl;
+        this->assemble_matrix_flag = (this->timestep_number == 1);
         assemble();
         pcout << "   Finished assemble" << std::endl;
         solve();
