@@ -23,7 +23,7 @@
 #include <deal.II/numerics/data_out.h>
 
 namespace MFSolver
-{  
+{
     template <int dim>
     void MatrixFreeADRSolver<dim>::setup_system()
     {
@@ -80,7 +80,7 @@ namespace MFSolver
                 // if (simd_flag){
                 //     system_mf_storage->reinit(mapping, dof_handler, constraints, QGaussLobatto<1>(fe.degree + 1), additional_data);
                 // } else {
-                    system_mf_storage->reinit(mapping, dof_handler, constraints, QGauss<1>(fe.degree + 1), additional_data);
+                system_mf_storage->reinit(mapping, dof_handler, constraints, QGauss<1>(fe.degree + 1), additional_data);
                 //}
 
                 system_matrix.initialize(system_mf_storage);
@@ -133,7 +133,7 @@ namespace MFSolver
                 // if (simd_flag){
                 //     mg_mf_storage_level->reinit(mapping, dof_handler, level_constraints, QGaussLobatto<1>(fe.degree + 1), additional_data);
                 // } else {
-                    mg_mf_storage_level->reinit(mapping, dof_handler, level_constraints, QGauss<1>(fe.degree + 1), additional_data);
+                mg_mf_storage_level->reinit(mapping, dof_handler, level_constraints, QGauss<1>(fe.degree + 1), additional_data);
                 //}
 
                 mg_matrices[level].initialize(mg_mf_storage_level, mg_constrained_dofs, level);
@@ -172,13 +172,13 @@ namespace MFSolver
         typename MatrixFree<dim, double>::AdditionalData additional_data;
         additional_data.mapping_update_flags = update_gradients | update_JxW_values | update_quadrature_points;
         std::shared_ptr<MatrixFree<dim, double>> inhomogeneous_mf_storage(new MatrixFree<dim, double>());
-        
+
         // Since the quadrature type decides whether simd is used or not, the choice of the former needs to depend on the latter
         // TODO: Andrea sa
         // if (simd_flag){
         //     inhomogeneous_mf_storage->reinit(mapping, dof_handler, no_constraints, QGaussLobatto<1>(fe.degree + 1), additional_data);
         // } else {
-            inhomogeneous_mf_storage->reinit(mapping, dof_handler, no_constraints, QGauss<1>(fe.degree + 1), additional_data);
+        inhomogeneous_mf_storage->reinit(mapping, dof_handler, no_constraints, QGauss<1>(fe.degree + 1), additional_data);
         // }
         inhomogeneous_operator.initialize(inhomogeneous_mf_storage);
 
@@ -281,13 +281,13 @@ namespace MFSolver
             if (level > 0)
             {
                 // For intermediate and fine levels, do a quick 5-degree polynomial smoothing sweep
-                smoother_data[level].smoothing_range = 15.;
-                smoother_data[level].degree = 5;
-                smoother_data[level].eig_cg_n_iterations = 10;
+                smoother_data[level].smoothing_range = this->problem.lvgt0_smoothing_range;
+                smoother_data[level].degree = this->problem.lvgt0_smoothing_degree;
+                smoother_data[level].eig_cg_n_iterations = this->problem.lvgt0_smoothing_eigenvalue_max_iterations;
             }
             else
             {
-                smoother_data[0].smoothing_range = 1e-3;
+                smoother_data[0].smoothing_range = this->problem.lv0_smoothing_range;
                 smoother_data[0].degree = numbers::invalid_unsigned_int;
                 smoother_data[0].eig_cg_n_iterations = mg_matrices[0].m();
             }
@@ -339,7 +339,7 @@ namespace MFSolver
 
     template <int dim>
     void MatrixFreeADRSolver<dim>::output_results()
-    {   
+    {
         Timer timer;
         // static unsigned int cycle = 0; // Using an internal counter since the method takes no arguments
 
@@ -370,23 +370,24 @@ namespace MFSolver
 
         time_details << "Creating solution output (cpu/wall): " << timer.cpu_time() << "s/" << timer.wall_time() << "s" << std::endl;
         timer.restart();
-        
+
         // All ranks participate here. The shared output_dir ensures their VTU
         // pieces and the PVTU index file describe one run rather than several.
         data_out.write_vtu_with_pvtu_record(
             this->output_dir, "/solution", this->timestep_number, MPI_COMM_WORLD);
-        
+
         time_details << "Writing solution output (cpu/wall): " << timer.cpu_time() << "s/" << timer.wall_time() << "s" << std::endl;
     }
 
     template <int dim>
     void MatrixFreeADRSolver<dim>::compute_error()
     {
-        if (this->problem.exact_solution == nullptr) return;
+        if (this->problem.exact_solution == nullptr)
+            return;
 
         this->solution.update_ghost_values();
         dealii::Vector<double> difference_per_cell(triangulation.n_active_cells());
-        
+
         dealii::VectorTools::integrate_difference(
             mapping,
             dof_handler,
@@ -394,11 +395,10 @@ namespace MFSolver
             *(this->problem.exact_solution),
             difference_per_cell,
             dealii::QGauss<dim>(fe.degree + 1),
-            dealii::VectorTools::L2_norm
-        );
+            dealii::VectorTools::L2_norm);
 
         this->l2_error = dealii::VectorTools::compute_global_error(triangulation, difference_per_cell, dealii::VectorTools::L2_norm);
-        
+
         dealii::VectorTools::integrate_difference(
             mapping,
             dof_handler,
@@ -406,11 +406,10 @@ namespace MFSolver
             *(this->problem.exact_solution),
             difference_per_cell,
             dealii::QGauss<dim>(fe.degree + 1),
-            dealii::VectorTools::H1_norm
-        );
+            dealii::VectorTools::H1_norm);
 
         this->h1_error = dealii::VectorTools::compute_global_error(triangulation, difference_per_cell, dealii::VectorTools::H1_norm);
-        
+
         dealii::VectorTools::integrate_difference(
             mapping,
             dof_handler,
@@ -418,11 +417,10 @@ namespace MFSolver
             *(this->problem.exact_solution),
             difference_per_cell,
             dealii::QGauss<dim>(fe.degree + 1),
-            dealii::VectorTools::Linfty_norm
-        );
+            dealii::VectorTools::Linfty_norm);
 
         this->linfty_error = dealii::VectorTools::compute_global_error(triangulation, difference_per_cell, dealii::VectorTools::Linfty_norm);
-        
+
         pcout << "   L2 Error vs Exact Solution: " << this->l2_error << std::endl;
         pcout << "   H1 Error vs Exact Solution: " << this->h1_error << std::endl;
         pcout << "   L_infty Error vs Exact Solution: " << this->linfty_error << std::endl;
@@ -438,7 +436,6 @@ namespace MFSolver
         pcout << "Number of MPI ranks:            "
               << dealii::Utilities::MPI::n_mpi_processes(MPI_COMM_WORLD) << std::endl;
 
-        // TODO: check this output actually reflects the employed vectorization
         const unsigned int n_vect_doubles = dealii::VectorizedArray<double>::size();
         const unsigned int n_vect_bits = 8 * sizeof(double) * n_vect_doubles;
         pcout << "Vectorization over " << n_vect_doubles
@@ -481,7 +478,8 @@ namespace MFSolver
                 pcout << "   Outputting results..." << std::endl;
                 output_results();
                 compute_error();
-                if (this->problem.exact_solution != nullptr) {
+                if (this->problem.exact_solution != nullptr)
+                {
                     pcout << "   L2 Error vs Exact Solution: " << this->l2_error << std::endl;
                     pcout << "   H1 Error vs Exact Solution: " << this->h1_error << std::endl;
                     pcout << "   L_infty Error vs Exact Solution: " << this->linfty_error << std::endl;
@@ -510,7 +508,8 @@ namespace MFSolver
             pcout << "   Outputting results..." << std::endl;
             output_results();
             compute_error();
-            if (this->problem.exact_solution != nullptr) {
+            if (this->problem.exact_solution != nullptr)
+            {
                 pcout << "   L2 Error vs Exact Solution: " << this->l2_error << std::endl;
                 pcout << "   H1 Error vs Exact Solution: " << this->h1_error << std::endl;
                 pcout << "   L_infty Error vs Exact Solution: " << this->linfty_error << std::endl;
