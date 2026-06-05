@@ -301,7 +301,8 @@ namespace MFSolver
      * over MPI ranks and must happen after all local WorkStream copy operations
      * have finished.
      */
-    system_matrix.compress(VectorOperation::add);
+    if (this->assemble_matrix_flag)
+      system_matrix.compress(VectorOperation::add);
     system_rhs.compress(VectorOperation::add);
   }
 
