@@ -3,9 +3,6 @@
 # Default Parameters
 SOLVER="mb mf"
 PROBLEM="advanced lab_02 lab_03 parabolic transient mms"
-# Keep one FE degree for both solver families by default; otherwise timings
-# would compare different discretizations. Pass --fe_deg 4 to reproduce the
-# old matrix-free hard-coded degree.
 FE_DEG="2"
 N_TESTS=5
 N_ADDITIONAL_REFINEMENTS="0 3 6"
@@ -19,6 +16,9 @@ RUN_TIMEOUT_SECONDS=60
 USE_SCRATCH_LOCAL=0
 SCRATCH_LOCAL_ROOT=""
 SCRATCH_GLOBAL_ROOT=""
+DEFAULT_CONTAINER="$HOME/amsc_mk_2025.sif"
+AVX512_CONTAINER="$HOME/dealii-avx512.sif"
+APPTAINER_BIND=""
 
 # Function Definitions
 
@@ -62,10 +62,17 @@ Options:
   --scratch_global_root <path>        Copy destination root used with
                                       --use_scratch_local.
                                       Default: /scratch_global/$USER/<repo>
+  --default_container <path>          Container for matrix_based and
+                                      matrix_free with SIMD=0.
+                                      Default: ~/amsc_mk_2025.sif
+  --avx512_container <path>           Container for matrix_free with SIMD=1.
+                                      Default: ~/dealii-avx512.sif
+  --apptainer_bind <paths>            Comma-separated bind paths passed to
+                                      apptainer exec, e.g.
+                                      /scratch_local,/scratch_global.
   --help                              Show this help message.
 
 Output:
-  Test results are saved in the ./tests/ directory unless --use_scratch_local is set.
   Test results are saved in the ./tests/ directory unless --use_scratch_local is set.
   A summary table is printed at the end showing aggregated statistics for each unique parameter combination.
   Results saved under:
@@ -91,6 +98,9 @@ while [[ $# -gt 0 ]]; do
         --use_scratch_local) USE_SCRATCH_LOCAL=1; shift;;
         --scratch_local_root) SCRATCH_LOCAL_ROOT="$2"; USE_SCRATCH_LOCAL=1; shift 2;;
         --scratch_global_root) SCRATCH_GLOBAL_ROOT="$2"; USE_SCRATCH_LOCAL=1; shift 2;;
+        --default_container) DEFAULT_CONTAINER="$2"; shift 2;;
+        --avx512_container) AVX512_CONTAINER="$2"; shift 2;;
+        --apptainer_bind) APPTAINER_BIND="$2"; shift 2;;
         --help) show_help;; 
         *) 
             echo "Unknown parameter: $1"
@@ -108,76 +118,27 @@ if [[ "$RUN_TIMEOUT_SECONDS" -gt 0 ]] && ! command -v timeout >/dev/null 2>&1; t
     exit 2
 fi
 
+if ! command -v apptainer >/dev/null 2>&1; then
+    echo "Error: run_extensive_tests.sh requires the apptainer command" >&2
+    exit 2
+fi
+
+if [[ ! -f "$DEFAULT_CONTAINER" ]]; then
+    echo "Error: default container not found: $DEFAULT_CONTAINER" >&2
+    exit 2
+fi
+
+if [[ ! -f "$AVX512_CONTAINER" ]]; then
+    echo "Error: AVX512 container not found: $AVX512_CONTAINER" >&2
+    exit 2
+fi
+
 # Run tests
 echo "=== Running tests ==="
 
 # Absolute path to the directory containing this script. This keeps the
 # manifest location stable even if the script is launched from another folder.
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-REPO_NAME="$(basename "$SCRIPT_DIR")"
-USER_NAME="${USER:-$(id -un)}"
-
-if [[ "$USE_SCRATCH_LOCAL" -eq 1 ]]; then
-    if [[ -z "$SCRATCH_LOCAL_ROOT" ]]; then
-        SCRATCH_LOCAL_ROOT="/scratch_local/$USER_NAME/$REPO_NAME"
-    fi
-
-    if [[ -z "$SCRATCH_GLOBAL_ROOT" ]]; then
-        SCRATCH_GLOBAL_ROOT="/scratch_global/$USER_NAME/$REPO_NAME"
-    fi
-
-    TESTS_DIR="$SCRATCH_LOCAL_ROOT/tests"
-else
-    TESTS_DIR="$SCRIPT_DIR/tests"
-fi
-
-copy_scratch_results() {
-    # Capture the status that made the script exit. The EXIT trap runs this
-    # function after normal completion and after failures, so we preserve that
-    # original status and return it at the end.
-    local exit_status=$?
-    local copy_status=0
-
-    # In the default mode, results already live in the repository tests/
-    # directory. Only the scratch-local mode needs a final transfer.
-    if [[ "$USE_SCRATCH_LOCAL" -ne 1 ]]; then
-        exit "$exit_status"
-    fi
-
-    echo ""
-    echo "Copying scratch-local tests to scratch_global..."
-    echo "  from: $TESTS_DIR"
-    echo "  to:   $SCRATCH_GLOBAL_ROOT/tests"
-
-    mkdir -p "$SCRATCH_GLOBAL_ROOT"
-
-    # Prefer rsync when available because it handles existing destination
-    # trees cleanly. Fall back to cp for simpler cluster/container images.
-    # The || command is an or command. copy_status=$? reports the status
-    # of the latest command; since || runs the right argument only if the 
-    # left fails, this essentially sets copy_status to the error of rsync.
-    if command -v rsync >/dev/null 2>&1; then
-        rsync -a "$TESTS_DIR" "$SCRATCH_GLOBAL_ROOT/" || copy_status=$?
-    else
-        cp -a "$TESTS_DIR" "$SCRATCH_GLOBAL_ROOT/" || copy_status=$?
-    fi
-
-    # If the solver run succeeded but the copy failed, make the script fail so
-    # the PBS job reports the transfer problem. If the solver already failed,
-    # keep the original failure status.
-    if [[ "$copy_status" -ne 0 ]]; then
-        echo "Error: copy to scratch_global failed with status $copy_status" >&2
-        if [[ "$exit_status" -eq 0 ]]; then
-            exit_status="$copy_status"
-        fi
-    fi
-
-    # End the script with the correct status. Returning from an EXIT trap can be
-    # subtle, so this function exits explicitly.
-    exit "$exit_status"
-}
-
-trap copy_scratch_results EXIT
 REPO_NAME="$(basename "$SCRIPT_DIR")"
 USER_NAME="${USER:-$(id -un)}"
 
@@ -353,18 +314,33 @@ discard_new_test_dirs() {
 }
 
 run_solver_command() {
-    # Run one physical solver attempt. Timeout exit codes are treated as
-    # discarded samples, not failed experiments, so the surrounding sweep keeps
-    # going and later averages only completed logs.
+    # Execute exactly one solver command, optionally under timeout.
+    #
+    # Arguments:
+    #   $1 = human-readable label printed on timeout, e.g. "run 0"
+    #   $2 = parameter directory where this command may create test_N folders
+    #   $3... = command to execute, including all its arguments
+    #
+    # The C++ output helper creates a new test_N directory during a successful
+    # run. If timeout kills the solver after that directory was partially
+    # created, we do not want summarize_tests.py to average a truncated log.
+    # For that reason this function snapshots the existing test_N directories
+    # before launching the command and deletes only the new ones on timeout.
     local run_label="$1"
     local base_dir="$2"
     shift 2
     local before_file
     local status
 
+    # Store the pre-run directory list in a temporary file instead of a Bash
+    # array. This keeps the comparison simple and avoids quoting problems with
+    # paths when the test root is under scratch.
     before_file="$(mktemp "${TMPDIR:-/tmp}/mfsolver-test-dirs-before.XXXXXX")" || return 1
     list_test_dirs "$base_dir" > "$before_file"
 
+    # timeout --foreground lets MPI children receive terminal-related signals
+    # correctly. The -k grace period sends SIGKILL if the process group does
+    # not exit after the initial timeout signal.
     if [[ "$RUN_TIMEOUT_SECONDS" -gt 0 ]]; then
         timeout --foreground -k 10s "${RUN_TIMEOUT_SECONDS}s" "$@"
     else
@@ -372,14 +348,103 @@ run_solver_command() {
     fi
     status=$?
 
+    # GNU timeout normally returns 124. MPI launchers may instead surface 137
+    # or 143 when the killed process reports SIGKILL/SIGTERM. Treat all three
+    # as discarded samples: remove partial output, print a note, and return 0
+    # so the sweep continues with the remaining parameter combinations.
     if [[ "$RUN_TIMEOUT_SECONDS" -gt 0 ]] && [[ "$status" -eq 124 || "$status" -eq 137 || "$status" -eq 143 ]]; then
         discard_new_test_dirs "$base_dir" "$before_file"
         echo "Discarded $run_label: exceeded ${RUN_TIMEOUT_SECONDS}s"
         status=0
     fi
 
+    # Non-timeout failures are returned unchanged. Whether they abort the whole
+    # script depends on the caller's shell settings, but the status is not
+    # hidden here.
     rm -f "$before_file"
     return "$status"
+}
+
+container_for_run() {
+    # Only matrix-free SIMD=1 runs belong in the AVX512 image. Matrix-based
+    # has no SIMD variant in this benchmark tree, and matrix-free SIMD=0 must
+    # stay in the baseline image to keep those timings comparable.
+    local solver="$1"
+    local simd="$2"
+
+    if [[ "$solver" == "mf" && "$simd" == "1" ]]; then
+        printf '%s\n' "$AVX512_CONTAINER"
+    else
+        printf '%s\n' "$DEFAULT_CONTAINER"
+    fi
+}
+
+run_solver_command_for_variant() {
+    # Run a solver command through the Apptainer image selected for this
+    # solver/SIMD pair.
+    #
+    # Arguments:
+    #   $1 = human-readable run label
+    #   $2 = parameter directory used by run_solver_command for cleanup
+    #   $3 = solver short name: "mb" or "mf"
+    #   $4 = SIMD flag for this run: "0" or "1"
+    #   $5... = solver command to run inside the selected environment
+    local run_label="$1"
+    local base_dir="$2"
+    local solver="$3"
+    local simd="$4"
+    shift 4
+
+    # container_for_run encodes the policy: matrix_free SIMD=1 -> AVX512
+    # image; every other run -> baseline image.
+    local container
+    container="$(container_for_run "$solver" "$simd")"
+    echo "  container: $container"
+
+    # Build Apptainer arguments as an array so an optional bind string remains
+    # one argument even if it contains commas or paths with shell-sensitive
+    # characters.
+    local apptainer_args=(exec)
+    if [[ -n "$APPTAINER_BIND" ]]; then
+        apptainer_args+=(--bind "$APPTAINER_BIND")
+    fi
+
+    local container_script
+
+    if [[ "$solver" == "mf" && "$simd" == "1" ]]; then
+        # The AVX512 image is expected to be self-contained: its compiler/MPI
+        # and deal.II runtime paths are already part of the image environment.
+        # Do not call module here, because that container may not ship the
+        # cluster module command at all.
+        container_script='
+set -euo pipefail
+exec "$@"
+'
+    else
+        # The baseline image follows the original cluster setup and needs the
+        # deal.II module environment before running matrix_based or
+        # matrix_free_no_simd.
+        container_script='
+set -euo pipefail
+if ! command -v module >/dev/null 2>&1; then
+    if [[ -r /u/sw/lmod/8.5.8/init/bash ]]; then
+        source /u/sw/lmod/8.5.8/init/bash
+    fi
+fi
+export MODULEPATH="${MODULEPATH:-/u/sw/modules}"
+module load toolchains/gcc-glibc/11.2.0 2>/dev/null || module load gcc-glibc
+module load dealii
+exec "$@"
+'
+    fi
+
+    # The outer run_solver_command still owns timeout handling and cleanup.
+    # Inside the container, bash -lc receives the setup script, "_" becomes
+    # bash's $0, and the original solver command becomes "$@" for the final
+    # exec line in container_script.
+    run_solver_command "$run_label" "$base_dir" \
+        apptainer "${apptainer_args[@]}" "$container" \
+        bash -lc "$container_script" _ "$@"
 }
 
 for solver in $SOLVER; do
@@ -401,8 +466,8 @@ for solver in $SOLVER; do
                                                 # MATRIX-FREE
                                                 test_base_dir="$(test_base_dir_for_run "$solver" "$problem" "$fe_deg" "$n_additional_refinements" "$n_ranks" "$n_threads" "$simd")"
                                                 case "$simd" in
-                                                    0)  run_solver_command "run $i" "$test_base_dir" mpirun --report-bindings -n "$n_ranks" --bind-to hwthread --map-by core:PE="$n_threads" ./matrix_free_no_simd "$n_threads" "$simd" "$problem" "$fe_deg" "$n_additional_refinements" "$delta_t" "$max_iters" "$tol";;
-                                                    1)  run_solver_command "run $i" "$test_base_dir" mpirun --report-bindings -n "$n_ranks" --bind-to hwthread --map-by core:PE="$n_threads" ./matrix_free_simd "$n_threads" "$simd" "$problem" "$fe_deg" "$n_additional_refinements" "$delta_t" "$max_iters" "$tol";; 
+                                                    0)  run_solver_command_for_variant "run $i" "$test_base_dir" "$solver" "$simd" mpirun --report-bindings -n "$n_ranks" --bind-to hwthread --map-by core:PE="$n_threads" ./matrix_free_no_simd "$n_threads" "$simd" "$problem" "$fe_deg" "$n_additional_refinements" "$delta_t" "$max_iters" "$tol";;
+                                                    1)  run_solver_command_for_variant "run $i" "$test_base_dir" "$solver" "$simd" mpirun --report-bindings -n "$n_ranks" --bind-to hwthread --map-by core:PE="$n_threads" ./matrix_free_simd "$n_threads" "$simd" "$problem" "$fe_deg" "$n_additional_refinements" "$delta_t" "$max_iters" "$tol";; 
                                                     *) echo "Unknown simd value: $simd";;
                                                 esac
                                             else
@@ -410,7 +475,7 @@ for solver in $SOLVER; do
                                                 case "$simd" in
                                                     0)
                                                         test_base_dir="$(test_base_dir_for_run "$solver" "$problem" "$fe_deg" "$n_additional_refinements" "$n_ranks" "$n_threads" "0")"
-                                                        run_solver_command "run $i" "$test_base_dir" mpirun --report-bindings -n "$n_ranks" --bind-to hwthread --map-by core:PE="$n_threads" ./matrix_based "$n_threads" "$problem" "$fe_deg" "$n_additional_refinements" "$delta_t" "$max_iters" "$tol";;
+                                                        run_solver_command_for_variant "run $i" "$test_base_dir" "$solver" "0" mpirun --report-bindings -n "$n_ranks" --bind-to hwthread --map-by core:PE="$n_threads" ./matrix_based "$n_threads" "$problem" "$fe_deg" "$n_additional_refinements" "$delta_t" "$max_iters" "$tol";;
                                                     1)  continue;;
                                                     *) echo "Unknown simd value: $simd";;
                                                 esac

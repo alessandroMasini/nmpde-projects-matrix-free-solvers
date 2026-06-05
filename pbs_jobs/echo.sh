@@ -17,6 +17,8 @@
 # (Optional) be explicit about threads if any BLAS/OpenMP is used
 # export OMP_NUM_THREADS=2
 
-# Run your script INSIDE the container
-echo "Hello world" | tee /home/u11172853/nmpde-projects-matrix-free-solvers/hello.txt 
+# Run from the submitted repository when PBS provides it; otherwise use the
+# current directory so the helper also works when launched manually.
+cd "${PBS_O_WORKDIR:-$PWD}" || exit 1
 
+echo "Hello world" | tee "$PWD/hello.txt"
