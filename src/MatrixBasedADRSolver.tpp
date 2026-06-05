@@ -124,6 +124,8 @@ namespace MFSolver
       scratch.fe_values.get_function_values(old_solution,
                                             scratch.old_solution_values);
 
+    const double inv_dt = this->problem.is_time_dependent ? (1.0 / this->problem.delta_t) : 0.0;
+
     for (unsigned int q = 0; q < n_q_points; ++q)
     {
       const Point<dim> &quadrature_point =
@@ -141,46 +143,38 @@ namespace MFSolver
       for (unsigned int i = 0; i < dofs_per_cell; ++i)
       {
         const double phi_i = scratch.fe_values.shape_value(i, q);
+        const auto grad_phi_i = scratch.fe_values.shape_grad(i, q);
 
         if (data.assemble_matrix)
         {
           for (unsigned int j = 0; j < dofs_per_cell; ++j)
           {
             const double phi_j = scratch.fe_values.shape_value(j, q);
+            const auto grad_phi_j = scratch.fe_values.shape_grad(j, q);
+
+            double cell_matrix_val = 0.0;
 
             /*
              * Mass term.
              */
             if (this->problem.is_time_dependent)
-              data.cell_matrix(i, j) +=
-                  (1.0 / this->problem.delta_t) * phi_i * phi_j * dx;
+              cell_matrix_val += inv_dt * phi_i * phi_j;
 
             // Diffusion: mu grad(phi_i) . grad(phi_j).
-            data.cell_matrix(i, j) +=
-                mu_loc *
-                scratch.fe_values.shape_grad(i, q) *
-                scratch.fe_values.shape_grad(j, q) *
-                dx;
+            cell_matrix_val += mu_loc * grad_phi_i * grad_phi_j;
 
             // Advection part beta . grad(phi_j), tested against phi_i.
-            data.cell_matrix(i, j) +=
-                b_loc *
-                scratch.fe_values.shape_grad(j, q) *
-                phi_i *
-                dx;
+            cell_matrix_val += b_loc * grad_phi_j * phi_i;
 
             // Reaction plus div(beta) term from the conservative formulation.
-            data.cell_matrix(i, j) +=
-                (k_loc + b_div) * phi_i * phi_j * dx;
+            cell_matrix_val += (k_loc + b_div) * phi_i * phi_j;
+
+            data.cell_matrix(i, j) += cell_matrix_val * dx;
           }
         }
 
         if (this->problem.is_time_dependent)
-          data.cell_rhs(i) +=
-              (1.0 / this->problem.delta_t) *
-              phi_i *
-              scratch.old_solution_values[q] *
-              dx;
+          data.cell_rhs(i) += inv_dt * phi_i * scratch.old_solution_values[q] * dx;
 
         // Forcing term.
         data.cell_rhs(i) += f_loc * phi_i * dx;
