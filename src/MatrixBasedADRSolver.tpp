@@ -329,7 +329,7 @@ namespace MFSolver
     if (!this->preconditioner_amg || this->assemble_matrix_flag)
     {
       LA::MPI::PreconditionAMG::AdditionalData data;
-      data.symmetric_operator = true;
+      data.symmetric_operator = false;
       this->preconditioner_amg = std::make_shared<LA::MPI::PreconditionAMG>();
       this->preconditioner_amg->initialize(system_matrix, data);
     }
