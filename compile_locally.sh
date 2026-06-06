@@ -71,14 +71,17 @@ if [[ ! -f "$DEFAULT_CONTAINER" ]]; then
 fi
 
 if [[ ! -f "$AVX512_CONTAINER" ]]; then
-    echo "Error: AVX512 container not found: $AVX512_CONTAINER" >&2
-    exit 2
+    echo "Warning: AVX512 container not found at: $AVX512_CONTAINER" >&2
+    echo "Skipping compilation of matrix_free_simd." >&2
+    BUILD_AVX512=false
+else
+    BUILD_AVX512=true
 fi
 
 echo "Building matrix_based and matrix_free_no_simd in:"
 echo "  $DEFAULT_CONTAINER"
 
-apptainer exec "$DEFAULT_CONTAINER" bash -lc '
+APPTAINERENV_N_BUILD_JOBS=$N_BUILD_JOBS apptainer exec --cleanenv "$DEFAULT_CONTAINER" bash -lc '
 set -euo pipefail
 
 if ! command -v module >/dev/null 2>&1; then
@@ -107,24 +110,29 @@ cmake -S . -B build/baseline \
 cmake --build build/baseline -j "$N_BUILD_JOBS" --target matrix_based matrix_free_no_simd
 '
 
-echo "Building matrix_free_simd in:"
-echo "  $AVX512_CONTAINER"
+if [[ "$BUILD_AVX512" = true ]]; then
+    echo "Building matrix_free_simd in:"
+    echo "  $AVX512_CONTAINER"
 
-# The AVX512 image is self-contained and intentionally does not use modules.
-apptainer exec "$AVX512_CONTAINER" bash -lc '
-set -euo pipefail
+    # The AVX512 image is self-contained and intentionally does not use modules.
+    APPTAINERENV_N_BUILD_JOBS=$N_BUILD_JOBS apptainer exec --cleanenv "$AVX512_CONTAINER" bash -lc '
+    set -euo pipefail
 
-cmake -S . -B build/avx512 \
-    -DMPI_C_COMPILER=$(command -v mpicc) \
-    -DMPI_CXX_COMPILER=$(command -v mpicxx) \
-    -DMFSOLVER_BUILD_MATRIX_BASED=OFF \
-    -DMFSOLVER_BUILD_MATRIX_FREE_NO_SIMD=OFF \
-    -DMFSOLVER_BUILD_MATRIX_FREE_SIMD=ON
+    cmake -S . -B build/avx512 \
+        -DMPI_C_COMPILER=$(command -v mpicc) \
+        -DMPI_CXX_COMPILER=$(command -v mpicxx) \
+        -DMFSOLVER_BUILD_MATRIX_BASED=OFF \
+        -DMFSOLVER_BUILD_MATRIX_FREE_NO_SIMD=OFF \
+        -DMFSOLVER_BUILD_MATRIX_FREE_SIMD=ON
 
-cmake --build build/avx512 -j "$N_BUILD_JOBS" --target matrix_free_simd
-'
+    cmake --build build/avx512 -j "$N_BUILD_JOBS" --target matrix_free_simd
+    '
+fi
 
 echo "Build complete:"
 echo "  ./matrix_based"
 echo "  ./matrix_free_no_simd"
-echo "  ./matrix_free_simd"
+if [[ "$BUILD_AVX512" = true ]]; then
+    echo "  ./matrix_free_simd"
+fi
+
