@@ -44,6 +44,7 @@
 #include <deal.II/lac/solver_cg.h>
 #include <deal.II/lac/solver_gmres.h>
 #include <deal.II/lac/sparsity_tools.h>
+#include <deal.II/lac/precondition.h>
 #include <deal.II/lac/trilinos_precondition.h>
 #include <deal.II/lac/trilinos_sparse_matrix.h>
 #include <deal.II/lac/trilinos_vector.h>
@@ -66,6 +67,7 @@
 
 #include <deal.II/multigrid/mg_constrained_dofs.h>
 #include <deal.II/multigrid/mg_transfer.h>
+#include <deal.II/multigrid/mg_transfer_matrix_free.h>
 #include <deal.II/multigrid/multigrid.h>
 #include <deal.II/multigrid/mg_smoother.h>
 #include <deal.II/multigrid/mg_coarse.h>
@@ -471,6 +473,20 @@ namespace MFSolver
         bool converged = false;
         ConditionalOStream pcout;
         ConditionalOStream time_details;
+
+        bool mf_setup_initialized = false;
+        std::shared_ptr<MatrixFree<dim, double>> inhomogeneous_mf_storage;
+        std::shared_ptr<ADROperator<dim, double>> inhomogeneous_operator;
+
+        std::shared_ptr<MGTransferMatrixFree<dim, float>> mg_transfer;
+        using SmootherType = PreconditionChebyshev<LevelMatrixType, DVector<float>>;
+        std::shared_ptr<mg::SmootherRelaxation<SmootherType, DVector<float>>> mg_smoother;
+        std::shared_ptr<MGCoarseGridApplySmoother<DVector<float>>> mg_coarse;
+        std::shared_ptr<mg::Matrix<DVector<float>>> mg_matrix;
+        std::shared_ptr<MGLevelObject<MatrixFreeOperators::MGInterfaceOperator<LevelMatrixType>>> mg_interface_matrices;
+        std::shared_ptr<mg::Matrix<DVector<float>>> mg_interface;
+        std::shared_ptr<Multigrid<DVector<float>>> mg;
+        std::shared_ptr<PreconditionMG<dim, DVector<float>, MGTransferMatrixFree<dim, float>>> preconditioner;
     };
 
     template <int dim>

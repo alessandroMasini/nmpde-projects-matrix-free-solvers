@@ -29,6 +29,7 @@ namespace MFSolver
     {
         dealii::Timer timer;
         setup_time = 0;
+        this->mf_setup_initialized = false;
 
         {
             system_matrix.clear();
@@ -150,49 +151,52 @@ namespace MFSolver
     {
         Timer timer;
 
-        system_matrix.set_time_step(this->problem.is_time_dependent ? this->problem.delta_t : 0.0);
-        system_matrix.evaluate_coefficients(*(this->problem.mu), *(this->problem.beta), *(this->problem.gamma));
-        system_matrix.compute_diagonal();
-
-        const unsigned int nlevels = triangulation.n_global_levels();
-        for (unsigned int level = 0; level < nlevels; ++level)
+        if (!this->mf_setup_initialized)
         {
-            mg_matrices[level].set_time_step(this->problem.is_time_dependent ? this->problem.delta_t : 0.0);
-            mg_matrices[level].evaluate_coefficients(*(this->problem.mu), *(this->problem.beta), *(this->problem.gamma));
-            mg_matrices[level].compute_diagonal();
+            system_matrix.set_time_step(this->problem.is_time_dependent ? this->problem.delta_t : 0.0);
+            system_matrix.evaluate_coefficients(*(this->problem.mu), *(this->problem.beta), *(this->problem.gamma));
+            system_matrix.compute_diagonal();
+
+            const unsigned int nlevels = triangulation.n_global_levels();
+            for (unsigned int level = 0; level < nlevels; ++level)
+            {
+                mg_matrices[level].set_time_step(this->problem.is_time_dependent ? this->problem.delta_t : 0.0);
+                mg_matrices[level].evaluate_coefficients(*(this->problem.mu), *(this->problem.beta), *(this->problem.gamma));
+                mg_matrices[level].compute_diagonal();
+            }
+
+            AffineConstraints<double> no_constraints;
+            no_constraints.close();
+
+            typename MatrixFree<dim, double>::AdditionalData additional_data;
+            additional_data.mapping_update_flags = update_gradients | update_JxW_values | update_quadrature_points;
+            this->inhomogeneous_mf_storage = std::make_shared<MatrixFree<dim, double>>();
+
+            // Since the quadrature type decides whether simd is used or not, the choice of the former needs to depend on the latter
+            // TODO: Andrea sa
+            // if (simd_flag){
+            //     this->inhomogeneous_mf_storage->reinit(mapping, dof_handler, no_constraints, QGaussLobatto<1>(fe.degree + 1), additional_data);
+            // } else {
+            this->inhomogeneous_mf_storage->reinit(mapping, dof_handler, no_constraints, QGauss<1>(fe.degree + 1), additional_data);
+            // }
+            
+            this->inhomogeneous_operator = std::make_shared<ADROperator<dim, double>>();
+            this->inhomogeneous_operator->initialize(this->inhomogeneous_mf_storage);
+            this->inhomogeneous_operator->evaluate_coefficients(*(this->problem.mu), *(this->problem.beta), *(this->problem.gamma));
         }
 
         system_rhs = 0;
 
-        AffineConstraints<double> no_constraints;
-        no_constraints.close();
-
-        ADROperator<dim, double> inhomogeneous_operator;
-
-        typename MatrixFree<dim, double>::AdditionalData additional_data;
-        additional_data.mapping_update_flags = update_gradients | update_JxW_values | update_quadrature_points;
-        std::shared_ptr<MatrixFree<dim, double>> inhomogeneous_mf_storage(new MatrixFree<dim, double>());
-
-        // Since the quadrature type decides whether simd is used or not, the choice of the former needs to depend on the latter
-        // TODO: Andrea sa
-        // if (simd_flag){
-        //     inhomogeneous_mf_storage->reinit(mapping, dof_handler, no_constraints, QGaussLobatto<1>(fe.degree + 1), additional_data);
-        // } else {
-        inhomogeneous_mf_storage->reinit(mapping, dof_handler, no_constraints, QGauss<1>(fe.degree + 1), additional_data);
-        // }
-        inhomogeneous_operator.initialize(inhomogeneous_mf_storage);
-
         solution = 0;
         constraints.distribute(solution);
-        inhomogeneous_operator.evaluate_coefficients(*(this->problem.mu), *(this->problem.beta), *(this->problem.gamma));
-        inhomogeneous_operator.vmult(system_rhs, solution);
+        this->inhomogeneous_operator->vmult(system_rhs, solution);
         system_rhs *= -1.0;
 
         // Use deal.II's dynamic-degree matrix-free evaluator. The FE_Q degree
         // itself comes from ProblemData::fe_degree and is stored in MatrixFree.
-        FEEvaluation<dim, -1, 0, 1, double> phi(*inhomogeneous_operator.get_matrix_free());
+        FEEvaluation<dim, -1, 0, 1, double> phi(*(this->inhomogeneous_operator->get_matrix_free()));
 
-        for (unsigned int cell = 0; cell < inhomogeneous_operator.get_matrix_free()->n_cell_batches(); ++cell)
+        for (unsigned int cell = 0; cell < this->inhomogeneous_operator->get_matrix_free()->n_cell_batches(); ++cell)
         {
             phi.reinit(cell);
 
@@ -264,58 +268,62 @@ namespace MFSolver
     {
         Timer timer;
 
-        // Grid Transfer: builds interpolation weights to move residual data to coarser grids (Restriction)
-        // and move algebraic corrections back up to finer grids (Prolongation).
-        MGTransferMatrixFree<dim, float> mg_transfer(mg_constrained_dofs);
-        mg_transfer.build(dof_handler);
-
-        // Smoother: Chebyshev iteration squashes high-frequency errors. It's mathematically
-        // perfect for matrix-free because it entirely relies on matrix-vector multiplications.
-        using SmootherType = PreconditionChebyshev<LevelMatrixType, DVector<float>>;
-        mg::SmootherRelaxation<SmootherType, DVector<float>> mg_smoother;
-        MGLevelObject<typename SmootherType::AdditionalData> smoother_data;
-        smoother_data.resize(0, triangulation.n_global_levels() - 1);
-
-        for (unsigned int level = 0; level < triangulation.n_global_levels(); ++level)
+        if (!this->mf_setup_initialized)
         {
-            if (level > 0)
+            // Grid Transfer: builds interpolation weights to move residual data to coarser grids (Restriction)
+            // and move algebraic corrections back up to finer grids (Prolongation).
+            this->mg_transfer = std::make_shared<MGTransferMatrixFree<dim, float>>(mg_constrained_dofs);
+            this->mg_transfer->build(dof_handler);
+
+            // Smoother: Chebyshev iteration squashes high-frequency errors. It's mathematically
+            // perfect for matrix-free because it entirely relies on matrix-vector multiplications.
+            this->mg_smoother = std::make_shared<mg::SmootherRelaxation<SmootherType, DVector<float>>>();
+            MGLevelObject<typename SmootherType::AdditionalData> smoother_data;
+            smoother_data.resize(0, triangulation.n_global_levels() - 1);
+
+            for (unsigned int level = 0; level < triangulation.n_global_levels(); ++level)
             {
-                // For intermediate and fine levels, do a quick 5-degree polynomial smoothing sweep
-                smoother_data[level].smoothing_range = this->problem.lvgt0_smoothing_range;
-                smoother_data[level].degree = this->problem.lvgt0_smoothing_degree;
-                smoother_data[level].eig_cg_n_iterations = this->problem.lvgt0_smoothing_eigenvalue_max_iterations;
+                if (level > 0)
+                {
+                    // For intermediate and fine levels, do a quick 5-degree polynomial smoothing sweep
+                    smoother_data[level].smoothing_range = this->problem.lvgt0_smoothing_range;
+                    smoother_data[level].degree = this->problem.lvgt0_smoothing_degree;
+                    smoother_data[level].eig_cg_n_iterations = this->problem.lvgt0_smoothing_eigenvalue_max_iterations;
+                }
+                else
+                {
+                    smoother_data[0].smoothing_range = this->problem.lv0_smoothing_range;
+                    smoother_data[0].degree = numbers::invalid_unsigned_int;
+                    smoother_data[0].eig_cg_n_iterations = mg_matrices[0].m();
+                }
+                // Inject the cached inverse diagonals we extracted during assemble()
+                smoother_data[level].preconditioner = mg_matrices[level].get_matrix_diagonal_inverse();
             }
-            else
-            {
-                smoother_data[0].smoothing_range = this->problem.lv0_smoothing_range;
-                smoother_data[0].degree = numbers::invalid_unsigned_int;
-                smoother_data[0].eig_cg_n_iterations = mg_matrices[0].m();
-            }
-            // Inject the cached inverse diagonals we extracted during assemble()
-            smoother_data[level].preconditioner = mg_matrices[level].get_matrix_diagonal_inverse();
+            this->mg_smoother->initialize(mg_matrices, smoother_data);
+
+            // Tell the coarse solver to just run the level 0 smoother we just configured above
+            this->mg_coarse = std::make_shared<MGCoarseGridApplySmoother<DVector<float>>>();
+            this->mg_coarse->initialize(*(this->mg_smoother));
+
+            this->mg_matrix = std::make_shared<mg::Matrix<DVector<float>>>(mg_matrices);
+
+            // Hanging node interfaces: when transferring residual data between levels, these
+            // special operators correctly account for the spatial discontinuities where h-refinement occurred.
+            this->mg_interface_matrices = std::make_shared<MGLevelObject<MatrixFreeOperators::MGInterfaceOperator<LevelMatrixType>>>();
+            this->mg_interface_matrices->resize(0, triangulation.n_global_levels() - 1);
+            for (unsigned int level = 0; level < triangulation.n_global_levels(); ++level)
+                (*(this->mg_interface_matrices))[level].initialize(mg_matrices[level]);
+
+            this->mg_interface = std::make_shared<mg::Matrix<DVector<float>>>(*(this->mg_interface_matrices));
+
+            // Assemble the full Multigrid V-Cycle Preconditioner structure
+            this->mg = std::make_shared<Multigrid<DVector<float>>>(*(this->mg_matrix), *(this->mg_coarse), *(this->mg_transfer), *(this->mg_smoother), *(this->mg_smoother));
+            this->mg->set_edge_matrices(*(this->mg_interface), *(this->mg_interface));
+
+            this->preconditioner = std::make_shared<PreconditionMG<dim, DVector<float>, MGTransferMatrixFree<dim, float>>>(dof_handler, *(this->mg), *(this->mg_transfer));
+            
+            this->mf_setup_initialized = true;
         }
-        mg_smoother.initialize(mg_matrices, smoother_data);
-
-        // Tell the coarse solver to just run the level 0 smoother we just configured above
-        MGCoarseGridApplySmoother<DVector<float>> mg_coarse;
-        mg_coarse.initialize(mg_smoother);
-
-        mg::Matrix<DVector<float>> mg_matrix(mg_matrices);
-
-        // Hanging node interfaces: when transferring residual data between levels, these
-        // special operators correctly account for the spatial discontinuities where h-refinement occurred.
-        MGLevelObject<MatrixFreeOperators::MGInterfaceOperator<LevelMatrixType>> mg_interface_matrices;
-        mg_interface_matrices.resize(0, triangulation.n_global_levels() - 1);
-        for (unsigned int level = 0; level < triangulation.n_global_levels(); ++level)
-            mg_interface_matrices[level].initialize(mg_matrices[level]);
-
-        mg::Matrix<DVector<float>> mg_interface(mg_interface_matrices);
-
-        // Assemble the full Multigrid V-Cycle Preconditioner structure
-        Multigrid<DVector<float>> mg(mg_matrix, mg_coarse, mg_transfer, mg_smoother, mg_smoother);
-        mg.set_edge_matrices(mg_interface, mg_interface);
-
-        PreconditionMG<dim, DVector<float>, MGTransferMatrixFree<dim, float>> preconditioner(dof_handler, mg, mg_transfer);
 
         // Outer Iterative Krylov Solver: Since our ADR equation has an asymmetric advection term,
         // standard Conjugate Gradient (CG) could fail here. We use GMRES instead.
@@ -328,7 +336,7 @@ namespace MFSolver
         // Zero out constraints before solving so the GMRES internal vectors aren't corrupted,
         // then distribute the exact boundary values back at the end
         constraints.set_zero(solution);
-        gmres.solve(system_matrix, solution, system_rhs, preconditioner);
+        gmres.solve(system_matrix, solution, system_rhs, *(this->preconditioner));
         this->conv_history.emplace_back(solver_control.get_history_data());
         converged = (solver_control.last_check() == SolverControl::State::success);
         constraints.distribute(solution);
