@@ -231,10 +231,9 @@ namespace MFSolver
          */
         void clear() override
         {
-            mu_coeff.reinit(0, 0);
-            beta_coeff.reinit(0, 0);
-            div_beta_coeff.reinit(0, 0);
-            gamma_coeff.reinit(0, 0);
+            mu_func = nullptr;
+            beta_func = nullptr;
+            gamma_func = nullptr;
 
             Super::clear();
         }
@@ -256,27 +255,9 @@ namespace MFSolver
             const VectorFunctionWithGradient<dim> &beta_coeff_function,
             const RealFunction<dim> &gamma_coeff_function)
         {
-            const unsigned int n_cells = this->data->n_cell_batches();
-            Phi phi(*this->data);
-
-            mu_coeff.reinit(n_cells, phi.n_q_points);
-            beta_coeff.reinit(n_cells, phi.n_q_points);
-            div_beta_coeff.reinit(n_cells, phi.n_q_points);
-            gamma_coeff.reinit(n_cells, phi.n_q_points);
-
-            for (unsigned int cell = 0; cell < n_cells; ++cell)
-            {
-                phi.reinit(cell);
-                for (const unsigned int q : phi.quadrature_point_indices())
-                {
-                    Point<dim, VectorizedArray<Number>> quadrature_point = phi.quadrature_point(q);
-
-                    mu_coeff(cell, q) = mu_coeff_function.value(quadrature_point);
-                    beta_coeff(cell, q) = beta_coeff_function.value(quadrature_point);
-                    div_beta_coeff(cell, q) = beta_coeff_function.divergence(quadrature_point);
-                    gamma_coeff(cell, q) = gamma_coeff_function.value(quadrature_point);
-                }
-            }
+            mu_func = &mu_coeff_function;
+            beta_func = &beta_coeff_function;
+            gamma_func = &gamma_coeff_function;
         }
 
         /**
@@ -330,6 +311,7 @@ namespace MFSolver
          */
         void lhs_computation(Phi &phi, const unsigned int cell) const
         {
+            (void)cell; // Cell index no longer needed since we evaluate on the fly
             phi.evaluate(EvaluationFlags::values | EvaluationFlags::gradients);
 
             for (const unsigned int q : phi.quadrature_point_indices())
@@ -337,10 +319,12 @@ namespace MFSolver
                 Tensor<1, dim, VectorizedArray<Number>> gradient_of_u = phi.get_gradient(q);
                 VectorizedArray<Number> value_of_u = phi.get_value(q);
 
-                VectorizedArray<Number> mu = mu_coeff(cell, q);
-                Tensor<1, dim, VectorizedArray<Number>> beta = beta_coeff(cell, q);
-                VectorizedArray<Number> div_beta = div_beta_coeff(cell, q);
-                VectorizedArray<Number> gamma = gamma_coeff(cell, q);
+                Point<dim, VectorizedArray<Number>> quadrature_point = phi.quadrature_point(q);
+
+                VectorizedArray<Number> mu = mu_func->value(quadrature_point);
+                Tensor<1, dim, VectorizedArray<Number>> beta = beta_func->value(quadrature_point);
+                VectorizedArray<Number> div_beta = beta_func->divergence(quadrature_point);
+                VectorizedArray<Number> gamma = gamma_func->value(quadrature_point);
 
                 VectorizedArray<Number> mass_term_coeff = make_vectorized_array<Number>(delta_t > 0.0 ? 1.0 / delta_t : 0.0);
 
@@ -363,17 +347,9 @@ namespace MFSolver
             Phi phi(data);
             for (unsigned int cell = cell_range.first; cell < cell_range.second; ++cell)
             {
-                AssertDimension(mu_coeff.size(0), data.n_cell_batches());
-                AssertDimension(mu_coeff.size(1), phi.n_q_points);
-
-                AssertDimension(beta_coeff.size(0), data.n_cell_batches());
-                AssertDimension(beta_coeff.size(1), phi.n_q_points);
-
-                AssertDimension(div_beta_coeff.size(0), data.n_cell_batches());
-                AssertDimension(div_beta_coeff.size(1), phi.n_q_points);
-
-                AssertDimension(gamma_coeff.size(0), data.n_cell_batches());
-                AssertDimension(gamma_coeff.size(1), phi.n_q_points);
+                Assert(mu_func != nullptr, ExcMessage("mu coefficient function was not set."));
+                Assert(beta_func != nullptr, ExcMessage("beta coefficient function was not set."));
+                Assert(gamma_func != nullptr, ExcMessage("gamma coefficient function was not set."));
 
                 phi.reinit(cell);
                 phi.read_dof_values(src);
@@ -410,26 +386,19 @@ namespace MFSolver
         double delta_t;
 
         /**
-         * \brief Cache used to store precomputed values for the diffusion coefficient.
+         * \brief Pointer to the diffusion coefficient function.
          */
-        Table<2, VectorizedArray<Number>> mu_coeff;
+        const RealFunction<dim> *mu_func = nullptr;
 
         /**
-         * \brief Cache used to store precomputed values for the advection coefficient.
+         * \brief Pointer to the advection coefficient function.
          */
-        Table<2, Tensor<1, dim, VectorizedArray<Number>>> beta_coeff; // Is this OK?
+        const VectorFunctionWithGradient<dim> *beta_func = nullptr;
 
         /**
-         * \brief Cache used to store precomputed values for the divergence of the advection coefficient.
-         *
-         * Here, the divergence of beta is treated exactly like a coefficient in order to have it precomputed when needed in order to not break the SIMD contexts in which they are used (that would cause significand slowdowns).
+         * \brief Pointer to the reaction coefficient function.
          */
-        Table<2, VectorizedArray<Number>> div_beta_coeff;
-
-        /**
-         * \brief Cache used to store precomputed values for the reaction coefficient.
-         */
-        Table<2, VectorizedArray<Number>> gamma_coeff;
+        const RealFunction<dim> *gamma_func = nullptr;
     };
 
     /**
