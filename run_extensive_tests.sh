@@ -220,15 +220,14 @@ mkdir -p "$TESTS_DIR"
 # Child processes inherit exported variables. The C++ output helpers read
 # these paths when choosing the tests root and appending completed runs.
 export MFSOLVER_TESTS_DIR="$TESTS_DIR"
-# Child processes inherit exported variables. The C++ output helpers read
-# these paths when choosing the tests root and appending completed runs.
-export MFSOLVER_TESTS_DIR="$TESTS_DIR"
 export MFSOLVER_LATEST_RUN_MANIFEST="$LATEST_RUN_MANIFEST"
+export MFSOLVER_DISABLE_VTU=1
 
 if [[ "$USE_SCRATCH_LOCAL" -eq 1 ]]; then
     export MFSOLVER_SCRATCH_GLOBAL_ROOT="$SCRATCH_GLOBAL_ROOT"
     export MFSOLVER_SCRATCH_GLOBAL_TESTS_DIR="$SCRATCH_GLOBAL_ROOT/tests"
 fi
+
 
 test_base_dir_for_run() {
     # Reconstruct the exact parameter directory where this solver invocation

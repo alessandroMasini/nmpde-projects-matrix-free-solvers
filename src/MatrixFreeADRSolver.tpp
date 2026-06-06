@@ -368,15 +368,22 @@ namespace MFSolver
                                             this->simd_flag,
                                             this->output_dir);
 
-        time_details << "Creating solution output (cpu/wall): " << timer.cpu_time() << "s/" << timer.wall_time() << "s" << std::endl;
-        timer.restart();
+        const char* disable_vtu_env = std::getenv("MFSOLVER_DISABLE_VTU");
+        const bool disable_vtu = (disable_vtu_env != nullptr && (std::string(disable_vtu_env) == "1" || std::string(disable_vtu_env) == "true"));
 
-        // All ranks participate here. The shared output_dir ensures their VTU
-        // pieces and the PVTU index file describe one run rather than several.
-        data_out.write_vtu_with_pvtu_record(
-            this->output_dir, "/solution", this->timestep_number, MPI_COMM_WORLD);
+        if (!disable_vtu)
+        {
+            time_details << "Creating solution output (cpu/wall): " << timer.cpu_time() << "s/" << timer.wall_time() << "s" << std::endl;
+            timer.restart();
 
-        time_details << "Writing solution output (cpu/wall): " << timer.cpu_time() << "s/" << timer.wall_time() << "s" << std::endl;
+            // All ranks participate here. The shared output_dir ensures their VTU
+            // pieces and the PVTU index file describe one run rather than several.
+            data_out.write_vtu_with_pvtu_record(
+                this->output_dir, "/solution", this->timestep_number, MPI_COMM_WORLD);
+
+            time_details << "Writing solution output (cpu/wall): " << timer.cpu_time() << "s/" << timer.wall_time() << "s" << std::endl;
+        }
+
     }
 
     template <int dim>

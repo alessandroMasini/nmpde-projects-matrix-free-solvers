@@ -375,10 +375,17 @@ namespace MFSolver
                                       this->mpi_communicator,
                                       this->output_dir);
     
-    // Every time step writes into the same reserved run folder. The time-step
-    // number appears in the filename, not in the directory name.
-    data_out.write_vtu_with_pvtu_record(
-        this->output_dir, "/solution", this->timestep_number, mpi_communicator);
+    const char* disable_vtu_env = std::getenv("MFSOLVER_DISABLE_VTU");
+    const bool disable_vtu = (disable_vtu_env != nullptr && (std::string(disable_vtu_env) == "1" || std::string(disable_vtu_env) == "true"));
+
+    if (!disable_vtu)
+    {
+      // Every time step writes into the same reserved run folder. The time-step
+      // number appears in the filename, not in the directory name.
+      data_out.write_vtu_with_pvtu_record(
+          this->output_dir, "/solution", this->timestep_number, mpi_communicator);
+    }
+
   }
 
   template <int dim>
