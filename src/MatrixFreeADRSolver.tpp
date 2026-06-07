@@ -329,16 +329,29 @@ namespace MFSolver
         // standard Conjugate Gradient (CG) could fail here. We use GMRES instead.
         // pcout << this->problem.solver_max_iterations << std::endl;
         // pcout << this->problem.solver_tolerance_factor << std::endl;
-        SolverControl solver_control(this->problem.solver_max_iterations, this->problem.solver_tolerance_factor * system_rhs.l2_norm());
+        const double adjusted_solver_tolerance =
+            this->problem.solver_tolerance_factor * system_rhs.l2_norm();
+        SolverControl solver_control(this->problem.solver_max_iterations, adjusted_solver_tolerance);
         solver_control.enable_history_data();
         SolverGMRES<DVector<double>> gmres(solver_control);
 
         // Zero out constraints before solving so the GMRES internal vectors aren't corrupted,
         // then distribute the exact boundary values back at the end
         constraints.set_zero(solution);
-        gmres.solve(system_matrix, solution, system_rhs, *(this->preconditioner));
+        try
+        {
+            gmres.solve(system_matrix, solution, system_rhs, *(this->preconditioner));
+            converged = (solver_control.last_check() == SolverControl::State::success);
+        }
+        catch (const SolverControl::NoConvergence &)
+        {
+            converged = false;
+            pcout << "Solver did not converge within "
+                  << this->problem.solver_max_iterations
+                  << " iterations." << std::endl;
+        }
         this->conv_history.emplace_back(solver_control.get_history_data());
-        converged = (solver_control.last_check() == SolverControl::State::success);
+        this->solver_tolerances.emplace_back(adjusted_solver_tolerance);
         constraints.distribute(solution);
 
         pcout << "Solved in " << solver_control.last_step() << " iterations." << std::endl;
@@ -560,6 +573,7 @@ namespace MFSolver
         write_solver_log_file(this->output_dir,
                               this->problem,
                               this->conv_history,
+                              this->solver_tolerances,
                               this->end_time - this->start_time,
                               this->l2_error,
                               this->h1_error,

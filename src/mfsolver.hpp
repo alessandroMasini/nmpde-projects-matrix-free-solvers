@@ -190,6 +190,7 @@ namespace MFSolver
         double end_time = 0;
 
         std::vector<std::vector<double>> conv_history;
+        std::vector<double> solver_tolerances;
 
         /**
          * Directory reserved for this run.

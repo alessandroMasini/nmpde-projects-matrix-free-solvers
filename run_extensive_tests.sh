@@ -51,8 +51,8 @@ Options:
                                       Default: "100"
   --tol <list>                        List of tolerances (per time step).
                                       Default: "1e-6 1-8 1e-10 1e-12"
-  --run_timeout_seconds <int>         Discard a single run if it lasts longer
-                                      than this many seconds. Use 0 to disable.
+  --run_timeout_seconds <int>         Mark a single run as overtime if it lasts
+                                      longer than this many seconds. Use 0 to disable.
                                       Default: 60
   --use_scratch_local                 Write tests to /scratch_local and copy
                                       the completed tests folder to
@@ -280,24 +280,9 @@ list_test_dirs() {
     done
 }
 
-remove_manifest_entry() {
-    # A completed run appends its test_N path to latest_run_tests.txt. If the
-    # process is killed after writing that line, remove it so the summary sees
-    # the timed-out run as if it had never happened.
-    local discarded_dir="$1"
-    local tmp_manifest
-
-    [[ -f "$LATEST_RUN_MANIFEST" ]] || return 0
-
-    tmp_manifest="$(mktemp "${LATEST_RUN_MANIFEST}.tmp.XXXXXX")" || return 1
-    grep -Fxv "$discarded_dir" "$LATEST_RUN_MANIFEST" > "$tmp_manifest" || true
-    mv "$tmp_manifest" "$LATEST_RUN_MANIFEST"
-}
-
-discard_new_test_dirs() {
+list_new_test_dirs() {
     # Compare the parameter directory before and after the command. Any new
-    # test_N directory belongs to the timed-out attempt and should be removed,
-    # leaving possible holes such as test_0, test_2, test_4.
+    # test_N directory belongs to the just-finished attempt.
     local base_dir="$1"
     local before_file="$2"
     local candidate
@@ -306,10 +291,97 @@ discard_new_test_dirs() {
 
     while IFS= read -r candidate; do
         if ! grep -Fxq "$candidate" "$before_file"; then
-            remove_manifest_entry "$candidate"
-            rm -rf -- "$candidate"
+            printf '%s\n' "$candidate"
         fi
     done < <(list_test_dirs "$base_dir")
+}
+
+join_lines_with_commas() {
+    local first=1
+    local line
+
+    while IFS= read -r line; do
+        [[ -n "$line" ]] || continue
+        if [[ "$first" -eq 1 ]]; then
+            printf '%s' "$line"
+            first=0
+        else
+            printf ',%s' "$line"
+        fi
+    done
+}
+
+save_command_output_log() {
+    local base_dir="$1"
+    local new_dirs="$2"
+    local command_output_file="$3"
+    local run_label="$4"
+    local status_kind="$5"
+    local saved_log_path=""
+    local run_dir
+    local safe_label
+    local fallback_dir
+
+    safe_label="${run_label//[^[:alnum:]_.-]/_}"
+
+    while IFS= read -r run_dir; do
+        [[ -n "$run_dir" ]] || continue
+        cp "$command_output_file" "$run_dir/runner_output.log"
+        saved_log_path="$run_dir/runner_output.log"
+    done <<< "$new_dirs"
+
+    if [[ -z "$saved_log_path" && "$status_kind" != "ok" ]]; then
+        fallback_dir="$base_dir/_attempt_logs"
+        mkdir -p "$fallback_dir"
+        saved_log_path="$fallback_dir/${safe_label}_$(date +%Y%m%dT%H%M%S%N).log"
+        cp "$command_output_file" "$saved_log_path"
+    fi
+
+    printf '%s\n' "$saved_log_path"
+}
+
+manifest_solver_name() {
+    local solver="$1"
+
+    if [[ "$solver" == "mf" ]]; then
+        printf '%s\n' "matrix_free"
+    else
+        printf '%s\n' "matrix_based"
+    fi
+}
+
+record_attempt_manifest_entry() {
+    local status_kind="$1"
+    local solver="$2"
+    local problem="$3"
+    local fe_deg="$4"
+    local n_additional_refinements="$5"
+    local n_ranks="$6"
+    local n_threads="$7"
+    local simd="$8"
+    local delta_t="$9"
+    shift 9
+    local max_iters="$1"
+    local tol="$2"
+    local exit_code="$3"
+    local output_dirs="$4"
+    local log_path="$5"
+
+    printf 'ATTEMPT status=%s solver=%s problem=%s fe_deg=%s n_add_ref=%s n_ranks=%s n_threads=%s simd=%s delta_t=%s max_iters=%s tol=%s exit_code=%s output_dirs=%s log=%s\n' \
+        "$status_kind" \
+        "$(manifest_solver_name "$solver")" \
+        "$problem" \
+        "$fe_deg" \
+        "$n_additional_refinements" \
+        "$n_ranks" \
+        "$n_threads" \
+        "$simd" \
+        "$delta_t" \
+        "$max_iters" \
+        "$tol" \
+        "$exit_code" \
+        "$output_dirs" \
+        "$log_path" >> "$LATEST_RUN_MANIFEST"
 }
 
 run_solver_command() {
@@ -320,48 +392,70 @@ run_solver_command() {
     #   $2 = parameter directory where this command may create test_N folders
     #   $3... = command to execute, including all its arguments
     #
-    # The C++ output helper creates a new test_N directory during a successful
-    # run. If timeout kills the solver after that directory was partially
-    # created, we do not want summarize_tests.py to average a truncated log.
-    # For that reason this function snapshots the existing test_N directories
-    # before launching the command and deletes only the new ones on timeout.
+    # The C++ output helper creates a new test_N directory during the run.
+    # Timeout and failure cases are still useful evidence, so this function
+    # snapshots the existing test_N directories before launching the command,
+    # keeps any new ones, and saves stdout/stderr into them when possible.
     local run_label="$1"
     local base_dir="$2"
     shift 2
     local before_file
+    local command_output_file
+    local new_dirs
+    local status_kind
+    local saved_log_path
     local status
+
+    RUN_SOLVER_COMMAND_STATUS="fail"
+    RUN_SOLVER_COMMAND_EXIT_CODE=1
+    RUN_SOLVER_COMMAND_OUTPUT_DIRS=""
+    RUN_SOLVER_COMMAND_LOG_PATH=""
 
     # Store the pre-run directory list in a temporary file instead of a Bash
     # array. This keeps the comparison simple and avoids quoting problems with
     # paths when the test root is under scratch.
     before_file="$(mktemp "${TMPDIR:-/tmp}/mfsolver-test-dirs-before.XXXXXX")" || return 1
     list_test_dirs "$base_dir" > "$before_file"
+    command_output_file="$(mktemp "${TMPDIR:-/tmp}/mfsolver-run-output.XXXXXX")" || {
+        rm -f "$before_file"
+        return 1
+    }
 
     # timeout --foreground lets MPI children receive terminal-related signals
     # correctly. The -k grace period sends SIGKILL if the process group does
     # not exit after the initial timeout signal.
     if [[ "$RUN_TIMEOUT_SECONDS" -gt 0 ]]; then
-        timeout --foreground -k 10s "${RUN_TIMEOUT_SECONDS}s" "$@"
+        timeout --foreground -k 10s "${RUN_TIMEOUT_SECONDS}s" "$@" > "$command_output_file" 2>&1
     else
-        "$@"
+        "$@" > "$command_output_file" 2>&1
     fi
     status=$?
+    cat "$command_output_file"
+
+    status_kind="ok"
 
     # GNU timeout normally returns 124. MPI launchers may instead surface 137
     # or 143 when the killed process reports SIGKILL/SIGTERM. Treat all three
-    # as discarded samples: remove partial output, print a note, and return 0
+    # as overtime attempts: preserve partial output, print a note, and return 0
     # so the sweep continues with the remaining parameter combinations.
     if [[ "$RUN_TIMEOUT_SECONDS" -gt 0 ]] && [[ "$status" -eq 124 || "$status" -eq 137 || "$status" -eq 143 ]]; then
-        discard_new_test_dirs "$base_dir" "$before_file"
-        echo "Discarded $run_label: exceeded ${RUN_TIMEOUT_SECONDS}s"
-        status=0
+        status_kind="overtime"
+        echo "Overtime $run_label: exceeded ${RUN_TIMEOUT_SECONDS}s"
+    elif [[ "$status" -ne 0 ]]; then
+        status_kind="fail"
     fi
 
-    # Non-timeout failures are returned unchanged. Whether they abort the whole
-    # script depends on the caller's shell settings, but the status is not
-    # hidden here.
+    new_dirs="$(list_new_test_dirs "$base_dir" "$before_file")"
+    saved_log_path="$(save_command_output_log "$base_dir" "$new_dirs" "$command_output_file" "$run_label" "$status_kind")"
+
+    RUN_SOLVER_COMMAND_STATUS="$status_kind"
+    RUN_SOLVER_COMMAND_EXIT_CODE="$status"
+    RUN_SOLVER_COMMAND_OUTPUT_DIRS="$(printf '%s\n' "$new_dirs" | join_lines_with_commas)"
+    RUN_SOLVER_COMMAND_LOG_PATH="$saved_log_path"
+
     rm -f "$before_file"
-    return "$status"
+    rm -f "$command_output_file"
+    return 0
 }
 
 container_for_run() {
@@ -446,6 +540,40 @@ exec "$@"
         bash -lc "$container_script" _ "$@"
 }
 
+run_solver_attempt() {
+    local run_label="$1"
+    local base_dir="$2"
+    local solver="$3"
+    local simd="$4"
+    local problem="$5"
+    local fe_deg="$6"
+    local n_additional_refinements="$7"
+    local n_ranks="$8"
+    local n_threads="$9"
+    local delta_t="${10}"
+    local max_iters="${11}"
+    local tol="${12}"
+    shift 12
+
+    run_solver_command_for_variant "$run_label" "$base_dir" "$solver" "$simd" "$@"
+
+    record_attempt_manifest_entry \
+        "$RUN_SOLVER_COMMAND_STATUS" \
+        "$solver" \
+        "$problem" \
+        "$fe_deg" \
+        "$n_additional_refinements" \
+        "$n_ranks" \
+        "$n_threads" \
+        "$simd" \
+        "$delta_t" \
+        "$max_iters" \
+        "$tol" \
+        "$RUN_SOLVER_COMMAND_EXIT_CODE" \
+        "$RUN_SOLVER_COMMAND_OUTPUT_DIRS" \
+        "$RUN_SOLVER_COMMAND_LOG_PATH"
+}
+
 for solver in $SOLVER; do
     echo "--- Solver: $solver ---"
     
@@ -465,8 +593,8 @@ for solver in $SOLVER; do
                                                 # MATRIX-FREE
                                                 test_base_dir="$(test_base_dir_for_run "$solver" "$problem" "$fe_deg" "$n_additional_refinements" "$n_ranks" "$n_threads" "$simd")"
                                                 case "$simd" in
-                                                    0)  run_solver_command_for_variant "run $i" "$test_base_dir" "$solver" "$simd" mpirun --report-bindings -n "$n_ranks" --bind-to hwthread --map-by core:PE="$n_threads" ./matrix_free_no_simd "$n_threads" "$simd" "$problem" "$fe_deg" "$n_additional_refinements" "$delta_t" "$max_iters" "$tol";;
-                                                    1)  run_solver_command_for_variant "run $i" "$test_base_dir" "$solver" "$simd" mpirun --report-bindings -n "$n_ranks" --bind-to hwthread --map-by core:PE="$n_threads" ./matrix_free_simd "$n_threads" "$simd" "$problem" "$fe_deg" "$n_additional_refinements" "$delta_t" "$max_iters" "$tol";; 
+                                                    0)  run_solver_attempt "run $i" "$test_base_dir" "$solver" "$simd" "$problem" "$fe_deg" "$n_additional_refinements" "$n_ranks" "$n_threads" "$delta_t" "$max_iters" "$tol" mpirun --report-bindings -n "$n_ranks" --bind-to hwthread --map-by core:PE="$n_threads" ./matrix_free_no_simd "$n_threads" "$simd" "$problem" "$fe_deg" "$n_additional_refinements" "$delta_t" "$max_iters" "$tol";;
+                                                    1)  run_solver_attempt "run $i" "$test_base_dir" "$solver" "$simd" "$problem" "$fe_deg" "$n_additional_refinements" "$n_ranks" "$n_threads" "$delta_t" "$max_iters" "$tol" mpirun --report-bindings -n "$n_ranks" --bind-to hwthread --map-by core:PE="$n_threads" ./matrix_free_simd "$n_threads" "$simd" "$problem" "$fe_deg" "$n_additional_refinements" "$delta_t" "$max_iters" "$tol";; 
                                                     *) echo "Unknown simd value: $simd";;
                                                 esac
                                             else
@@ -474,7 +602,7 @@ for solver in $SOLVER; do
                                                 case "$simd" in
                                                     0)
                                                         test_base_dir="$(test_base_dir_for_run "$solver" "$problem" "$fe_deg" "$n_additional_refinements" "$n_ranks" "$n_threads" "0")"
-                                                        run_solver_command_for_variant "run $i" "$test_base_dir" "$solver" "0" mpirun --report-bindings -n "$n_ranks" --bind-to hwthread --map-by core:PE="$n_threads" ./matrix_based "$n_threads" "$problem" "$fe_deg" "$n_additional_refinements" "$delta_t" "$max_iters" "$tol";;
+                                                        run_solver_attempt "run $i" "$test_base_dir" "$solver" "0" "$problem" "$fe_deg" "$n_additional_refinements" "$n_ranks" "$n_threads" "$delta_t" "$max_iters" "$tol" mpirun --report-bindings -n "$n_ranks" --bind-to hwthread --map-by core:PE="$n_threads" ./matrix_based "$n_threads" "$problem" "$fe_deg" "$n_additional_refinements" "$delta_t" "$max_iters" "$tol";;
                                                     1)  continue;;
                                                     *) echo "Unknown simd value: $simd";;
                                                 esac

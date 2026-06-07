@@ -315,8 +315,10 @@ namespace MFSolver
                                             mpi_communicator);
 
     // Solver and preconditioner
+    const double adjusted_solver_tolerance =
+        this->problem.solver_tolerance_factor * system_rhs.l2_norm();
     SolverControl solver_control(this->problem.solver_max_iterations,
-                                  this->problem.solver_tolerance_factor * system_rhs.l2_norm());
+                                  adjusted_solver_tolerance);
     SolverGMRES<LA::MPI::Vector> solver(solver_control);
     solver_control.enable_history_data();
 
@@ -329,14 +331,25 @@ namespace MFSolver
       this->preconditioner_amg->initialize(system_matrix, data);
     }
 
-    solver.solve(system_matrix,
-                  completely_distributed_solution,
-                  system_rhs,
-                  *(this->preconditioner_amg));
+    try
+    {
+      solver.solve(system_matrix,
+                    completely_distributed_solution,
+                    system_rhs,
+                    *(this->preconditioner_amg));
+      converged = (solver_control.last_check() ==
+                    SolverControl::State::success);
+    }
+    catch (const SolverControl::NoConvergence &)
+    {
+      converged = false;
+      pcout << "   Solver did not converge within "
+            << this->problem.solver_max_iterations
+            << " iterations." << std::endl;
+    }
 
     this->conv_history.emplace_back(solver_control.get_history_data());
-    converged = (solver_control.last_check() ==
-                  SolverControl::State::success);
+    this->solver_tolerances.emplace_back(adjusted_solver_tolerance);
     pcout << "   Solved in " << solver_control.last_step()
           << " iterations." << std::endl;
 
@@ -538,6 +551,7 @@ namespace MFSolver
     write_solver_log_file(this->output_dir,
                           this->problem,
                           this->conv_history,
+                          this->solver_tolerances,
                           this->end_time - this->start_time,
                           this->l2_error,
                           this->h1_error,

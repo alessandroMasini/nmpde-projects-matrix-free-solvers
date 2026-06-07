@@ -284,6 +284,7 @@ namespace MFSolver
   void write_solver_log_file(const std::string &output_dir,
                              const ADR::ProblemData<dim> &problem,
                              const std::vector<std::vector<double>> &conv_history,
+                             const std::vector<double> &solver_tolerances,
                              const double total_time,
                              const double l2_error,
                              const double h1_error,
@@ -318,7 +319,7 @@ namespace MFSolver
             // log by hand still gives a readable table.
             << std::setw(float_width) << "delta_t" << ' '
             << std::setw(int_width) << "max_iter" << ' '
-            << std::setw(float_width) << "tol" << ' '
+            << std::setw(float_width) << "adj_tol" << ' '
             << std::setw(step_width) << "rel_t_step" << ' '
             << std::setw(int_width) << "it_n" << ' '
             << std::setw(float_width) << "err" << ' '
@@ -328,7 +329,11 @@ namespace MFSolver
             << std::setw(float_width) << "linfty_error" << ' '
             << std::setw(converged_width) << "converged" << std::endl;
 
+    AssertThrow(conv_history.size() == solver_tolerances.size(),
+                ExcMessage("Convergence history and solver tolerances differ in size"));
+
     const auto write_history = [&](const double rel_t_step,
+                                   const double adjusted_solver_tolerance,
                                    const std::vector<double> &history) {
       /*
        * Each row describes one solver-control checkpoint for a representative
@@ -350,7 +355,7 @@ namespace MFSolver
         deallog << std::right
                 << std::setw(float_width) << std::setprecision(6) << std::scientific << problem.delta_t << ' '
                 << std::setw(int_width) << problem.solver_max_iterations << ' '
-                << std::setw(float_width) << std::setprecision(6) << std::scientific << problem.solver_tolerance_factor << ' '
+                << std::setw(float_width) << std::setprecision(6) << std::scientific << adjusted_solver_tolerance << ' '
                 << std::setw(step_width) << std::fixed << std::setprecision(1) << rel_t_step << ' '
                 << std::setw(int_width) << i << ' '
                 << std::setw(float_width) << std::setprecision(6) << std::scientific << history[i] << ' '
@@ -365,7 +370,7 @@ namespace MFSolver
     AssertThrow(!conv_history.empty(),
                 ExcMessage("No solver convergence history is available"));
 
-    write_history(0.0, conv_history[0]);
+    write_history(0.0, solver_tolerances[0], conv_history[0]);
 
     if (conv_history.size() > 1)
     {
@@ -375,7 +380,7 @@ namespace MFSolver
        * plots without turning log.txt into a second solution output file.
        */
       size_t mid_step = conv_history.size() / 2;
-      write_history(0.5, conv_history[mid_step]);
+      write_history(0.5, solver_tolerances[mid_step], conv_history[mid_step]);
     }
 
     if (conv_history.size() > 2)
@@ -383,7 +388,7 @@ namespace MFSolver
       // The last slice captures the final solver behavior and is the row most
       // scripts naturally inspect when they only need one status value.
       size_t last_step = conv_history.size() - 1;
-      write_history(1.0, conv_history[last_step]);
+      write_history(1.0, solver_tolerances[last_step], conv_history[last_step]);
     }
 
     // Every table row was already emitted with std::endl. Detaching is enough

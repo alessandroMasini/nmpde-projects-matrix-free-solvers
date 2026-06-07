@@ -106,10 +106,11 @@ cmake --build build/avx512 -j 4 --target matrix_free_simd
     --default_container "$DEFAULT_CONTAINER" \
     --avx512_container "$AVX512_CONTAINER" \
     --apptainer_bind "$CONTAINER_BIND" \
-    --solver mb mf \
+    --solver mb \
+    --problem transient \
     --n_tests 1 \
     --fe_deg 2 \
-    --tol 0.001 \
+    --tol 1e-9 \
     --n_ranks 1 2 4 8 \
     --n_threads 1 2 \
     --run_timeout_seconds 90 \

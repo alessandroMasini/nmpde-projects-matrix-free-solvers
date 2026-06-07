@@ -13,10 +13,11 @@ from collections import defaultdict
 # Columns and Directory Parameters
 # -----------------------------------------------------------------------------
 
-FILE_COLUMNS = ["delta_t", "max_iter", "tol", "rel_t_step", "it_n", "err", "total_t", "l2_error", "h1_error", "linfty_error", "converged"]
+FILE_COLUMNS = ["delta_t", "max_iter", "adj_tol", "rel_t_step", "it_n", "err", "total_t", "l2_error", "h1_error", "linfty_error", "converged"]
+LEGACY_FILE_COLUMNS = ["delta_t", "max_iter", "tol", "rel_t_step", "it_n", "err", "total_t", "l2_error", "h1_error", "linfty_error", "converged"]
 DIR_PARAMS = ["solver", "problem", "fe_deg", "n_additional_refinements", "n_ranks", "n_threads", "simd"]
 
-X_PARAMS = ["delta_t", "fe_deg", "n_additional_refinements", "n_ranks", "n_threads", "simd", "tol", "rel_t_step", "it_n"]
+X_PARAMS = ["delta_t", "fe_deg", "n_additional_refinements", "n_ranks", "n_threads", "simd", "adj_tol", "rel_t_step", "it_n"]
 Y_PARAMS = ["it_n", "total_t", "l2_error", "h1_error", "linfty_error"]
 
 def legacy_fe_degree_for_solver(solver):
@@ -72,7 +73,7 @@ def fixed_param_value(key, value):
     if key in ["fe_deg", "n_additional_refinements", "n_ranks", "n_threads", "simd", "it_n", "max_iter", "converged"]:
         return int(value)
 
-    if key in ["delta_t", "tol", "rel_t_step", "l2_error", "h1_error", "linfty_error"]:
+    if key in ["delta_t", "adj_tol", "rel_t_step", "l2_error", "h1_error", "linfty_error"]:
         return float(value)
 
     return value
@@ -87,7 +88,7 @@ def column_index(header, column):
     return header.index(normalize_column_name(column))
 
 def is_file_column(column):
-    return column in FILE_COLUMNS
+    return column in FILE_COLUMNS or column in LEGACY_FILE_COLUMNS
 
 def normalize_header(header_line):
     """Interpret a log header according to the current solver-to-script schema."""
@@ -103,15 +104,18 @@ def normalize_header(header_line):
 
     # From here on, be strict. If the C++ output changes, the scripts should
     # fail loudly instead of silently plotting numbers under the wrong labels.
-    if header != FILE_COLUMNS:
+    if header == FILE_COLUMNS or header == LEGACY_FILE_COLUMNS:
+        return header
+
+    else:
         raise ValueError(
             "Unexpected log header. Expected "
             + " ".join(FILE_COLUMNS)
+            + " or "
+            + " ".join(LEGACY_FILE_COLUMNS)
             + ", got "
             + " ".join(header)
         )
-
-    return header
 
 def parse_data_line(line, n_columns):
     """Parse one row from the current whitespace-separated log layout."""
@@ -218,7 +222,7 @@ def satisfies_fixed_params(file_data, fixed_params, compare, compare_values_info
 
     return True
 
-def actually_finished(file_data):
+def actually_converged(file_data):
     """Decide whether a run converged using the solver's own convergence flag.
 
     The final residual is still useful for plotting, but it is not the
@@ -284,13 +288,13 @@ def satisfies_dir_params(dir_params, fixed_params, compare, compare_values_info,
 # Aggregated Plots
 # -----------------------------------------------------------------------------
 
-def plot_average_results(fixed_params, x, y, req_finished, compare, compare_values, save_path, scalex, scaley, plot_theor, tests_dir):
+def plot_average_results(fixed_params, x, y, req_converged, compare, compare_values, save_path, scalex, scaley, plot_theor, tests_dir):
     tests_dir = Path(tests_dir)
     if not tests_dir.exists():
         print(f"[ERROR] tests directory not found at {tests_dir}")
         return 1
 
-    required_finish = bool(req_finished)
+    required_convergence = bool(req_converged)
     curves = []
     compare_values_info = []
 
@@ -337,7 +341,7 @@ def plot_average_results(fixed_params, x, y, req_finished, compare, compare_valu
         # At this point, only if the test did not converge the run is discarded.
         potential += 1
 
-        if required_finish and not actually_finished(file_data):
+        if required_convergence and not actually_converged(file_data):
             discarded += 1
             continue
 
@@ -519,13 +523,13 @@ if __name__ == "__main__":
         )
 
     # -------------------------------------------------------------------------
-    # Actually finished
+    # Convergence filter
     # Allowed: 0, 1
     # -------------------------------------------------------------------------
     parser.add_argument(
-        "--finished",
+        "--converged",
         type=int,
-        help="1: only runs that converged will be considered. 0: all of them",
+        help="1: only converged runs will be considered. 0: converged and overtime runs will be considered",
     )
 
     # -------------------------------------------------------------------------
@@ -612,6 +616,11 @@ if __name__ == "__main__":
     args = parser.parse_args()
     no_error = True
 
+    converged_filter = args.converged
+    if converged_filter is not None and converged_filter not in [0, 1]:
+        print("Error, --converged must be 0 or 1")
+        no_error = False
+
     # Retrieving the test directory
     try:
         tests_dir = resolve_tests_dir(args.tests_dir, args.from_scratch_global, args.scratch_global_root)
@@ -627,7 +636,7 @@ if __name__ == "__main__":
     fixed_params = {}
     output_name = args.x + "_vs_" + args.y + "___"
     for p in DIR_PARAMS + FILE_COLUMNS:
-        if p in ["err", "total_t"]:
+        if p in ["err", "total_t", "converged"]:
             continue
 
         val = getattr(args, p, None)
@@ -663,8 +672,8 @@ if __name__ == "__main__":
         print("Error, you can show a scaling plot only if you are plotting or comparing the number of MPI ranks")
         no_error = False
 
-    if getattr(args, "finished") is not None and args.finished == 1:
-        output_name += "finished---"
+    if converged_filter == 1:
+        output_name += "converged---"
 
     # Trimming useless characters
     if output_name[-3:] in ["---", "___"]:
@@ -684,6 +693,6 @@ if __name__ == "__main__":
     # Dispatch plot
     # -------------------------------------------------------------------------
     if no_error:
-        discarded = plot_average_results(fixed_params, args.x, args.y, args.finished, args.compare, args.compare_only, output_name, logxscale, logyscale, args.scale_line, tests_dir)
+        discarded = plot_average_results(fixed_params, args.x, args.y, converged_filter, args.compare, args.compare_only, output_name, logxscale, logyscale, args.scale_line, tests_dir)
     
-        print(f"A fraction of {discarded} tests did not actually converge and were not plotted")
+        print(f"A fraction of {discarded} tests did not converge and were not plotted")
