@@ -55,7 +55,14 @@ namespace MFSolver
                                      locally_relevant_dofs,
                                      mpi_communicator);
     system_rhs.reinit(locally_owned_dofs, mpi_communicator);
-    old_solution.reinit(locally_owned_dofs, mpi_communicator);
+    /*
+     * Transient assembly evaluates old_solution on locally owned cells. In a
+     * distributed DoFHandler those cells can touch DoFs owned by neighboring
+     * ranks, so old_solution must carry locally relevant ghost entries.
+     */
+    old_solution.reinit(locally_owned_dofs,
+                        locally_relevant_dofs,
+                        mpi_communicator);
 
     // Handle hanging nodes (created by adaptive h-refinement) to ensure solution continuity
     constraints.clear();
@@ -434,6 +441,8 @@ namespace MFSolver
       setup_system();
 
       VectorTools::interpolate(dof_handler, *(this->problem.initial_condition), old_solution);
+      old_solution.compress(VectorOperation::insert);
+      old_solution.update_ghost_values();
       locally_relevant_solution = old_solution;
       completely_distributed_solution = old_solution;
 
@@ -452,6 +461,7 @@ namespace MFSolver
         pcout << "   Finished solve" << std::endl;
 
         old_solution = completely_distributed_solution;
+        old_solution.update_ghost_values();
         locally_relevant_solution = completely_distributed_solution;
 
         output_results();

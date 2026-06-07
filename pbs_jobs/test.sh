@@ -108,6 +108,7 @@ cmake --build build/avx512 -j 4 --target matrix_free_simd
     --apptainer_bind "$CONTAINER_BIND" \
     --solver mb \
     --problem transient \
+    --simd 0 \
     --n_tests 1 \
     --fe_deg 2 \
     --tol 1e-9 \
