@@ -20,6 +20,8 @@ int main(int argc, char **argv)
     // Initializing MPI
     unsigned int max_n_threads = std::stoi(argv[1]);
     dealii::Utilities::MPI::MPI_InitFinalize mpi_initialization(argc, argv, max_n_threads);
+    if (dealii::Utilities::MPI::this_mpi_process(MPI_COMM_WORLD) == 0)
+        std::cout << "DEBUG: max_n_threads passed = " << max_n_threads << ", MultithreadInfo::n_threads() = " << dealii::MultithreadInfo::n_threads() << std::endl;
 
     // fe_deg is a runtime experiment parameter. The solver stores it in
     // ProblemData and constructs FE_Q(fe_deg), while FEEvaluation reads it from
