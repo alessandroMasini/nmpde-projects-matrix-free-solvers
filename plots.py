@@ -60,6 +60,13 @@ def resolve_tests_dir(tests_dir=None, from_scratch_global=False, scratch_global_
 def comparison_name(key, value):
     return str(value)
 
+def comparison_sort_key(value):
+    """Sort numeric comparison values numerically and text values alphabetically."""
+    try:
+        return (0, int(value))
+    except (TypeError, ValueError):
+        return (1, str(value))
+
 def fixed_param_value(key, value):
     """Convert command-line fixed parameters to the type used internally."""
     if key in ["fe_deg", "n_additional_refinements", "n_ranks", "n_threads", "simd", "it_n", "max_iter", "converged"]:
@@ -307,7 +314,6 @@ def plot_average_results(fixed_params, x, y, req_finished, compare, compare_valu
 
     # Tree traversal. Recursing from log.txt keeps the plotting code compatible
     # with both the new fe_deg-aware hierarchy and older saved test folders.
-    last_dir_params = None
     for log_file in tests_dir.rglob("log.txt"):
         test_dir = log_file.parent
         if not test_dir.name.startswith("test_"):
@@ -356,8 +362,6 @@ def plot_average_results(fixed_params, x, y, req_finished, compare, compare_valu
         else:
             curves.append((x_arr, y_arr))
 
-        last_dir_params = dir_params
-
     frac_discarded = 0
 
     # If nothing matched, avoid empty plot
@@ -368,11 +372,15 @@ def plot_average_results(fixed_params, x, y, req_finished, compare, compare_valu
     # Utility variables for theoretical scaling lines
     p = []
     base_time = {}
+    curve_stats = {}
     
     plt.figure(figsize=(10, 6))
 
     if compare is not None:
-        for compare_value, value_list in curves.items():
+        for compare_value, value_list in sorted(curves.items(), key=lambda item: comparison_sort_key(item[0])):
+            if not value_list:
+                continue
+
             bucket = defaultdict(list)
             for x_arr, y_arr in value_list:
                 for xi, yi in zip(x_arr, y_arr):
@@ -381,8 +389,12 @@ def plot_average_results(fixed_params, x, y, req_finished, compare, compare_valu
             xs = np.array(sorted(bucket.keys()))
 
             means = np.array([np.mean(bucket[xv]) for xv in xs])
-            if x in ["n_threads", "n_ranks"]:
-                base_time[compare_value] = means[0]
+
+            # If on the x axis we have the number of ranks, the base time is given
+            # by the time at the lowest # cores * # cores. This is a number.
+            if x == "n_ranks":
+                base_time[compare_value] = means[0] * xs[0]
+            
             stds  = np.array([np.std(bucket[xv]) for xv in xs])
 
             upper = means + 2 * stds
@@ -390,6 +402,7 @@ def plot_average_results(fixed_params, x, y, req_finished, compare, compare_valu
 
             # The confidence interval of time cannot go below 0
             lower = np.maximum(lower, np.zeros_like(lower))
+            curve_stats[compare_value] = (xs, means, stds)
             
             p.append(plt.plot(xs, means, label=compare + " = " + compare_value))
             plt.fill_between(xs, lower, upper, alpha=0.3)
@@ -405,8 +418,8 @@ def plot_average_results(fixed_params, x, y, req_finished, compare, compare_valu
         xs = np.array(sorted(bucket.keys()))
 
         means = np.array([np.mean(bucket[xv]) for xv in xs])
-        if x in ["n_threads", "n_ranks"]:
-            base_time = means[0]
+        if x == "n_ranks":
+            base_time = means[0] * xs[0]
         stds  = np.array([np.std(bucket[xv]) for xv in xs])
 
         upper = means + 2 * stds
@@ -421,33 +434,25 @@ def plot_average_results(fixed_params, x, y, req_finished, compare, compare_valu
     
     # Inserting optimal scaling line, if necessary
     if plot_theor:
-        # Since the theoretical plotting line is considered by taking
-        # serial_time / (n_ranks * n_threads), retrieve the parallel dimension
-        # that is not currently on the x axis.
-        divisor = 0
-        if x == "n_threads":
-            divisor = last_dir_params["n_ranks"]
-        elif x == "n_ranks":
-            divisor = last_dir_params["n_threads"]
-
         if compare is not None:
-            i = 0
-            for compare_value, value_list in curves.items():
-                if compare == "n_threads" or compare == "n_ranks":
-                    divisor = int(compare_value)
-                if not value_list:
-                    i += 1
-                    continue
+            if compare == "n_ranks":
+                min_rank_key = min(curve_stats, key=lambda value: int(value))
+                min_rank = int(min_rank_key)
+                base_xs, base_means, _ = curve_stats[min_rank_key]
 
-                xs = np.array(sorted({xi for x_arr, _ in value_list for xi in x_arr}))
-                theoretical = base_time[compare_value] / (xs * divisor)
-
-                plt.plot(xs, theoretical, "--", color = p[i][0].get_color())
-                i+=1
+            for i, (compare_value, (xs, means, _)) in enumerate(curve_stats.items()):
+                # When comparing MPI ranks, every ideal line is the measured
+                # minimum-rank curve scaled by min_rank / current_rank.
+                if compare == "n_ranks":
+                    theoretical = base_means * min_rank / int(compare_value)
+                    plt.plot(base_xs, theoretical, "--", color = p[i][0].get_color())
+                else:
+                    theoretical = base_time[compare_value] / xs
+                    plt.plot(xs, theoretical, "--", color = p[i][0].get_color())
 
         else: 
             xs = np.array(sorted({xi for x_arr, _ in curves for xi in x_arr}))
-            theoretical = base_time / (xs * divisor)
+            theoretical = base_time / xs
 
             plt.plot(xs, theoretical, "--", color = p[0].get_color())
 
@@ -652,8 +657,10 @@ if __name__ == "__main__":
         output_name += "comp_" + args.compare + "---"
 
     # Correctness checking for theoretical scaling
-    if bool(getattr(args, "scale_line")) and args.x not in ["n_ranks", "n_threads"]:
-        print("Error, you can show a scaling plot only if you are plotting against the number of MPI ranks or threads")
+    # Theoretical scaling can only be showed if the x axis contains the number of ranks
+    # or the compare value is the number of ranks
+    if bool(getattr(args, "scale_line")) and not (args.x == "n_ranks" or (bool(getattr(args, "compare")) and args.compare == "n_ranks")):
+        print("Error, you can show a scaling plot only if you are plotting or comparing the number of MPI ranks")
         no_error = False
 
     if getattr(args, "finished") is not None and args.finished == 1:
