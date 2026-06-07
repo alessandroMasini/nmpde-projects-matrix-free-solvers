@@ -147,6 +147,41 @@ namespace MFSolver
     }
 
     template <int dim>
+    void MatrixFreeADRSolver<dim>::local_assemble_cell(const MatrixFree<dim, double> &data,
+                                                      DVector<double> &dst,
+                                                      const DVector<double> &src,
+                                                      const std::pair<unsigned int, unsigned int> &cell_range) const
+    {
+        FEEvaluation<dim, -1, 0, 1, double> phi(data);
+
+        for (unsigned int cell = cell_range.first; cell < cell_range.second; ++cell)
+        {
+            phi.reinit(cell);
+
+            if (this->problem.is_time_dependent && this->problem.delta_t > 0.0)
+            {
+                phi.read_dof_values(src);
+                phi.evaluate(EvaluationFlags::values);
+            }
+
+            for (const unsigned int q : phi.quadrature_point_indices())
+            {
+                Point<dim, VectorizedArray<double>> quadrature_point = phi.quadrature_point(q);
+                VectorizedArray<double> value_of_f = this->problem.forcing_term->value(quadrature_point);
+
+                if (this->problem.is_time_dependent && this->problem.delta_t > 0.0)
+                {
+                    value_of_f += phi.get_value(q) / this->problem.delta_t;
+                }
+
+                phi.submit_value(value_of_f, q);
+            }
+            phi.integrate(EvaluationFlags::values);
+            phi.distribute_local_to_global(dst);
+        }
+    }
+
+    template <int dim>
     void MatrixFreeADRSolver<dim>::assemble()
     {
         Timer timer;
@@ -169,7 +204,8 @@ namespace MFSolver
             no_constraints.close();
 
             typename MatrixFree<dim, double>::AdditionalData additional_data;
-            additional_data.mapping_update_flags = update_gradients | update_JxW_values | update_quadrature_points;
+            additional_data.tasks_parallel_scheme = MatrixFree<dim, double>::AdditionalData::TasksParallelScheme::partition_color;
+            additional_data.mapping_update_flags = update_gradients | update_JxW_values | update_quadrature_points | update_values;
             this->inhomogeneous_mf_storage = std::make_shared<MatrixFree<dim, double>>();
 
             // Since the quadrature type decides whether simd is used or not, the choice of the former needs to depend on the latter
@@ -192,35 +228,8 @@ namespace MFSolver
         this->inhomogeneous_operator->vmult(system_rhs, solution);
         system_rhs *= -1.0;
 
-        // Use deal.II's dynamic-degree matrix-free evaluator. The FE_Q degree
-        // itself comes from ProblemData::fe_degree and is stored in MatrixFree.
-        FEEvaluation<dim, -1, 0, 1, double> phi(*(this->inhomogeneous_operator->get_matrix_free()));
-
-        for (unsigned int cell = 0; cell < this->inhomogeneous_operator->get_matrix_free()->n_cell_batches(); ++cell)
-        {
-            phi.reinit(cell);
-
-            if (this->problem.is_time_dependent && this->problem.delta_t > 0.0)
-            {
-                phi.read_dof_values(old_solution);
-                phi.evaluate(EvaluationFlags::values);
-            }
-
-            for (const unsigned int q : phi.quadrature_point_indices())
-            {
-                Point<dim, VectorizedArray<double>> quadrature_point = phi.quadrature_point(q);
-                VectorizedArray<double> value_of_f = this->problem.forcing_term->value(quadrature_point);
-
-                if (this->problem.is_time_dependent && this->problem.delta_t > 0.0)
-                {
-                    value_of_f += phi.get_value(q) / this->problem.delta_t;
-                }
-
-                phi.submit_value(value_of_f, q);
-            }
-            phi.integrate(EvaluationFlags::values);
-            phi.distribute_local_to_global(system_rhs);
-        }
+        this->inhomogeneous_operator->get_matrix_free()->cell_loop(
+            &MatrixFreeADRSolver::local_assemble_cell, this, system_rhs, old_solution);
 
         system_rhs.compress(VectorOperation::add);
 

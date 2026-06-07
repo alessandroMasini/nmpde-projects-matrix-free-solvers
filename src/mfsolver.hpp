@@ -437,6 +437,10 @@ namespace MFSolver
         void solve() override;
         void output_results() override;
         void compute_error();
+        void local_assemble_cell(const MatrixFree<dim, double> &data,
+                                 DVector<double> &dst,
+                                 const DVector<double> &src,
+                                 const std::pair<unsigned int, unsigned int> &cell_range) const;
 
 #ifdef DEAL_II_WITH_P4EST
         //         // The second "dim" is needed in case the spatial dimension
