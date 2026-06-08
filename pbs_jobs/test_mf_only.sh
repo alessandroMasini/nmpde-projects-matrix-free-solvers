@@ -1,5 +1,5 @@
 #!/bin/bash
-#PBS -l select=1:ncpus=16:mpiprocs=8
+#PBS -l select=1:ncpus=16:mpiprocs=2
 #PBS -l place=scatter
 #PBS -l walltime=02:00:00
 #PBS -q cpu
