@@ -630,6 +630,14 @@ namespace MFSolver
         ConditionalOStream pcout;
         TimerOutput computing_timer;
 
+        /*
+         * PETSc MPI vectors are not a safe object to sample concurrently from
+         * several WorkStream workers. Transient RHS assembly reads
+         * old_solution through FEValues::get_function_values(), so serialize
+         * that narrow read section while leaving the quadrature work parallel.
+         */
+        std::mutex old_solution_read_mutex;
+
         double time = 0.0;
         double l2_error = 0.0;
         double h1_error = 0.0;

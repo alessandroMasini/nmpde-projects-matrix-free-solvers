@@ -128,8 +128,11 @@ namespace MFSolver
      * each worker thread has private storage for FEValues to fill.
      */
     if (this->problem.is_time_dependent)
+    {
+      std::lock_guard<std::mutex> lock(old_solution_read_mutex);
       scratch.fe_values.get_function_values(old_solution,
                                             scratch.old_solution_values);
+    }
 
     const double inv_dt = this->problem.is_time_dependent ? (1.0 / this->problem.delta_t) : 0.0;
 
