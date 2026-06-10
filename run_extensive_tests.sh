@@ -593,8 +593,8 @@ for solver in $SOLVER; do
                                                 # MATRIX-FREE
                                                 test_base_dir="$(test_base_dir_for_run "$solver" "$problem" "$fe_deg" "$n_additional_refinements" "$n_ranks" "$n_threads" "$simd")"
                                                 case "$simd" in
-                                                    0)  run_solver_attempt "run $i" "$test_base_dir" "$solver" "$simd" "$problem" "$fe_deg" "$n_additional_refinements" "$n_ranks" "$n_threads" "$delta_t" "$max_iters" "$tol" mpirun --report-bindings -n "$n_ranks" --bind-to core --map-by socket:PE="$n_threads" ./matrix_free_no_simd "$n_threads" "$simd" "$problem" "$fe_deg" "$n_additional_refinements" "$delta_t" "$max_iters" "$tol";;
-                                                    1)  run_solver_attempt "run $i" "$test_base_dir" "$solver" "$simd" "$problem" "$fe_deg" "$n_additional_refinements" "$n_ranks" "$n_threads" "$delta_t" "$max_iters" "$tol" mpirun --report-bindings -n "$n_ranks" --bind-to core --map-by socket:PE="$n_threads" ./matrix_free_simd "$n_threads" "$simd" "$problem" "$fe_deg" "$n_additional_refinements" "$delta_t" "$max_iters" "$tol";;
+                                                    0)  run_solver_attempt "run $i" "$test_base_dir" "$solver" "$simd" "$problem" "$fe_deg" "$n_additional_refinements" "$n_ranks" "$n_threads" "$delta_t" "$max_iters" "$tol" mpirun --report-bindings -n "$n_ranks" --bind-to core --map-by package:PE="$n_threads" ./matrix_free_no_simd "$n_threads" "$simd" "$problem" "$fe_deg" "$n_additional_refinements" "$delta_t" "$max_iters" "$tol";;
+                                                    1)  run_solver_attempt "run $i" "$test_base_dir" "$solver" "$simd" "$problem" "$fe_deg" "$n_additional_refinements" "$n_ranks" "$n_threads" "$delta_t" "$max_iters" "$tol" mpirun --report-bindings -n "$n_ranks" --bind-to core --map-by package:PE="$n_threads" ./matrix_free_simd "$n_threads" "$simd" "$problem" "$fe_deg" "$n_additional_refinements" "$delta_t" "$max_iters" "$tol";;
                                                     *) echo "Unknown simd value: $simd";;
                                                 esac
                                             else
@@ -602,7 +602,7 @@ for solver in $SOLVER; do
                                                 case "$simd" in
                                                     0)
                                                         test_base_dir="$(test_base_dir_for_run "$solver" "$problem" "$fe_deg" "$n_additional_refinements" "$n_ranks" "$n_threads" "0")"
-                                                        run_solver_attempt "run $i" "$test_base_dir" "$solver" "0" "$problem" "$fe_deg" "$n_additional_refinements" "$n_ranks" "$n_threads" "$delta_t" "$max_iters" "$tol" mpirun --report-bindings -n "$n_ranks" --bind-to core --map-by socket:PE="$n_threads" ./matrix_based "$n_threads" "$problem" "$fe_deg" "$n_additional_refinements" "$delta_t" "$max_iters" "$tol";;
+                                                        run_solver_attempt "run $i" "$test_base_dir" "$solver" "0" "$problem" "$fe_deg" "$n_additional_refinements" "$n_ranks" "$n_threads" "$delta_t" "$max_iters" "$tol" mpirun --report-bindings -n "$n_ranks" --bind-to core --map-by package:PE="$n_threads" ./matrix_based "$n_threads" "$problem" "$fe_deg" "$n_additional_refinements" "$delta_t" "$max_iters" "$tol";;
                                                     1)  continue;;
                                                     *) echo "Unknown simd value: $simd";;
                                                 esac
