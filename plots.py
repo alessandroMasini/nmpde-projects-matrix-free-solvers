@@ -20,6 +20,53 @@ DIR_PARAMS = ["solver", "problem", "fe_deg", "n_additional_refinements", "n_rank
 X_PARAMS = ["delta_t", "fe_deg", "n_additional_refinements", "n_ranks", "n_threads", "simd", "adj_tol", "rel_t_step", "it_n"]
 Y_PARAMS = ["it_n", "total_t", "l2_error", "h1_error", "linfty_error"]
 
+# Keep the plotting-side problem validation aligned with the solver CLIs.
+SUPPORTED_PROBLEMS = {"advanced", "lab_02", "lab_03", "parabolic", "transient", "mms"}
+
+def problem_dimension(problem):
+    """Return the dimension associated with a solver problem name."""
+    # The C++ drivers instantiate lab_02 in 2D and all other supported CLI
+    # problems in 3D, so the theoretical refinement line must follow the same
+    # mapping instead of guessing from the plotted data.
+    if problem not in SUPPORTED_PROBLEMS:
+        raise ValueError(
+            f"unknown problem '{problem}'. Expected one of {sorted(SUPPORTED_PROBLEMS)}"
+        )
+
+    return 2 if problem == "lab_02" else 3
+
+def scale_line_mode(x, y, compare):
+    """Classify which theoretical scaling line, if any, the plot can show."""
+    # Refinement-growth scaling is defined only for final run time plotted
+    # against the number of additional refinements.
+    if x == "n_additional_refinements" and y == "total_t":
+        return "refinement_time"
+
+    # Existing strong-scaling behavior is kept for plots where MPI ranks are
+    # either the x axis or the comparison variable.
+    if x == "n_ranks" or compare == "n_ranks":
+        return "strong_scaling"
+
+    return None
+
+def theoretical_refinement_times(xs, means, dim):
+    """Build the ideal time-growth line for refinement sweeps."""
+    # The measured leftmost point anchors the line, exactly as requested by
+    # t'(0) = t(0).
+    base_time = means[0]
+
+    # Each further point uses the plotted refinement value as ref(i), giving
+    # t'(i) = 2^(dim * ref(i)) * t(0).
+    theoretical = np.array([
+        (2 ** (dim * int(refinement))) * base_time
+        for refinement in xs
+    ])
+
+    # This explicit overwrite preserves the anchor even when the first shown
+    # refinement is not zero.
+    theoretical[0] = base_time
+    return theoretical
+
 def legacy_fe_degree_for_solver(solver):
     """Return the old hard-coded FE degree for pre-fe_deg result folders."""
     # New output paths carry fe_deg explicitly. The fallback lets older result
@@ -288,7 +335,7 @@ def satisfies_dir_params(dir_params, fixed_params, compare, compare_values_info,
 # Aggregated Plots
 # -----------------------------------------------------------------------------
 
-def plot_average_results(fixed_params, x, y, req_converged, compare, compare_values, save_path, scalex, scaley, plot_theor, tests_dir):
+def plot_average_results(fixed_params, x, y, req_converged, compare, compare_values, save_path, scalex, scaley, plot_theor, tests_dir, scaling_dim=None):
     tests_dir = Path(tests_dir)
     if not tests_dir.exists():
         print(f"[ERROR] tests directory not found at {tests_dir}")
@@ -438,16 +485,27 @@ def plot_average_results(fixed_params, x, y, req_converged, compare, compare_val
     
     # Inserting optimal scaling line, if necessary
     if plot_theor:
+        # Decide once which kind of dashed reference line this plot requires;
+        # the CLI has already rejected unsupported combinations.
+        theor_mode = scale_line_mode(x, y, compare)
+
         if compare is not None:
-            if compare == "n_ranks":
+            if theor_mode == "strong_scaling" and compare == "n_ranks":
                 min_rank_key = min(curve_stats, key=lambda value: int(value))
                 min_rank = int(min_rank_key)
                 base_xs, base_means, _ = curve_stats[min_rank_key]
 
             for i, (compare_value, (xs, means, _)) in enumerate(curve_stats.items()):
+                # For refinement sweeps, each compared curve is anchored to
+                # its own measured leftmost runtime and then grows like
+                # 2^(dim * n_additional_refinements).
+                if theor_mode == "refinement_time":
+                    theoretical = theoretical_refinement_times(xs, means, scaling_dim)
+                    plt.plot(xs, theoretical, "--", color = p[i][0].get_color())
+
                 # When comparing MPI ranks, every ideal line is the measured
                 # minimum-rank curve scaled by min_rank / current_rank.
-                if compare == "n_ranks":
+                elif compare == "n_ranks":
                     theoretical = base_means * min_rank / int(compare_value)
                     plt.plot(base_xs, theoretical, "--", color = p[i][0].get_color())
                 else:
@@ -456,7 +514,15 @@ def plot_average_results(fixed_params, x, y, req_converged, compare, compare_val
 
         else: 
             xs = np.array(sorted({xi for x_arr, _ in curves for xi in x_arr}))
-            theoretical = base_time / xs
+            means = np.array([np.mean(bucket[xv]) for xv in xs])
+
+            # Refinement sweeps use the problem dimension to model the growth
+            # in work after uniform mesh refinement; strong scaling keeps the
+            # previous inverse-rank reference.
+            if theor_mode == "refinement_time":
+                theoretical = theoretical_refinement_times(xs, means, scaling_dim)
+            else:
+                theoretical = base_time / xs
 
             plt.plot(xs, theoretical, "--", color = p[0].get_color())
 
@@ -666,11 +732,28 @@ if __name__ == "__main__":
         output_name += "comp_" + args.compare + "---"
 
     # Correctness checking for theoretical scaling
-    # Theoretical scaling can only be showed if the x axis contains the number of ranks
-    # or the compare value is the number of ranks
-    if bool(getattr(args, "scale_line")) and not (args.x == "n_ranks" or (bool(getattr(args, "compare")) and args.compare == "n_ranks")):
-        print("Error, you can show a scaling plot only if you are plotting or comparing the number of MPI ranks")
-        no_error = False
+    # Theoretical scaling can be shown for strong-scaling rank plots or for
+    # total runtime versus additional refinements.
+    scaling_dim = None
+    if bool(getattr(args, "scale_line")):
+        scaling_mode = scale_line_mode(args.x, args.y, args.compare)
+
+        if scaling_mode is None:
+            print("Error, --scale_line is available only for rank scaling or for total_t vs n_additional_refinements")
+            no_error = False
+
+        # The refinement-time model needs the problem dimension. Require a
+        # fixed, valid problem so one plot cannot silently mix 2D and 3D data.
+        elif scaling_mode == "refinement_time":
+            if "problem" not in fixed_params:
+                print("Error, --scale_line with total_t vs n_additional_refinements requires --problem")
+                no_error = False
+            else:
+                try:
+                    scaling_dim = problem_dimension(fixed_params["problem"])
+                except ValueError as exception:
+                    print(f"Error, {exception}")
+                    no_error = False
 
     if converged_filter == 1:
         output_name += "converged---"
@@ -693,6 +776,6 @@ if __name__ == "__main__":
     # Dispatch plot
     # -------------------------------------------------------------------------
     if no_error:
-        discarded = plot_average_results(fixed_params, args.x, args.y, converged_filter, args.compare, args.compare_only, output_name, logxscale, logyscale, args.scale_line, tests_dir)
+        discarded = plot_average_results(fixed_params, args.x, args.y, converged_filter, args.compare, args.compare_only, output_name, logxscale, logyscale, args.scale_line, tests_dir, scaling_dim)
     
         print(f"A fraction of {discarded} tests did not converge and were not plotted")
