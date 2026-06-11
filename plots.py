@@ -18,7 +18,9 @@ LEGACY_FILE_COLUMNS = ["delta_t", "max_iter", "tol", "rel_t_step", "it_n", "err"
 DIR_PARAMS = ["solver", "problem", "fe_deg", "n_additional_refinements", "n_ranks", "n_threads", "simd"]
 
 X_PARAMS = ["delta_t", "fe_deg", "n_additional_refinements", "n_ranks", "n_threads", "simd", "adj_tol", "rel_t_step", "it_n"]
-Y_PARAMS = ["it_n", "total_t", "l2_error", "h1_error", "linfty_error"]
+Y_PARAMS = ["it_n", "total_t", "l2_error", "h1_error", "linfty_error", "mf_speedup"]
+MF_SPEEDUP_SOLVERS = ("matrix_based", "matrix_free")
+SETTING_FILE_COLUMNS = ["delta_t", "max_iter", "rel_t_step"]
 
 # Keep the plotting-side problem validation aligned with the solver CLIs.
 SUPPORTED_PROBLEMS = {"advanced", "lab_02", "lab_03", "parabolic", "transient", "mms"}
@@ -302,6 +304,221 @@ def extract_data(dir_params, file_data, x, all):
 
     raise ValueError(f"Unknown parameter: {x}")
 
+def speedup_setting_key(dir_params, file_data, simd_override=None):
+    """Build the solver-independent key used to pair MB and MF timings."""
+    header, data = file_data
+    simd_value = dir_params["simd"] if simd_override is None else simd_override
+
+    # Solver is deliberately excluded: the key describes the numerical/test
+    # setting that must be identical before the two solver timings can be
+    # divided.
+    key_parts = [
+        ("problem", dir_params["problem"]),
+        ("fe_deg", dir_params["fe_deg"]),
+        ("n_additional_refinements", dir_params["n_additional_refinements"]),
+        ("n_ranks", dir_params["n_ranks"]),
+        ("n_threads", dir_params["n_threads"]),
+        ("simd", simd_value),
+    ]
+
+    # These columns are run inputs written in the log. Output quantities such
+    # as residuals and errors are not part of the pairing key because they may
+    # legitimately differ between matrix-based and matrix-free runs.
+    for column in SETTING_FILE_COLUMNS:
+        if column in header:
+            key_parts.append((column, float(data[-1, column_index(header, column)])))
+
+    return tuple(key_parts)
+
+def setting_description(setting_key):
+    """Format a pairing key in warning/error messages."""
+    return ", ".join(f"{key}={value}" for key, value in setting_key)
+
+def add_speedup_sample(curves, compare, compare_value, x_value, speedup):
+    """Append one derived speedup datapoint to the normal curve container."""
+    x_arr = np.array([float(x_value)])
+    y_arr = np.array([float(speedup)])
+
+    if compare is not None:
+        curves[compare_value].append((x_arr, y_arr))
+    else:
+        curves.append((x_arr, y_arr))
+
+def curves_have_samples(curves, compare):
+    """Return whether the curve container has at least one plottable sample."""
+    if compare is not None:
+        return any(bool(value_list) for value_list in curves.values())
+
+    return bool(curves)
+
+def collect_mf_speedup_curves(fixed_params, x, req_converged, compare, compare_values, tests_dir):
+    """Collect matrix_based/matrix_free runtime ratios as plot samples."""
+    tests_dir = Path(tests_dir)
+    required_convergence = bool(req_converged)
+
+    if compare is None or compare_values is None:
+        compare_values_info = [compare is not None, True]
+        curves = defaultdict(list) if compare is not None else []
+    else:
+        compare_values_info = [True, False]
+        curves = {str(el): [] for el in compare_values}
+
+    runs_by_setting = defaultdict(lambda: {
+        "times": defaultdict(list),
+        "x_values": defaultdict(list),
+        "compare_value": None,
+    })
+    matrix_based_simd0_cache = defaultdict(lambda: {
+        "times": [],
+        "x_values": [],
+    })
+    seen_solvers = set()
+    potential = 0
+    discarded = 0
+
+    # First pass: gather all matching logs by solver-independent setting.
+    for log_file in tests_dir.rglob("log.txt"):
+        test_dir = log_file.parent
+        if not test_dir.name.startswith("test_"):
+            continue
+
+        try:
+            dir_params = extract_dir_params(test_dir.parent.parts)
+        except (IndexError, ValueError):
+            continue
+
+        if dir_params["solver"] not in MF_SPEEDUP_SOLVERS:
+            continue
+
+        # Matrix-based has only a scalar implementation, so its simd=0 runs are
+        # the baseline for every matrix-free SIMD variant. Do not let --simd 1
+        # or --compare_only 1 discard that required matrix-based baseline.
+        dir_fixed_params = fixed_params
+        dir_compare_values_info = compare_values_info
+        if dir_params["solver"] == "matrix_based":
+            dir_fixed_params = {
+                key: value
+                for key, value in fixed_params.items()
+                if key != "simd"
+            }
+            dir_compare_values_info = [False, True]
+
+        if not satisfies_dir_params(dir_params, dir_fixed_params, compare, dir_compare_values_info, compare_values):
+            continue
+
+        file_data = load_file_data(log_file)
+
+        if not satisfies_fixed_params(file_data, dir_fixed_params, compare, compare_values_info, compare_values):
+            continue
+
+        potential += 1
+
+        if required_convergence and not actually_converged(file_data):
+            discarded += 1
+            continue
+
+        solver = dir_params["solver"]
+        seen_solvers.add(solver)
+        total_t = extract_data(dir_params, file_data, "total_t", False)[0]
+
+        # Use the selected x value from the same logs. For ordinary setting
+        # axes this is identical across solvers; if an output x such as it_n is
+        # requested, the matrix_free value is preferred below.
+        x_value = extract_data(dir_params, file_data, x, False)[0]
+
+        # Cache matrix-based SIMD-0 and attach it later to every matching
+        # matrix-free setting, including matrix-free SIMD-1.
+        if solver == "matrix_based":
+            if dir_params["simd"] == 0:
+                base_key = speedup_setting_key(dir_params, file_data, simd_override=0)
+                matrix_based_simd0_cache[base_key]["times"].append(total_t)
+                matrix_based_simd0_cache[base_key]["x_values"].append(x_value)
+            continue
+
+        setting_key = speedup_setting_key(dir_params, file_data)
+
+        # Store final total_t for this solver and exact setting. Repeated runs
+        # are averaged before the ratio is formed.
+        runs_by_setting[setting_key]["times"][solver].append(total_t)
+        runs_by_setting[setting_key]["x_values"][solver].append(x_value)
+
+        if compare is not None and runs_by_setting[setting_key]["compare_value"] is None:
+            runs_by_setting[setting_key]["compare_value"] = comparison_name(compare, dir_params[compare])
+
+    # Fill every matrix-free setting with the matching matrix-based SIMD-0
+    # baseline. For matrix-free SIMD-1, the lookup key is normalized to SIMD-0.
+    for setting_key, values in runs_by_setting.items():
+        if values["times"]["matrix_based"]:
+            continue
+
+        base_key = tuple(
+            (key, 0 if key == "simd" else value)
+            for key, value in setting_key
+        )
+        if matrix_based_simd0_cache[base_key]["times"]:
+            values["times"]["matrix_based"].extend(
+                matrix_based_simd0_cache[base_key]["times"]
+            )
+            values["x_values"]["matrix_based"].extend(
+                matrix_based_simd0_cache[base_key]["x_values"]
+            )
+
+    # A completely missing solver means the requested speedup is undefined for
+    # the whole filtered dataset, so fail instead of producing an empty plot.
+    for solver in MF_SPEEDUP_SOLVERS:
+        if solver not in seen_solvers:
+            print(f"[ERROR] Cannot compute mf_speedup: no matching {solver} data found.")
+            return None, potential, discarded, 1
+
+    # Second pass: form ratios for complete settings and warn about holes.
+    complete_pairs = 0
+    for setting_key, values in sorted(runs_by_setting.items(), key=lambda item: setting_description(item[0])):
+        missing_solvers = [
+            solver
+            for solver in MF_SPEEDUP_SOLVERS
+            if not values["times"][solver]
+        ]
+
+        if missing_solvers:
+            for solver in missing_solvers:
+                print(
+                    "[WARNING] Missing mf_speedup datapoint: "
+                    f"{setting_description(setting_key)}, missing solver={solver}"
+                )
+            continue
+
+        matrix_based_time = np.mean(values["times"]["matrix_based"])
+        matrix_free_time = np.mean(values["times"]["matrix_free"])
+        if matrix_free_time == 0:
+            print(
+                "[WARNING] Missing mf_speedup datapoint: "
+                f"{setting_description(setting_key)}, matrix_free total_t is zero"
+            )
+            continue
+
+        # Prefer the matrix-free x coordinate for output-derived x axes. For
+        # setting-derived axes both solvers should provide the same value.
+        x_values = values["x_values"]
+        x_value = np.mean(x_values["matrix_free"] or x_values["matrix_based"])
+        speedup = matrix_based_time / matrix_free_time
+        complete_pairs += 1
+
+        if compare is not None:
+            compare_value = values["compare_value"]
+            if compare_values_info[1] and compare_value not in curves:
+                curves[compare_value] = []
+            add_speedup_sample(curves, compare, compare_value, x_value, speedup)
+        else:
+            add_speedup_sample(curves, compare, None, x_value, speedup)
+
+    # If every setting was missing one side of the pair, there is no meaningful
+    # speedup plot to render even though both solvers appeared somewhere.
+    if complete_pairs == 0:
+        print("[ERROR] Cannot compute mf_speedup: no setting has both matrix_based and matrix_free data.")
+        return curves, potential, discarded, 1
+
+    return curves, potential, discarded, 0
+
 
 def stop_searching(fixed_params, key, dir, compare, compare_values_flags, compare_values):
     if not dir.is_dir():
@@ -341,82 +558,89 @@ def plot_average_results(fixed_params, x, y, req_converged, compare, compare_val
         print(f"[ERROR] tests directory not found at {tests_dir}")
         return 1
 
-    required_convergence = bool(req_converged)
-    curves = []
-    compare_values_info = []
-
-    # Tracking, if necessary, all the compare values that will be compared upon:
-    # The first argument of compare_values_info states
-    # whether we need to track comparing values 
-    # The second argument states whether we need to track all of them or only some
-    if compare is None or compare_values is None:
-        compare_values_info = [compare is not None, True]
-        if compare is not None:
-            curves = defaultdict()
+    if y == "mf_speedup":
+        curves, potential, discarded, status = collect_mf_speedup_curves(
+            fixed_params, x, req_converged, compare, compare_values, tests_dir
+        )
+        if status:
+            return None
     else:
-        compare_values_info = [True, False]
-        curves = {str(el): [] for el in compare_values}
+        required_convergence = bool(req_converged)
+        curves = []
+        compare_values_info = []
 
-    # These variable count the number of runs 
-    # that fit the chosen parameters but may be
-    # discarded because they did not converge
-    potential = 0
-    discarded = 0
-
-    # Tree traversal. Recursing from log.txt keeps the plotting code compatible
-    # with both the new fe_deg-aware hierarchy and older saved test folders.
-    for log_file in tests_dir.rglob("log.txt"):
-        test_dir = log_file.parent
-        if not test_dir.name.startswith("test_"):
-            continue
-
-        try:
-            dir_params = extract_dir_params(test_dir.parent.parts)
-        except (IndexError, ValueError):
-            continue
-
-        if not satisfies_dir_params(dir_params, fixed_params, compare, compare_values_info, compare_values):
-            continue
-
-        file_data = load_file_data(log_file)
-
-        # A file is skipped if it does not respect fixed file-column parameters
-        # or its values are not among the ones chosen for comparison.
-        if not satisfies_fixed_params(file_data, fixed_params, compare, compare_values_info, compare_values):
-            continue
-
-        # At this point, only if the test did not converge the run is discarded.
-        potential += 1
-
-        if required_convergence and not actually_converged(file_data):
-            discarded += 1
-            continue
-
-        # If the current value for the comparing attribute has not yet been
-        # seen, add a curve bucket for it.
-        if compare_values_info[0] and compare_values_info[1]:
-            if comparison_name(compare, dir_params[compare]) not in curves.keys():
-                curves[comparison_name(compare, dir_params[compare])] = []
-
-        # Only when the number of iterations is on the x axis does it make
-        # sense to take every residual-history point. Other plots use the final
-        # row for each run.
-        if x == "it_n":
-            x_arr = extract_data(dir_params, file_data, x, True)
-            y_arr = extract_data(dir_params, file_data, y, True)
+        # Tracking, if necessary, all the compare values that will be compared upon:
+        # The first argument of compare_values_info states
+        # whether we need to track comparing values 
+        # The second argument states whether we need to track all of them or only some
+        if compare is None or compare_values is None:
+            compare_values_info = [compare is not None, True]
+            if compare is not None:
+                curves = defaultdict()
         else:
-            x_arr = extract_data(dir_params, file_data, x, False)
-            y_arr = extract_data(dir_params, file_data, y, False)
+            compare_values_info = [True, False]
+            curves = {str(el): [] for el in compare_values}
 
-        if compare is not None:
-            curves[comparison_name(compare, dir_params[compare])].append((x_arr, y_arr))
-        else:
-            curves.append((x_arr, y_arr))
+        # These variable count the number of runs 
+        # that fit the chosen parameters but may be
+        # discarded because they did not converge
+        potential = 0
+        discarded = 0
+
+        # Tree traversal. Recursing from log.txt keeps the plotting code compatible
+        # with both the new fe_deg-aware hierarchy and older saved test folders.
+        for log_file in tests_dir.rglob("log.txt"):
+            test_dir = log_file.parent
+            if not test_dir.name.startswith("test_"):
+                continue
+
+            try:
+                dir_params = extract_dir_params(test_dir.parent.parts)
+            except (IndexError, ValueError):
+                continue
+
+            if not satisfies_dir_params(dir_params, fixed_params, compare, compare_values_info, compare_values):
+                continue
+
+            file_data = load_file_data(log_file)
+
+            # A file is skipped if it does not respect fixed file-column parameters
+            # or its values are not among the ones chosen for comparison.
+            if not satisfies_fixed_params(file_data, fixed_params, compare, compare_values_info, compare_values):
+                continue
+
+            # At this point, only if the test did not converge the run is discarded.
+            potential += 1
+
+            if required_convergence and not actually_converged(file_data):
+                discarded += 1
+                continue
+
+            # If the current value for the comparing attribute has not yet been
+            # seen, add a curve bucket for it.
+            if compare_values_info[0] and compare_values_info[1]:
+                if comparison_name(compare, dir_params[compare]) not in curves.keys():
+                    curves[comparison_name(compare, dir_params[compare])] = []
+
+            # Only when the number of iterations is on the x axis does it make
+            # sense to take every residual-history point. Other plots use the final
+            # row for each run.
+            if x == "it_n":
+                x_arr = extract_data(dir_params, file_data, x, True)
+                y_arr = extract_data(dir_params, file_data, y, True)
+            else:
+                x_arr = extract_data(dir_params, file_data, x, False)
+                y_arr = extract_data(dir_params, file_data, y, False)
+
+            if compare is not None:
+                curves[comparison_name(compare, dir_params[compare])].append((x_arr, y_arr))
+            else:
+                curves.append((x_arr, y_arr))
 
     frac_discarded = 0
 
     # If nothing matched, avoid empty plot
-    if not curves:
+    if not curves_have_samples(curves, compare):
         print(f"[WARNING] No matching runs found for {fixed_params}. Empty plot skipped.")
         return 1
     
@@ -687,6 +911,14 @@ if __name__ == "__main__":
         print("Error, --converged must be 0 or 1")
         no_error = False
 
+    if args.x not in X_PARAMS:
+        print(f"Error, --x must be one of {X_PARAMS}")
+        no_error = False
+
+    if args.y not in Y_PARAMS:
+        print(f"Error, --y must be one of {Y_PARAMS}")
+        no_error = False
+
     # Retrieving the test directory
     try:
         tests_dir = resolve_tests_dir(args.tests_dir, args.from_scratch_global, args.scratch_global_root)
@@ -730,6 +962,11 @@ if __name__ == "__main__":
             args.compare_only = args.compare_only.split()
 
         output_name += "comp_" + args.compare + "---"
+
+    if args.y == "mf_speedup":
+        if args.compare == "solver":
+            print("Error, --compare solver is disabled when plotting mf_speedup")
+            no_error = False
 
     # Correctness checking for theoretical scaling
     # Theoretical scaling can be shown for strong-scaling rank plots or for
@@ -778,4 +1015,5 @@ if __name__ == "__main__":
     if no_error:
         discarded = plot_average_results(fixed_params, args.x, args.y, converged_filter, args.compare, args.compare_only, output_name, logxscale, logyscale, args.scale_line, tests_dir, scaling_dim)
     
-        print(f"A fraction of {discarded} tests did not converge and were not plotted")
+        if discarded is not None:
+            print(f"A fraction of {discarded} tests did not converge and were not plotted")
