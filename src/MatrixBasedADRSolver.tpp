@@ -1,3 +1,11 @@
+/**
+ * @file MatrixBasedADRSolver.tpp
+ * @brief Template implementations for MatrixBasedADRSolver.
+ *
+ * @details Contains setup, assembly, solve, output, and error-computation
+ * routines for the sparse-matrix ADR solver backend.
+ */
+
 namespace MFSolver
 {
   template <int dim>
@@ -5,7 +13,7 @@ namespace MFSolver
   {
     TimerOutput::Scope t(computing_timer, "setup");
 
-    // idk if needed
+    /// Clear any state from a previous setup before rebuilding the system.
     system_matrix.clear();
     system_rhs.clear();
 
@@ -36,8 +44,7 @@ namespace MFSolver
       }
     }
 
-    // This is a property of the solver.
-    // It should be set according to the level of refinement desired.
+    /// Refine the mesh according to the selected benchmark problem.
     triangulation.refine_global(this->problem.refinement_level);
 
     dof_handler.distribute_dofs(fe);
@@ -55,7 +62,7 @@ namespace MFSolver
                                      locally_relevant_dofs,
                                      mpi_communicator);
     system_rhs.reinit(locally_owned_dofs, mpi_communicator);
-    /*
+    /**
      * Transient assembly evaluates old_solution on locally owned cells. In a
      * distributed DoFHandler those cells can touch DoFs owned by neighboring
      * ranks, so old_solution must carry locally relevant ghost entries.
@@ -64,15 +71,16 @@ namespace MFSolver
                         locally_relevant_dofs,
                         mpi_communicator);
 
-    // Handle hanging nodes (created by adaptive h-refinement) to ensure solution continuity
+    /// Handle hanging nodes potentially created by adaptive refinement to ensure continuity.
+    /// @todo Check if it is possible that adaptive refinement is actually carried out.
     constraints.clear();
     constraints.reinit(DoFTools::extract_locally_relevant_dofs(dof_handler));
     DoFTools::make_hanging_node_constraints(dof_handler, constraints);
 
-    // Interpolate the Dirichlet (essential) boundary conditions from our ProblemData map
+    /// Interpolate Dirichlet boundary conditions from the ProblemData map.
     for (const auto &[boundary_id, function] : this->problem.dirichlet_boundaries)
     {
-      // Interpolates the specific function onto the nodes belonging to boundary_id
+      /// Interpolate the selected boundary function onto this boundary id.
       VectorTools::interpolate_boundary_values(mapping, dof_handler, boundary_id, *function, constraints);
     }
 
@@ -100,7 +108,7 @@ namespace MFSolver
     const unsigned int dofs_per_cell = fe.n_dofs_per_cell();
     const unsigned int n_q_points = scratch.fe_values.n_quadrature_points;
 
-    /*
+    /**
      * WorkStream reuses CopyData objects. Always reset every field that the
      * copier may inspect, including the skip flag, before returning control to
      * the framework.
@@ -110,7 +118,7 @@ namespace MFSolver
     data.cell_rhs = 0.;
     data.cell_is_locally_owned = false;
 
-    /*
+    /**
      * In a distributed triangulation, every rank can iterate over cells that
      * exist only as ghosts or artificial cells. Those cells must not contribute
      * to this rank's PETSc matrix/vector. The copier still runs for the item,
@@ -122,7 +130,7 @@ namespace MFSolver
     data.cell_is_locally_owned = true;
     scratch.fe_values.reinit(cell);
 
-    /*
+    /**
      * Time-dependent problems need the previous solution in the mass-term
      * contribution to the right-hand side. This vector lives in ScratchData so
      * each worker thread has private storage for FEValues to fill.
@@ -164,19 +172,19 @@ namespace MFSolver
 
             double cell_matrix_val = 0.0;
 
-            /*
+            /**
              * Mass term.
              */
             if (this->problem.is_time_dependent)
               cell_matrix_val += inv_dt * phi_i * phi_j;
 
-            // Diffusion: mu grad(phi_i) . grad(phi_j).
+            /// Diffusion term: mu grad(phi_i) . grad(phi_j).
             cell_matrix_val += mu_loc * grad_phi_i * grad_phi_j;
 
-            // Advection part beta . grad(phi_j), tested against phi_i.
+            /// Advection term beta . grad(phi_j), tested against phi_i.
             cell_matrix_val += b_loc * grad_phi_j * phi_i;
 
-            // Reaction plus div(beta) term from the conservative formulation.
+            /// Reaction plus div(beta) term from the conservative formulation.
             cell_matrix_val += (k_loc + b_div) * phi_i * phi_j;
 
             data.cell_matrix(i, j) += cell_matrix_val * dx;
@@ -186,12 +194,12 @@ namespace MFSolver
         if (this->problem.is_time_dependent)
           data.cell_rhs(i) += inv_dt * phi_i * scratch.old_solution_values[q] * dx;
 
-        // Forcing term.
+        /// Forcing term.
         data.cell_rhs(i) += f_loc * phi_i * dx;
       }
     }
 
-    /*
+    /**
      * Neumann data are face-local, so the face FEValues object also belongs in
      * ScratchData. Only faces explicitly listed in ProblemData contribute; all
      * other boundary faces are either Dirichlet or natural zero-flux.
@@ -240,7 +248,7 @@ namespace MFSolver
   template <int dim>
   void MatrixBasedADRSolver<dim>::copy_local_to_global(const PerTaskData<dim> &data)
   {
-    /*
+    /**
      * WorkStream guarantees that this copier is never executed concurrently
      * with another copier invocation and that calls happen in iterator order.
      * That is why the PETSc matrix/vector writes below need no explicit mutex.
@@ -269,7 +277,7 @@ namespace MFSolver
   {
     TimerOutput::Scope t(computing_timer, "assembly");
 
-    /*
+    /**
      * The solver can assemble once for steady problems and many times for
      * transient problems. Start every assembly from a clean algebraic state.
      */
@@ -290,7 +298,7 @@ namespace MFSolver
                                       update_quadrature_points | update_JxW_values,
                                   update_values |
                                       update_quadrature_points | update_JxW_values);
-    /*
+    /**
      * WorkStream runs assemble_on_one_cell() in parallel with private scratch
      * and copy buffers, then runs copy_local_to_global() sequentially. This is
      * the deal.II pattern intended for local finite-element assembly: the
@@ -306,7 +314,7 @@ namespace MFSolver
         scratch_data,
         per_task_data);
 
-    /*
+    /**
      * PETSc accumulates off-process entries lazily. Compression is collective
      * over MPI ranks and must happen after all local WorkStream copy operations
      * have finished.
@@ -324,7 +332,7 @@ namespace MFSolver
     completely_distributed_solution.reinit(locally_owned_dofs,
                                             mpi_communicator);
 
-    // Solver and preconditioner
+    /// Configure the Krylov solver and its tolerance from the RHS norm.
     const double adjusted_solver_tolerance =
         this->problem.solver_tolerance_factor * system_rhs.l2_norm();
     SolverControl solver_control(this->problem.solver_max_iterations,
@@ -332,7 +340,7 @@ namespace MFSolver
     SolverGMRES<LA::MPI::Vector> solver(solver_control);
     solver_control.enable_history_data();
 
-    // AMG test
+    /// Rebuild AMG whenever the sparse matrix has changed.
     if (!this->preconditioner_amg || this->assemble_matrix_flag)
     {
       LA::MPI::PreconditionAMG::AdditionalData data;
@@ -373,22 +381,20 @@ namespace MFSolver
   {
     TimerOutput::Scope t(computing_timer, "output");
 
-    // DataOut owns the conversion from the distributed finite-element solution
-    // to VTU/PVTU files. The directory logic below only decides where those
-    // collective files belong.
+    /// DataOut owns conversion from the distributed solution to VTU/PVTU files.
+    /// The directory logic below only decides where those collective files belong.
     DataOut<dim> data_out;
     data_out.attach_dof_handler(dof_handler);
     data_out.add_data_vector(locally_relevant_solution, "u");
 
-    // Writing the subdomain id beside the solution makes it easier to inspect
-    // parallel decompositions when a run is distributed across several ranks.
+    /// Write the subdomain id beside the solution to inspect MPI partitioning.
     Vector<float> subdomain(triangulation.n_active_cells());
     for (unsigned int i = 0; i < subdomain.size(); ++i)
       subdomain(i) = triangulation.locally_owned_subdomain();
     data_out.add_data_vector(subdomain, "subdomain");
     data_out.build_patches();
 
-    /*
+    /**
      * Reserve the run folder at the first output point and then reuse it for
      * every following time step. This keeps solution_0.*, solution_1.*, ...
      * together even for time-dependent problems.
@@ -403,8 +409,8 @@ namespace MFSolver
 
     if (!disable_vtu)
     {
-      // Every time step writes into the same reserved run folder. The time-step
-      // number appears in the filename, not in the directory name.
+      /// Every time step writes into the same reserved run folder. The time-step
+      /// number appears in the filename, not in the directory name.
       data_out.write_vtu_with_pvtu_record(
           this->output_dir, "/solution", this->timestep_number, mpi_communicator);
     }
@@ -544,11 +550,11 @@ namespace MFSolver
   template <int dim>
   void MatrixBasedADRSolver<dim>::output_to_file()
   {
-    // Only rank 0 should write to file.
+    /// Only rank 0 writes the scalar log file.
     if (Utilities::MPI::this_mpi_process(this->mpi_communicator) != 0)
       return;
 
-    /*
+    /**
      * log.txt is the metadata companion of the VTU/PVTU files. It must be
      * written into the directory selected during output_results(), not into
      * whatever happens to be the newest test_N folder at the end of the run.
@@ -556,7 +562,7 @@ namespace MFSolver
     AssertThrow(!this->output_dir.empty(),
                 ExcMessage("output_results() must be called before output_to_file()"));
 
-    /*
+    /**
      * The table layout is shared with the matrix-free solver. This wrapper only
      * supplies the matrix-based run state that is private to this concrete
      * class: error norms, convergence flag, and elapsed time.

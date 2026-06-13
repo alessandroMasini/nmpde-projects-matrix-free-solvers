@@ -1,3 +1,12 @@
+/**
+ * @file ProblemData.hpp
+ * @brief Benchmark problem definitions and coefficient functions for ADR runs.
+ *
+ * @details Provides reusable coefficient, boundary, exact-solution, and forcing
+ * function objects together with the ProblemData factory methods used by the
+ * matrix-based and matrix-free driver executables.
+ */
+
 #pragma once
 
 #include <deal.II/base/point.h>
@@ -9,11 +18,13 @@
 
 #include <memory>
 
-// TODO: insert grid refinement level for all problems
-
 namespace ADR
 {
 
+    /**
+     * @brief Constant scalar coefficient or source term.
+     * @tparam dim Spatial dimension of the evaluation point.
+     */
     template <int dim>
     class ConstantRealFunction : public MFSolver::RealFunction<dim>
     {
@@ -45,6 +56,10 @@ namespace ADR
         }
     };
 
+    /**
+     * @brief Constant vector coefficient with zero gradient and divergence.
+     * @tparam dim Spatial dimension of the vector field.
+     */
     template <int dim>
     class ConstantVectorFunctionWithGradient : public MFSolver::VectorFunctionWithGradient<dim>
     {
@@ -123,6 +138,10 @@ namespace ADR
         }
     };
 
+    /**
+     * @brief Constant Dirichlet boundary value.
+     * @tparam dim Spatial dimension of the boundary.
+     */
     template <int dim>
     class ConstantDirichletBoundary : public MFSolver::DirichletBoundary<dim>
     {
@@ -138,6 +157,10 @@ namespace ADR
         }
     };
 
+    /**
+     * @brief Dirichlet function returning the sum of point coordinates.
+     * @tparam dim Spatial dimension of the boundary.
+     */
     template <int dim>
     class SumReductionFunction : public MFSolver::DirichletBoundary<dim>
     {
@@ -153,6 +176,10 @@ namespace ADR
         }
     };
 
+    /**
+     * @brief Neumann function returning one selected coordinate.
+     * @tparam dim Spatial dimension of the boundary.
+     */
     template <int dim>
     class NthCoordFunction : public MFSolver::NeumannBoundary<dim>
     {
@@ -184,6 +211,10 @@ namespace ADR
         }
     };
 
+    /**
+     * @brief Piecewise diffusion coefficient used by the lab_03 benchmark.
+     * @tparam dim Spatial dimension of the problem.
+     */
     template <int dim>
     class Lab03Mu : public MFSolver::RealFunction<dim>
     {
@@ -216,6 +247,10 @@ namespace ADR
         }
     };
 
+    /**
+     * @brief Advection field used by the Miro benchmark definition.
+     * @tparam dim Spatial dimension of the problem.
+     */
     template <int dim>
     class beta_term_of_miro_problem : public MFSolver::VectorFunctionWithGradient<dim>
     {
@@ -306,6 +341,10 @@ namespace ADR
         }
     };
 
+    /**
+     * @brief Forcing term used by the Miro benchmark definition.
+     * @tparam dim Spatial dimension of the problem.
+     */
     template <int dim>
     class forcing_term_of_miro_problem : public MFSolver::RealFunction<dim>
     {
@@ -338,6 +377,10 @@ namespace ADR
         }
     };
 
+    /**
+     * @brief Gaussian initial condition used by transient benchmark problems.
+     * @tparam dim Spatial dimension of the problem.
+     */
     template <int dim>
     class GaussianFunction : public MFSolver::RealFunction<dim>
     {
@@ -369,6 +412,10 @@ namespace ADR
         }
     };
 
+    /**
+     * @brief Exact solution for the manufactured-solution benchmark.
+     * @tparam dim Spatial dimension of the problem.
+     */
     template <int dim>
     class MMSExactSolution : public MFSolver::RealFunction<dim> {
     public:
@@ -389,6 +436,10 @@ namespace ADR
         }
     };
 
+    /**
+     * @brief Forcing term consistent with the manufactured exact solution.
+     * @tparam dim Spatial dimension of the problem.
+     */
     template <int dim>
     class MMSForcingTerm : public MFSolver::RealFunction<dim> {
     public:
@@ -416,6 +467,10 @@ namespace ADR
      * This ensures that both the Matrix-Based and Matrix-Free solvers
      * solve the exact same mathematical problem.
      */
+    /**
+     * @brief Complete runtime description of one ADR benchmark problem.
+     * @tparam dim Spatial dimension of the problem.
+     */
     template <int dim>
     struct ProblemData
     {
@@ -425,12 +480,14 @@ namespace ADR
 
         unsigned int num_levels; /**< Number of multigrid levels in the V-cycle. */
 
-        // TODO: is this actually used?
+        /// @todo Verify whether this parameter is still used by the solvers.
         unsigned int num_quadrature_points; /**< Number of quadrature points. */
 
         double lv0_smoothing_range; /**< The range between the largest and the smaller eigenvalue for the lower level of the multigrid V-Cycle. */
-        // double lv0_smoothing_degree; // Unset as we use invalid int to make this a solver instead of a preconditioner. See PreconditionChebyshev documentation
-        // double lv0_smoothing_eigenvalue_max_iterations; // Unset as we use the number of rows of the lowest level matrix in muligrid V-Cycle
+        /// @note The level-0 smoothing degree is intentionally unset because
+        /// the lowest level is used as a solver rather than a preconditioner.
+        /// @note The level-0 eigenvalue iteration count is intentionally unset
+        /// because the lowest-level row count is used instead.
 
         double lvgt0_smoothing_range;                     /**< The range between the largest and the smaller eigenvalue for all but the lower level of the multigrid V-Cycle. */
         double lvgt0_smoothing_degree;                    /**< The number of smoothing iterations for all but the lower level of the multigrid V-Cycle. */
@@ -441,10 +498,11 @@ namespace ADR
 
         unsigned int refinement_level = 3; /**< Total number of times the grid is refined. This should be changed for problem to problem. */
         unsigned int n_additional_refinements = 0; /**< Extra global refinements requested on top of the problem default. */
-        // TODO: where is this used???
+        /// @todo Verify where this refinement coefficient is consumed.
         unsigned int refinement_coefficient_per_level = 4; /**< Mesh refinement level (if generating a hyper_cube/hyper_ball) */
 
-        // --- PDE Coefficients ---
+        /// @name PDE coefficients
+        /// @{
 
         std::shared_ptr<MFSolver::RealFunction<dim>> mu;                 /**< Diffusion coefficient function: mu(x) */
         std::shared_ptr<MFSolver::VectorFunctionWithGradient<dim>> beta; /**< Advection coefficient function: beta(x) (velocity field) */
@@ -452,16 +510,22 @@ namespace ADR
 
         std::shared_ptr<MFSolver::RealFunction<dim>> forcing_term; /**< Forcing term: f(x) */
         std::shared_ptr<MFSolver::RealFunction<dim>> exact_solution = nullptr;          /**< Exact solution: u(x) */
-        // --- Time Dependency Parameters ---
+        /// @}
+
+        /// @name Time dependency parameters
+        /// @{
         bool is_time_dependent = false;                                 /**< Flag to explicitly mark this problem as unsteady/transient. */
         double delta_t = 0.0;                                           /**< The size of the time step. */
         double end_time = 0.0;                                          /**< The final simulation time. */
         std::shared_ptr<MFSolver::RealFunction<dim>> initial_condition; /**< u(x, t=0): The initial state of the domain. */
         MFSolver::DirichletBoundaries<dim> dirichlet_boundaries;        /**< Dirichlet boundaries. */
         MFSolver::NeumannBoundaries<dim> neumann_boundaries;            /**< Neumann boundaries. */
+        /// @}
 
         /**
-         * @brief Helper to initialize with some default test-case values
+         * @brief Build the generic steady test case.
+         * @param fe_degree Degree of the FE_Q finite element.
+         * @return Fully initialized problem descriptor.
          */
         static ProblemData<dim> standard_test_case(const unsigned int fe_degree)
         {
@@ -502,14 +566,19 @@ namespace ADR
             return data;
         }
 
+        /**
+         * @brief Build the steady advanced benchmark.
+         * @param fe_degree Degree of the FE_Q finite element.
+         * @return Fully initialized problem descriptor.
+         */
         static ProblemData<dim> advanced_test_case(const unsigned int fe_degree)
         {
             MFSolver::DirichletBoundaries<dim> dirichlet_boundaries;
-            dirichlet_boundaries[0] = std::make_shared<ConstantRealFunction<dim>>(0.0); // Side 0: 0.0
-            dirichlet_boundaries[1] = std::make_shared<ConstantRealFunction<dim>>(1.0); // Side 1: 1.0
+            dirichlet_boundaries[0] = std::make_shared<ConstantRealFunction<dim>>(0.0); /**< Side 0 value. */
+            dirichlet_boundaries[1] = std::make_shared<ConstantRealFunction<dim>>(1.0); /**< Side 1 value. */
 
             MFSolver::NeumannBoundaries<dim> neumann_boundaries;
-            // The other 4 faces are zero-flux Neumann insulation
+            /// The other four faces use zero-flux Neumann insulation.
             neumann_boundaries[2] = std::make_shared<ConstantRealFunction<dim>>(0.0);
             neumann_boundaries[3] = std::make_shared<ConstantRealFunction<dim>>(0.0);
             neumann_boundaries[4] = std::make_shared<ConstantRealFunction<dim>>(0.0);
@@ -536,7 +605,7 @@ namespace ADR
                 .beta = std::make_shared<ConstantVectorFunctionWithGradient<dim>>(0.0),
                 .gamma = std::make_shared<ConstantRealFunction<dim>>(0.0),
 
-                // Set forcing term to 0 for a generic laplace steady state solution driven by boundaries
+                /// Set zero forcing for a boundary-driven steady Laplace solution.
                 .forcing_term = std::make_shared<ConstantRealFunction<dim>>(0.0),
 
                 .dirichlet_boundaries = dirichlet_boundaries,
@@ -546,13 +615,18 @@ namespace ADR
             return data;
         }
 
+        /**
+         * @brief Build a Neumann-boundary regression test case.
+         * @param fe_degree Degree of the FE_Q finite element.
+         * @return Fully initialized problem descriptor.
+         */
         static ProblemData<dim> test_case_neumann_fix(const unsigned int fe_degree)
         {
             MFSolver::DirichletBoundaries<dim> dirichlet_boundaries;
             dirichlet_boundaries[0] = std::make_shared<ConstantRealFunction<dim>>(0.0);
 
             MFSolver::NeumannBoundaries<dim> neumann_boundaries;
-            neumann_boundaries[1] = std::make_shared<ConstantRealFunction<dim>>(10.0); // Flux is exactly 10.0 on face 1
+            neumann_boundaries[1] = std::make_shared<ConstantRealFunction<dim>>(10.0); /**< Exact flux on face 1. */
             neumann_boundaries[2] = std::make_shared<ConstantRealFunction<dim>>(0.0);
             neumann_boundaries[3] = std::make_shared<ConstantRealFunction<dim>>(0.0);
             neumann_boundaries[4] = std::make_shared<ConstantRealFunction<dim>>(0.0);
@@ -571,7 +645,7 @@ namespace ADR
                 .solver_max_iterations = 100,
                 .solver_tolerance_factor = 1e-12,
 
-                // IMPORTANT: We set mu = 5.0 to trigger the bug.
+                /// @note IMPORTANT: We set mu = 5.0 to trigger the bug.
                 .mu = std::make_shared<ConstantRealFunction<dim>>(5.0),
                 .beta = std::make_shared<ConstantVectorFunctionWithGradient<dim>>(0.0),
                 .gamma = std::make_shared<ConstantRealFunction<dim>>(0.0),
@@ -582,6 +656,11 @@ namespace ADR
             return data;
         }
 
+        /**
+         * @brief Build the manufactured-solution benchmark.
+         * @param fe_degree Degree of the FE_Q finite element.
+         * @return Fully initialized problem descriptor.
+         */
         static ProblemData<dim> mms_test_case(const unsigned int fe_degree)
         {
             MFSolver::DirichletBoundaries<dim> dirichlet_boundaries;
@@ -619,11 +698,16 @@ namespace ADR
             return data;
         }
 
+        /**
+         * @brief Build a simple parabolic benchmark.
+         * @param fe_degree Degree of the FE_Q finite element.
+         * @return Fully initialized problem descriptor.
+         */
         static ProblemData<dim> test_case_parabolic(const unsigned int fe_degree)
         {
             MFSolver::DirichletBoundaries<dim> dirichlet_boundaries;
-            dirichlet_boundaries[0] = std::make_shared<ConstantRealFunction<dim>>(0.0); // Side 0: 0.0
-            dirichlet_boundaries[1] = std::make_shared<ConstantRealFunction<dim>>(0.0); // Side 1: 0.0
+            dirichlet_boundaries[0] = std::make_shared<ConstantRealFunction<dim>>(0.0); /**< Side 0 value. */
+            dirichlet_boundaries[1] = std::make_shared<ConstantRealFunction<dim>>(0.0); /**< Side 1 value. */
 
             MFSolver::NeumannBoundaries<dim> neumann_boundaries;
             neumann_boundaries[2] = std::make_shared<ConstantRealFunction<dim>>(0.0);
@@ -648,7 +732,7 @@ namespace ADR
                 .beta = std::make_shared<ConstantVectorFunctionWithGradient<dim>>(0.0),
                 .gamma = std::make_shared<ConstantRealFunction<dim>>(0.0),
 
-                // We heat the whole domain up uniformly with a forcing term of 6.0
+                /// Uniformly heat the domain with a constant forcing term.
                 .forcing_term = std::make_shared<ConstantRealFunction<dim>>(6.0),
                 .is_time_dependent = true,
                 .delta_t = 0.1,
@@ -660,18 +744,23 @@ namespace ADR
             return data;
         }
 
+        /**
+         * @brief Build a transient benchmark exercising all ADR terms.
+         * @param fe_degree Degree of the FE_Q finite element.
+         * @return Fully initialized problem descriptor.
+         */
         static ProblemData<dim> test_case_comprehensive_transient(const unsigned int fe_degree)
         {
-            // We want to test EVERYTHING: Diffusion, Advection, Reaction, mixed boundaries, and Time.
+            /// Exercise diffusion, advection, reaction, mixed boundaries, and time dependence.
             MFSolver::DirichletBoundaries<dim> dirichlet_boundaries;
-            dirichlet_boundaries[0] = std::make_shared<ConstantRealFunction<dim>>(0.0); // Allow it to "fade out" when hitting left boundary
-            dirichlet_boundaries[1] = std::make_shared<ConstantRealFunction<dim>>(0.0); // and right boundary
-            dirichlet_boundaries[2] = std::make_shared<ConstantRealFunction<dim>>(0.0); // bottom boundary
-            dirichlet_boundaries[3] = std::make_shared<ConstantRealFunction<dim>>(0.0); // top boundary
+            dirichlet_boundaries[0] = std::make_shared<ConstantRealFunction<dim>>(0.0); /**< Left boundary. */
+            dirichlet_boundaries[1] = std::make_shared<ConstantRealFunction<dim>>(0.0); /**< Right boundary. */
+            dirichlet_boundaries[2] = std::make_shared<ConstantRealFunction<dim>>(0.0); /**< Bottom boundary. */
+            dirichlet_boundaries[3] = std::make_shared<ConstantRealFunction<dim>>(0.0); /**< Top boundary. */
 
             MFSolver::NeumannBoundaries<dim> neumann_boundaries;
-            neumann_boundaries[4] = std::make_shared<ConstantRealFunction<dim>>(0.0); // Front - zero flux
-            neumann_boundaries[5] = std::make_shared<ConstantRealFunction<dim>>(0.0); // Back - zero flux
+            neumann_boundaries[4] = std::make_shared<ConstantRealFunction<dim>>(0.0); /**< Front zero-flux boundary. */
+            neumann_boundaries[5] = std::make_shared<ConstantRealFunction<dim>>(0.0); /**< Back zero-flux boundary. */
 
             ProblemData<dim> data{
                 .mesh_filename = "input.msh",
@@ -686,22 +775,29 @@ namespace ADR
                 .solver_max_iterations = 100,
                 .solver_tolerance_factor = 1e-12,
 
-                // --- Stress Test the Physics Setup ---
-                .mu = std::make_shared<ConstantRealFunction<dim>>(0.02),                // Small diffusion so the initial blob spreads slowly
-                .beta = std::make_shared<ConstantVectorFunctionWithGradient<dim>>(0.8), // Advection pushes the blob diagonally! (0.8, 0.8, 0.8)
-                .gamma = std::make_shared<ConstantRealFunction<dim>>(0.5),              // Reaction decays the solution gradually over time
+                /// @name Physics stress-test coefficients
+                /// @{
+                .mu = std::make_shared<ConstantRealFunction<dim>>(0.02),                /**< Small diffusion so the initial blob spreads slowly. */
+                .beta = std::make_shared<ConstantVectorFunctionWithGradient<dim>>(0.8), /**< Diagonal advection velocity. (0.8, 0.8, 0.8) */
+                .gamma = std::make_shared<ConstantRealFunction<dim>>(0.5),              /**< Gradual reaction decay. */
+                /// @}
 
-                .forcing_term = std::make_shared<ConstantRealFunction<dim>>(0.0), // No external source, just the drifting blob
+                .forcing_term = std::make_shared<ConstantRealFunction<dim>>(0.0), /**< No external source; only the drifting blob. */
                 .is_time_dependent = true,
                 .delta_t = 0.005,
                 .end_time = 0.5,
-                .initial_condition = std::make_shared<GaussianFunction<dim>>(), // Initial state: A hot sphere at corner (0.2, 0.2, 0.2)
+                .initial_condition = std::make_shared<GaussianFunction<dim>>(), /**< Initial hot sphere near (0.2, 0.2, 0.2). */
                 .dirichlet_boundaries = dirichlet_boundaries,
                 .neumann_boundaries = neumann_boundaries,
             };
             return data;
         }
 
+        /**
+         * @brief Build the heated-wall transient benchmark.
+         * @param fe_degree Degree of the FE_Q finite element.
+         * @return Fully initialized problem descriptor.
+         */
         static ProblemData<dim> test_case_heated_wall(const unsigned int fe_degree)
         {
             MFSolver::DirichletBoundaries<dim> dirichlet_boundaries;
@@ -727,10 +823,12 @@ namespace ADR
                 .solver_max_iterations = 100,
                 .solver_tolerance_factor = 1e-12,
 
-                // --- Stress Test the Physics Setup ---
+                /// @name Heated-wall physics coefficients
+                /// @{
                 .mu = std::make_shared<ConstantRealFunction<dim>>(0.02),
                 .beta = std::make_shared<ConstantVectorFunctionWithGradient<dim>>(0.8),
                 .gamma = std::make_shared<ConstantRealFunction<dim>>(0),
+                /// @}
 
                 .forcing_term = std::make_shared<ConstantRealFunction<dim>>(1.0),
                 .is_time_dependent = true,
@@ -743,6 +841,11 @@ namespace ADR
             return data;
         }
 
+        /**
+         * @brief Build the two-dimensional lab_02 Poisson benchmark.
+         * @param fe_degree Degree of the FE_Q finite element.
+         * @return Fully initialized problem descriptor.
+         */
         static ProblemData<dim> lab_02_poisson(const unsigned int fe_degree)
         {
             MFSolver::DirichletBoundaries<dim> dirichlet_boundaries;
@@ -783,6 +886,11 @@ namespace ADR
             return data;
         }
 
+        /**
+         * @brief Build the lab_03 diffusion-reaction benchmark.
+         * @param fe_degree Degree of the FE_Q finite element.
+         * @return Fully initialized problem descriptor.
+         */
         static ProblemData<dim> lab_03_dr_eq(const unsigned int fe_degree)
         {
             MFSolver::DirichletBoundaries<dim> dirichlet_boundaries;
@@ -823,6 +931,11 @@ namespace ADR
             return data;
         }
 
+        /**
+         * @brief Build the Miro benchmark problem.
+         * @param fe_degree Degree of the FE_Q finite element.
+         * @return Fully initialized problem descriptor.
+         */
         static ProblemData<dim> see_miro_for_problem_definition_andrea_knows(const unsigned int fe_degree)
         {
             MFSolver::DirichletBoundaries<dim> dirichlet_boundaries;

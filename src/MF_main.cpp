@@ -1,45 +1,51 @@
+/**
+ * @file MF_main.cpp
+ * @brief Command-line entry point for the matrix-free ADR solver executable.
+ *
+ * @details Parses the experiment parameters produced by the batch scripts,
+ * including the SIMD implementation selector, selects a benchmark problem,
+ * applies runtime mesh and solver controls, and dispatches to
+ * MatrixFreeADRSolver in either two or three spatial dimensions.
+ */
+
 #include "mfsolver.hpp"
 #include "ProblemData.hpp"
 
 int main(int argc, char **argv)
 {   
-    // Checking that there are enough inputs
+    /// Validate the expected matrix-free command-line interface.
     if (argc < 8)
     {
        throw std::invalid_argument("Usage: mpirun -n <n_cores> <program> <n_threads> <simd> <problem> <fe_deg> <n_additional_refinements> <delta_t> <max_iters> <tol>");
     }
 
-    // Checking that the considered problem is valid
-    // Problems will now be addressed through test_idx, the index relative to the following array
+    /// Validate the benchmark problem and retain its index for dispatch.
     std::string problems[6] = {"advanced", "lab_02", "lab_03", "parabolic", "transient", "mms"};
     int test_idx = std::find(problems, problems + 6, argv[3]) - problems;
     if (test_idx >= 6){
         throw std::invalid_argument("<problem> needs to be one of 'advanced', 'lab_02', 'lab_03', 'parabolic', 'transient', 'mms'");
     }
 
-    // Initializing MPI
+    /// Initialize MPI and deal.II threading using the requested thread count.
     unsigned int max_n_threads = std::stoi(argv[1]);
     dealii::Utilities::MPI::MPI_InitFinalize mpi_initialization(argc, argv, max_n_threads);
     if (dealii::Utilities::MPI::this_mpi_process(MPI_COMM_WORLD) == 0)
         std::cout << "DEBUG: max_n_threads passed = " << max_n_threads << ", MultithreadInfo::n_threads() = " << dealii::MultithreadInfo::n_threads() << std::endl;
 
-    // fe_deg is a runtime experiment parameter. The solver stores it in
-    // ProblemData and constructs FE_Q(fe_deg), while FEEvaluation reads it from
-    // MatrixFree through the dynamic-degree path.
+    /// Read the runtime finite element degree used by MatrixFree.
     int parsed_fe_degree = std::stoi(argv[4]);
     if (parsed_fe_degree < 1)
         throw std::invalid_argument("<fe_deg> must be a positive integer");
     unsigned int fe_degree = static_cast<unsigned int>(parsed_fe_degree);
     
-    // We first distinguish between 2d and 3d case, and then specialize
+    /// Dispatch lab_02 to the two-dimensional problem specialization.
     if (test_idx == 1){
         ADR::ProblemData<2> data = ADR::ProblemData<2>::lab_02_poisson(fe_degree);
         data.n_additional_refinements = std::stoi(argv[5]);
         data.refinement_level += data.n_additional_refinements;
 
-        // A time step of 0 simply means getting the problem's default
-        // A value different then [0, 1] for a time-indepedent gets simply ignored since 
-        // the is_time_dependent flag checks for that
+        /// Interpret delta_t: zero keeps the problem default; positive values
+        /// in (0, 1) override default settings.
         double delta_t = std::stod(argv[6]);
         if (!data.is_time_dependent && delta_t != 0){
             if (dealii::Utilities::MPI::this_mpi_process(MPI_COMM_WORLD) == 0)
@@ -61,7 +67,7 @@ int main(int argc, char **argv)
     } else {
         ADR::ProblemData<3> data;
 
-        // Switching based on the test case to be created
+        /// Instantiate the selected three-dimensional benchmark problem.
         switch (test_idx){
             case 0:
             data = ADR::ProblemData<3>::advanced_test_case(fe_degree);
@@ -87,9 +93,8 @@ int main(int argc, char **argv)
         data.n_additional_refinements = std::stoi(argv[5]);
         data.refinement_level += data.n_additional_refinements;
 
-        // A time step of 0 simply means getting the problem's default
-        // A value different then [0, 1] for a time-indepedent gets simply ignored since 
-        // the is_time_dependent flag checks for that
+        /// Interpret delta_t: zero keeps the problem default; positive values
+        /// in (0, 1) override default settings.
         double delta_t = std::stod(argv[6]);
         if (!data.is_time_dependent && delta_t != 0){
             if (dealii::Utilities::MPI::this_mpi_process(MPI_COMM_WORLD) == 0)

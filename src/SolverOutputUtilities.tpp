@@ -1,12 +1,21 @@
+/**
+ * @file SolverOutputUtilities.tpp
+ * @brief Output-directory, logging, and run-metadata utilities.
+ *
+ * @details Provides helpers used by both solver backends to reserve run
+ * directories, write solver logs, and keep output naming consistent across MPI
+ * ranks and repeated experiment runs.
+ */
+
 #pragma once
 
 namespace MFSolver
 {
   inline bool to_bool(const std::string &x)
   {
-    // Command-line solver selection passes the SIMD flag as 0/1. Keep the
-    // accepted values narrow so an accidental string cannot silently choose the
-    // non-vectorized path.
+    /// Command-line solver selection passes the SIMD flag as 0/1. Keep the
+    /// accepted values narrow so an accidental string cannot silently choose
+    /// the non-vectorized path.
     assert(x == "0" || x == "1");
     return x == "1";
   }
@@ -30,7 +39,7 @@ namespace MFSolver
    */
   inline int get_max_test_number(const std::filesystem::path &dir)
   {
-    /*
+    /**
      * A missing parameter directory means no run has produced output for this
      * configuration yet, so the caller should start numbering from test_0.
      */
@@ -40,22 +49,22 @@ namespace MFSolver
     int max_test_number = -1;
     for (const auto &entry : std::filesystem::directory_iterator(dir))
     {
-      // Ignore non-directories such as temporary files or notes left near the
-      // results. Only test_N folders participate in run numbering.
+      /// Ignore non-directories such as temporary files or notes left near the
+      /// results. Only test_N folders participate in run numbering.
       if (!entry.is_directory())
         continue;
 
       const std::string name = entry.path().filename().string();
       const std::string prefix = "test_";
 
-      // The parameter directory may contain unrelated folders. Treat them as
-      // out-of-band metadata, not as solver runs.
+      /// The parameter directory may contain unrelated folders. Treat them as
+      /// out-of-band metadata, not as solver runs.
       if (name.rfind(prefix, 0) != 0)
         continue;
 
       try
       {
-        /*
+        /**
          * A valid run folder is exactly test_<integer>. The parsed_length check
          * keeps names like test_3_backup from being mistaken for a real run.
          */
@@ -66,8 +75,8 @@ namespace MFSolver
       }
       catch (const std::exception &)
       {
-        // Malformed test_* names are ignored so one bad manual folder does not
-        // prevent the next simulation from reserving a clean directory.
+        /// Malformed test_* names are ignored so one bad manual folder does not
+        /// prevent the next simulation from reserving a clean directory.
         continue;
       }
     }
@@ -86,17 +95,17 @@ namespace MFSolver
   inline void broadcast_string_from_root(std::string &value,
                                          const MPI_Comm &mpi_communicator)
   {
-    // MPI needs to know how many characters will follow before non-root ranks
-    // can size their receive buffer.
+    /// MPI needs to know how many characters will follow before non-root ranks
+    /// can size their receive buffer.
     int value_size = static_cast<int>(value.size());
     MPI_Bcast(&value_size, 1, MPI_INT, 0, mpi_communicator);
 
-    // On non-root ranks this resize creates the exact buffer that will receive
-    // the text chosen by rank 0.
+    /// On non-root ranks this resize creates the exact buffer that will receive
+    /// the text chosen by rank 0.
     value.resize(value_size);
 
-    // Empty strings are meaningful here: they represent "no error" or "no
-    // selected directory yet". Avoid broadcasting a zero-length data pointer.
+    /// Empty strings are meaningful here: they represent "no error" or "no
+    /// selected directory yet". Avoid broadcasting a zero-length data pointer.
     if (value_size > 0)
       MPI_Bcast(value.data(), value_size, MPI_CHAR, 0, mpi_communicator);
   }
@@ -105,7 +114,7 @@ namespace MFSolver
                                       const MPI_Comm &mpi_communicator,
                                       std::string &output_dir)
   {
-    /*
+    /**
      * A solver run is represented by exactly one test_N folder.
      *
      * The solution writer is collective: every MPI rank participates and writes
@@ -116,17 +125,17 @@ namespace MFSolver
      */
     static std::mutex directory_mutex;
 
-    // selected_dir is the normal result; error_message is the failure result.
-    // Broadcasting both lets every rank reach the same AssertThrow below.
+    /// selected_dir is the normal result; error_message is the failure result.
+    /// Broadcasting both lets every rank reach the same AssertThrow below.
     std::string selected_dir;
     std::string error_message;
 
-    // Only rank 0 talks to the filesystem for the reservation. Other ranks
-    // wait for the chosen path, which prevents one MPI run from splitting into
-    // rank-specific folders.
+    /// Only rank 0 talks to the filesystem for the reservation. Other ranks
+    /// wait for the chosen path, which prevents one MPI run from splitting into
+    /// rank-specific folders.
     if (Utilities::MPI::this_mpi_process(mpi_communicator) == 0)
     {
-      /*
+      /**
        * This mutex protects multiple solver objects in the same process. The
        * filesystem create_directory call below protects separate MPI launches
        * of this project that happen to write the same parameter directory at
@@ -136,11 +145,11 @@ namespace MFSolver
 
       try
       {
-        // The parameter directory itself is shared by many test_N folders and
-        // may not exist yet for a new combination of solver settings.
+        /// The parameter directory itself is shared by many test_N folders and
+        /// may not exist yet for a new combination of solver settings.
         std::filesystem::create_directories(base_dir);
 
-        /*
+        /**
          * Reserve the run directory by creating it, not merely by counting
          * existing folders. If another independent run claims the candidate
          * first, we simply try the next number.
@@ -150,8 +159,8 @@ namespace MFSolver
           const std::filesystem::path candidate =
               base_dir / ("test_" + std::to_string(test_number));
 
-          // create_directory is the actual reservation operation. It succeeds
-          // only for the process that first claims this exact test_N path.
+          /// create_directory is the actual reservation operation. It succeeds
+          /// only for the process that first claims this exact test_N path.
           std::error_code error_code;
           if (std::filesystem::create_directory(candidate, error_code))
           {
@@ -159,13 +168,13 @@ namespace MFSolver
             break;
           }
 
-          // If the candidate already exists, another run got there first; try
-          // the next integer rather than failing the whole batch.
+          /// If the candidate already exists, another run got there first; try
+          /// the next integer rather than failing the whole batch.
           if (std::filesystem::exists(candidate))
             continue;
 
-          // Any other failure means the filesystem is not giving us a usable
-          // run directory, so all ranks should stop with the same message.
+          /// Any other failure means the filesystem is not giving us a usable
+          /// run directory, so all ranks should stop with the same message.
           error_message = "Could not create " + candidate.string() + ": " +
                           error_code.message();
           break;
@@ -173,13 +182,13 @@ namespace MFSolver
       }
       catch (const std::exception &exception)
       {
-        // Convert filesystem exceptions into a broadcastable error so non-root
-        // ranks do not keep running after rank 0 has failed setup.
+        /// Convert filesystem exceptions into a broadcastable error so non-root
+        /// ranks do not keep running after rank 0 has failed setup.
         error_message = exception.what();
       }
     }
 
-    /*
+    /**
      * Publish both the successful path and the failure state. Non-root ranks did
      * not attempt the reservation themselves, so this is their only source of
      * truth about where this run belongs, or why no valid output directory
@@ -191,11 +200,11 @@ namespace MFSolver
     AssertThrow(error_message.empty(), ExcMessage(error_message));
     AssertThrow(!selected_dir.empty(), ExcMessage("No output directory was selected"));
 
-    // Store the agreed directory in the solver object through the reference
-    // parameter. Later log writing uses this exact path, not a filesystem query.
+    /// Store the agreed directory in the solver object through the reference
+    /// parameter. Later log writing uses this exact path, not a filesystem query.
     output_dir = selected_dir;
 
-    /*
+    /**
      * Non-root ranks should see the directory before DataOut starts writing
      * their VTU pieces. The barrier keeps the collective output phase from
      * racing ahead of directory visibility on shared filesystems.
@@ -209,7 +218,7 @@ namespace MFSolver
                                   MPI_Comm &mpi_communicator,
                                   std::string &output_dir)
   {
-    /*
+    /**
      * Matrix-based runs use the same directory taxonomy as matrix-free runs.
      * The final component is fixed to 0 because this solver has no SIMD/non-SIMD
      * variant, but keeping the slot makes the test tree uniform for plotting.
@@ -217,20 +226,20 @@ namespace MFSolver
     std::filesystem::path save_dir =
         get_tests_base_dir() /
         "matrix_based" /
-        // FE degree is a discretization parameter, so it sits beside the
-        // problem name and above mesh refinements and parallel execution shape.
+        /// FE degree is a discretization parameter, so it sits beside the
+        /// problem name and above mesh refinements and parallel execution shape.
         problem.problem_name /
         std::to_string(problem.fe_degree) /
-        // The directory stores the command-line experiment parameter: the
-        // extra refinements requested on top of the problem's built-in default.
-        // The total refinement level is still kept in problem.refinement_level
-        // and is what setup_system() uses to refine the mesh.
+        /// The directory stores the command-line experiment parameter: the
+        /// extra refinements requested on top of the problem's built-in default.
+        /// The total refinement level is still kept in problem.refinement_level
+        /// and is what setup_system() uses to refine the mesh.
         std::to_string(problem.n_additional_refinements) /
-        // MPI ranks and threads describe the parallel execution shape.
+        /// MPI ranks and threads describe the parallel execution shape.
         std::to_string(Utilities::MPI::n_mpi_processes(mpi_communicator)) /
         std::to_string(MultithreadInfo::n_threads()) /
-        // The final slot is the SIMD flag in the matrix-free tree. Matrix-based
-        // output uses 0 so both solvers keep the same directory depth.
+        /// The final slot is the SIMD flag in the matrix-free tree. Matrix-based
+        /// output uses 0 so both solvers keep the same directory depth.
         "0";
 
     create_saving_directory(save_dir, mpi_communicator, output_dir);
@@ -241,7 +250,7 @@ namespace MFSolver
                                   const bool &simd_flag,
                                   std::string &output_dir)
   {
-    /*
+    /**
      * Matrix-free runs split the output tree by SIMD setting so that plots and
      * summaries can compare vectorized and non-vectorized executions without
      * inspecting executable names.
@@ -249,18 +258,18 @@ namespace MFSolver
     std::filesystem::path save_dir =
         get_tests_base_dir() /
         "matrix_free" /
-        // FE degree is part of the numerical discretization, not the run
-        // repetition, so separate it before refinement and parallel settings.
+        /// FE degree is part of the numerical discretization, not the run
+        /// repetition, so separate it before refinement and parallel settings.
         problem.problem_name /
         std::to_string(problem.fe_degree) /
-        // Store the additional refinement count, not the total mesh refinement.
-        // This keeps the output tree aligned with run_extensive_tests.sh and
-        // with plots.py/summarize_tests.py column names.
+        /// Store the additional refinement count, not the total mesh refinement.
+        /// This keeps the output tree aligned with run_extensive_tests.sh and
+        /// with plots.py/summarize_tests.py column names.
         std::to_string(problem.n_additional_refinements) /
-        // MPI ranks and threads identify the parallel execution shape.
+        /// MPI ranks and threads identify the parallel execution shape.
         std::to_string(Utilities::MPI::n_mpi_processes(MPI_COMM_WORLD)) /
         std::to_string(MultithreadInfo::n_threads()) /
-        // The last level distinguishes vectorized and non-vectorized runs.
+        /// The last level distinguishes vectorized and non-vectorized runs.
         (simd_flag ? "1" : "0");
 
     create_saving_directory(save_dir, MPI_COMM_WORLD, output_dir);
@@ -294,11 +303,11 @@ namespace MFSolver
     LogStream deallog;
     std::ofstream log_file(output_dir + "/log.txt");
 
-    // deallog keeps file writes serialized in the same spirit as the rest of
-    // deal.II logging; the attached stream pins the destination to this run.
+    /// deallog keeps file writes serialized in the same spirit as the rest of
+    /// deal.II logging; the attached stream pins the destination to this run.
     deallog.attach(log_file, false);
 
-    /*
+    /**
      * The log is meant to be read by humans and by plots.py/summarize_tests.py.
      * The field widths make the table easy to scan, while the explicit spaces
      * are the real parsing contract: even if a value fills its whole field, the
@@ -315,8 +324,8 @@ namespace MFSolver
     constexpr unsigned int converged_width = 9;
 
     deallog << std::right
-            // Fixed-width headers mirror the numeric rows below, so opening a
-            // log by hand still gives a readable table.
+            /// Fixed-width headers mirror the numeric rows below, so opening a
+            /// log by hand still gives a readable table.
             << std::setw(float_width) << "delta_t" << ' '
             << std::setw(int_width) << "max_iter" << ' '
             << std::setw(float_width) << "adj_tol" << ' '
@@ -335,7 +344,7 @@ namespace MFSolver
     const auto write_history = [&](const double rel_t_step,
                                    const double adjusted_solver_tolerance,
                                    const std::vector<double> &history) {
-      /*
+      /**
        * Each row describes one solver-control checkpoint for a representative
        * time position. The convergence flag is repeated on every row because it
        * is a run-level answer: the scripts can safely read the last row without
@@ -343,7 +352,7 @@ namespace MFSolver
        */
       for (size_t i = 0; i < history.size(); i++)
       {
-        /*
+        /**
          * Each insertion is followed by an explicit space. That space is not
          * decoration: it is what makes split()-based parsing reliable when a
          * scientific-notation value exactly fills its formatted width.
@@ -374,7 +383,7 @@ namespace MFSolver
 
     if (conv_history.size() > 1)
     {
-      /*
+      /**
        * For time-dependent runs, the full history can be large. Logging the
        * first, middle, and last time slices keeps enough shape for summaries and
        * plots without turning log.txt into a second solution output file.
@@ -385,15 +394,15 @@ namespace MFSolver
 
     if (conv_history.size() > 2)
     {
-      // The last slice captures the final solver behavior and is the row most
-      // scripts naturally inspect when they only need one status value.
+      /// The last slice captures the final solver behavior and is the row most
+      /// scripts naturally inspect when they only need one status value.
       size_t last_step = conv_history.size() - 1;
       write_history(1.0, solver_tolerances[last_step], conv_history[last_step]);
     }
 
-    // Every table row was already emitted with std::endl. Detaching is enough
-    // here; an extra std::flush would create a prefix-only DEAL:: line because
-    // LogStream treats the empty buffer as another log record.
+    /// Every table row was already emitted with std::endl. Detaching is enough
+    /// here; an extra std::flush would create a prefix-only DEAL:: line because
+    /// LogStream treats the empty buffer as another log record.
     deallog.detach();
     log_file.close();
 

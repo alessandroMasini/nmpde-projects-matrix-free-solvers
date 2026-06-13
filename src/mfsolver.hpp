@@ -1,3 +1,12 @@
+/**
+ * @file mfsolver.hpp
+ * @brief Core ADR solver interfaces and solver class declarations.
+ *
+ * @details Declares the shared solver base class, the matrix-free ADR operator,
+ * and the matrix-based and matrix-free solver front ends. Template
+ * implementation files are included at the end of this header.
+ */
+
 #include <exception>
 #include <cassert>
 #include <cstdlib>
@@ -86,7 +95,7 @@
 #include "ProblemData.hpp"
 
 /**
- * \brief Namespace containing all the methods and type definitions used in the project.
+ * @brief Namespace containing all solver types and helper aliases used by the project.
  */
 namespace MFSolver
 {
@@ -106,28 +115,28 @@ namespace MFSolver
     } // namespace LA
 
     /**
-     * \brief Like a vector, but distributed.
-     * \tparam T The type of elements stored in the vector.
+     * @brief Distributed vector alias used by the solver implementations.
+     * @tparam T Element type stored in the vector.
      */
     template <typename T>
     using DVector = LinearAlgebra::distributed::Vector<T>;
 
     /**
-     * \brief Represents a range of cells.
+     * @brief Represents a range of cells.s
      */
     using Range = std::pair<unsigned int, unsigned int>;
 
     /**
-     * \brief Abstract class used to keep a common interface between the matrix-free solver (MatrixFreeADRSolver) and the matrix-based solver (MatrixBasedADRSolver).
-     * \tparam dim The dimensionality of the space the ADR problem is living in.
+     * @brief Common interface shared by the matrix-free and matrix-based solvers.
+     * @tparam dim Spatial dimension of the ADR problem.
      */
     template <unsigned int dim>
     class ADRSolver
     {
     public:
         /**
-         * \brief Constructs a new instance of ADRSolver
-         * \param _problem The problem this solver will solve.
+         * @brief Construct a solver for one benchmark problem definition.
+         * @param _problem Problem data copied into this solver instance.
          */
         ADRSolver(const ADR::ProblemData<dim> &_problem)
             : problem(_problem)
@@ -135,50 +144,50 @@ namespace MFSolver
         }
 
         /**
-         * \brief Destructor for the solver.
+         * @brief Virtual destructor for derived solver implementations.
          */
         virtual ~ADRSolver() {};
 
         /**
-         * \brief Actually solve the problem.
+         * @brief Execute the full setup, solve, output, and logging workflow.
          */
         virtual void run() = 0;
 
-        // /**
-        //  * \brief writes the result of the computation in a structured manner on file.
-        //  */
+        /**
+         * @brief Write the collected run data in the project log format.
+         */
         virtual void output_to_file() = 0;
 
     protected:
         /**
-         * \brief Sets up the algebraic system corresponding to the problem.
+         * @brief Set up the algebraic system corresponding to the problem.
          */
         virtual void setup_system() = 0;
 
         /**
-         * \brief Assembles the rhs of the algebraic system corresponding to the problem.
+         * @brief Assemble the algebraic right-hand side.
          */
         virtual void assemble() = 0;
 
         /**
-         * \brief Solves the algebraic system corresponding to the problem.
+         * @brief Solve the assembled algebraic system.
          */
         virtual void solve() = 0;
 
         /**
-         * \brief writes the result of the computation on terminal.
+         * @brief Write solution output and terminal status information.
          */
         virtual void output_results() = 0;
 
         /**
-         * \brief The problem this solver will solve.
+         * @brief Problem definition solved by this object.
          */
         ADR::ProblemData<dim> problem;
 
         unsigned int timestep_number = 0;
 
         /**
-         * Timing and convergence data collected during one solver run.
+         * @brief Timing and convergence data collected during one solver run.
          *
          * The same solver object writes both the visualization files and the
          * final log.txt summary. Keeping the selected output directory here
@@ -193,7 +202,7 @@ namespace MFSolver
         std::vector<double> solver_tolerances;
 
         /**
-         * Directory reserved for this run.
+         * @brief Directory reserved for this run.
          *
          * It is intentionally solver state, not recomputed from the filesystem
          * later. Looking up "the latest test_N" after output has started is
@@ -204,9 +213,9 @@ namespace MFSolver
     };
 
     /**
-     * \brief Class representing the Advection-Diffusion-Reaction operator.
-     * \tparam dim The dimensionality of the space the ADR problem lives in.
-     * \tparam Number The data type used to represent coordinates in the space the ADR problem lives in.
+     * @brief Matrix-free Advection-Diffusion-Reaction operator.
+     * @tparam dim Spatial dimension of the ADR problem.
+     * @tparam Number Scalar type used by the matrix-free evaluator.
      *
      * The ADR operator is built to represent an operator \f( L \f) such that the problem to solve can be expressed as \f[ Lu := -\nabla \cdot (\mu \nabla u) + \nabla \cdot (\beta u) + \gamma u = f \f]
      */
@@ -215,14 +224,15 @@ namespace MFSolver
     {
     public:
         /**
-         * \brief Constructs a new instance of ADROperator.
+         * @brief Construct an empty ADR operator.
          */
         ADROperator() : Super(), delta_t(0.0)
         {
         }
 
         /**
-         * \brief Sets the time step size for transient problems.
+         * @brief Set the time step size for transient problems.
+         * @param dt Time-step size; zero selects the steady-state operator.
          */
         void set_time_step(double dt)
         {
@@ -230,7 +240,7 @@ namespace MFSolver
         }
 
         /**
-         * \brief Resets the ADROperator.
+         * @brief Reset coefficient pointers and base matrix-free state.
          */
         void clear() override
         {
@@ -242,15 +252,15 @@ namespace MFSolver
         }
 
         /**
-         * \brief Precomputes all the coefficients.
-         * \param mu_coeff_function Instance of RealFunction representing the diffusion coefficient of the problem to be solved.
-         * \param beta_coeff_function Instance of VectorFunctionWithGradient representing the advection coefficient of the problem to be solved.
-         * \param gamma_coeff_function Instance of RealFunction representing the reaction coefficient of the problem to be solved.
+         * @brief Store the coefficient functions used by operator applications.
+         * @param mu_coeff_function Diffusion coefficient function.
+         * @param beta_coeff_function Advection coefficient function with divergence.
+         * @param gamma_coeff_function Reaction coefficient function.
          *
          * A call to this method is needed in order to have them ready in SIMD vectors (without having to break the SIMD context) when used while solving the associated algebraic system.
          * There is no failsafe implemented that is activated when this method is not called. In case this method is not called before the coefficients are used, the program will most likely crash with a segmentation fault.
          *
-         * \note This method assumes that the ADROperator was correctly initialized (see Deal.II tutorial step-37 for reference).
+         * @note This method assumes that the ADROperator was correctly initialized (see deal.II tutorial step-37 for reference).
          * If this is not true, this method will just crash with a segmentation fault trying to access non initialized pointers.
          */
         void evaluate_coefficients(
@@ -264,9 +274,10 @@ namespace MFSolver
         }
 
         /**
-         * \brief Computes the diagonal of the ADROperator.
+         * @todo Is this correct? Doesn't it compute the inverse diagonal?
+         * @brief Compute the diagonal of the ADR operator.
          *
-         * \note This method assumes that the ADROperator was correctly initialized (see Deal.II tutorial step-37 for reference).
+         * @note This method assumes that the ADROperator was correctly initialized (see deal.II tutorial step-37 for reference).
          * If this is not true, this method will just crash with a segmentation fault trying to access non initialized pointers.
          */
         virtual void compute_diagonal() override
@@ -289,12 +300,12 @@ namespace MFSolver
 
     private:
         /**
-         * \brief Type alias used as a shorthand to get to the base class.
+         * @brief Base class alias for the matrix-free operator implementation.
          */
         using Super = MatrixFreeOperators::Base<dim, DVector<Number>>;
 
         /**
-         * \brief Type alias used as a shorthand to use FEEvaluation with the correct template parameters.
+         * @brief FEEvaluation alias using runtime element degree and quadrature size.
          *
          * The FE degree is controlled at runtime through FE_Q(problem.fe_degree).
          * deal.II supports FEEvaluation<dim, -1, 0, ...> for this mode: -1
@@ -304,17 +315,19 @@ namespace MFSolver
         using Phi = FEEvaluation<dim, -1, 0, 1, Number>;
 
         /**
-         * \brief Computes the lhs for a given cell.
-         * \param phi The FEEvaluation object representing the finite element approximation.
-         * \param cell The cell for which to compute the lhs.
+         * @brief Computes the lhs for a given cell.
+         * @param phi The FEEvaluation object representing the finite element approximation.
+         * @param cell The cell for which to compute the lhs.
          *
-         * \note This code is extracted and reused by `local_apply` and `local_compute_diagonal`.
-         * According to Step-37, it seems that they are the same but I have not found proof for it (TODO: check).
+         * This code is extracted and reused by `local_apply` and
+         * `local_compute_diagonal`.
+         * @todo Confirm that the same local action is appropriate for diagonal
+         * extraction in all ADR configurations.
          * Class methods gets automatically inlined by the compiler, therefore there should not be any performance loss due to the function call.
          */
         void lhs_computation(Phi &phi, const unsigned int cell) const
         {
-            (void)cell; // Cell index no longer needed since we evaluate on the fly
+            (void)cell; ///< Cell index no longer needed since coefficients are evaluated on the fly.
             phi.evaluate(EvaluationFlags::values | EvaluationFlags::gradients);
 
             for (const unsigned int q : phi.quadrature_point_indices())
@@ -339,11 +352,11 @@ namespace MFSolver
         }
 
         /**
-         * \brief Applies the ADROperator to a range of cells.
-         * \param data The MatrixFree object containing all the information needed by the FEEvaluation to evaluate.
-         * \param dst The vector of DoFs in which the result of the application is saved.
-         * \param src The vector of DoFs to which the operator is applied.
-         * \param cell_range Describes the range of cells to which apply the operator.
+         * @brief the ADROperator to a range of cells.
+         * @param data The MatrixFree object containing all the information needed by the FEEvaluation to evaluate.
+         * @param dst The vector of DoFs in which the result of the application is saved.
+         * @param src The vector of DoFs to which the operator is applied.
+         * @param cell_range Describes the range of cells to which apply the operator.
          */
         void local_apply(const MatrixFree<dim, Number> &data, DVector<Number> &dst, const DVector<Number> &src, const Range &cell_range) const
         {
@@ -364,8 +377,8 @@ namespace MFSolver
         }
 
         /**
-         * \brief Used as cell operation to compute the diagonal of the operator.
-         * \param phi The FEEvaluation to be used in the computation.
+         * @brief Cell operation used to compute diagonal entries.
+         * @param phi FEEvaluation object positioned on the current cell.
          */
         void local_compute_diagonal(Phi &phi) const
         {
@@ -374,9 +387,9 @@ namespace MFSolver
         }
 
         /**
-         * \brief Applies the operator to a given vector of DoFs.
-         * \param dst The vector of DoFs in which the result of the application is saved.
-         * \param src The vector of DoFs to which the operator is applied.
+         * @brief Applies the operator to a given vector of DoFs.
+         * @param dst The vector of DoFs in which the result of the application is saved.
+         * @param src The vector of DoFs to which the operator is applied.
          */
         virtual void apply_add(DVector<Number> &dst, const DVector<Number> &src) const override
         {
@@ -384,29 +397,29 @@ namespace MFSolver
         }
 
         /**
-         * \brief The time step size. If > 0, the operator shifts from steady-state to time-dependent (adds Mass Matrix component).
+         * @brief Time-step size; positive values add the transient mass term.
          */
         double delta_t;
 
         /**
-         * \brief Pointer to the diffusion coefficient function.
+         * @brief Pointer to the diffusion coefficient function.
          */
         const RealFunction<dim> *mu_func = nullptr;
 
         /**
-         * \brief Pointer to the advection coefficient function.
+         * @brief Pointer to the advection coefficient function.
          */
         const VectorFunctionWithGradient<dim> *beta_func = nullptr;
 
         /**
-         * \brief Pointer to the reaction coefficient function.
+         * @brief Pointer to the reaction coefficient function.
          */
         const RealFunction<dim> *gamma_func = nullptr;
     };
 
     /**
-     * \brief Solver class that will solve an ADR problem using matrix-free techniques.
-     * \tparam dim The dimensionality of the space the ADR problem is living in.
+     * @brief ADR solver implementation based on matrix-free operator application.
+     * @tparam dim Spatial dimension of the ADR problem.
      */
     template <int dim>
     class MatrixFreeADRSolver : public ADRSolver<dim>
@@ -433,7 +446,7 @@ namespace MFSolver
 
     private:
         void setup_system() override;
-        void assemble() override; // <-- this one assembles the RHS, the LHS initialization was already performed somewhere else
+        void assemble() override; ///< Assemble the RHS; LHS initialization is handled TODO: where?.
         void solve() override;
         void output_results() override;
         void compute_error();
@@ -443,8 +456,7 @@ namespace MFSolver
                                  const std::pair<unsigned int, unsigned int> &cell_range) const;
 
 #ifdef DEAL_II_WITH_P4EST
-        //         // The second "dim" is needed in case the spatial dimension
-        //         // is different than the FE dimension
+        /// Distributed triangulation with explicit spacedim equal to dim.
         parallel::distributed::Triangulation<dim, dim> triangulation;
 #else
         Triangulation<dim> triangulation;
@@ -457,8 +469,8 @@ namespace MFSolver
 
         AffineConstraints<double> constraints;
 
-        // The matrix-free operator reads degree and quadrature size from the
-        // MatrixFree object at runtime through FEEvaluation<dim, -1, 0, ...>.
+        /// The matrix-free operator reads degree and quadrature size from the
+        /// MatrixFree object at runtime through FEEvaluation<dim, -1, 0, ...>.
         using SystemMatrixType = ADROperator<dim, double>;
         SystemMatrixType system_matrix;
 
@@ -494,6 +506,10 @@ namespace MFSolver
         std::shared_ptr<PreconditionMG<dim, DVector<float>, MGTransferMatrixFree<dim, float>>> preconditioner;
     };
 
+    /**
+     * @brief Per-cell local matrix and vector data copied into global objects.
+     * @tparam dim Spatial dimension of the finite element cell.
+     */
     template <int dim>
     struct PerTaskData {
         FullMatrix<double> cell_matrix;
@@ -510,7 +526,9 @@ namespace MFSolver
                     dof_indices (fe.dofs_per_cell)
             {}
 
-        /*
+        /**
+         * @brief Copy constructor used by WorkStream worker-local data pools.
+         *
          * WorkStream keeps a pool of CopyData objects and constructs that pool
          * by copying this sample object. Copy only the allocated shape, not the
          * transient values from a previous cell. The worker resets the fields
@@ -530,6 +548,10 @@ namespace MFSolver
             {}
     };
 
+    /**
+     * @brief Per-thread scratch objects used during matrix-based assembly.
+     * @tparam dim Spatial dimension of the finite element cell.
+     */
     template <int dim>
     struct ScratchData {
         FEValues<dim> fe_values;
@@ -547,7 +569,9 @@ namespace MFSolver
                     old_solution_values(quadrature.size())
             {}
         
-        /*
+        /**
+         * @brief Copy constructor that creates private evaluator caches.
+         *
          * FEValues and FEFaceValues own mutable caches that are changed by
          * reinit(). Sharing them across threads would be a data race, so a
          * ScratchData copy must construct fresh evaluator objects using the
@@ -568,8 +592,8 @@ namespace MFSolver
     };
 
     /**
-     * \brief Solver class that will solve an ADR problem using matrix-based techniques.
-     * \tparam dim The dimensionality of the space the ADR problem is living in.
+     * @brief ADR solver implementation based on an assembled sparse matrix.
+     * @tparam dim Spatial dimension of the ADR problem.
      */
     template <int dim>
     class MatrixBasedADRSolver : public ADRSolver<dim>
@@ -634,7 +658,9 @@ namespace MFSolver
         ConditionalOStream pcout;
         TimerOutput computing_timer;
 
-        /*
+        /**
+         * @brief Serializes the narrow old-solution read section.
+         *
          * PETSc MPI vectors are not a safe object to sample concurrently from
          * several WorkStream workers. Transient RHS assembly reads
          * old_solution through FEValues::get_function_values(), so serialize
@@ -647,14 +673,15 @@ namespace MFSolver
         double h1_error = 0.0;
         double linfty_error = 0.0;
         bool converged = false;
-        // const double theta = 1.0;
+        /// @todo Reintroduce a theta-method parameter here if time integration
+        /// is generalized beyond the current implicit form.
 
         bool assemble_matrix_flag = true;
         std::shared_ptr<LA::MPI::PreconditionAMG> preconditioner_amg;
     };
 };
 
-// Including template function implementations
+/// @brief Include template function implementations for the declarations above.
 #include "SolverOutputUtilities.tpp"
 #include "MatrixBasedADRSolver.tpp"
 #include "MatrixFreeADRSolver.tpp"

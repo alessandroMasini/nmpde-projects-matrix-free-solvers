@@ -1,6 +1,14 @@
 #pragma once
 
-// Implementation of MatrixFreeADRSolver methods
+/**
+ * @file MatrixFreeADRSolver.tpp
+ * @brief Template implementations for MatrixFreeADRSolver.
+ *
+ * @details Contains setup, matrix-free assembly, multigrid preconditioner
+ * construction, solve, output, and error-computation routines for the
+ * matrix-free ADR solver backend.
+ */
+
 #include <deal.II/grid/grid_generator.h>
 #include <deal.II/grid/tria.h>
 #include <deal.II/numerics/vector_tools.h>
@@ -35,23 +43,23 @@ namespace MFSolver
             system_matrix.clear();
             mg_matrices.clear_elements();
 
-            // Distribute degrees of freedom for the fine mesh and the multigrid hierarchy
+            /// Distribute degrees of freedom for the fine mesh and hierarchy.
             dof_handler.distribute_dofs(fe);
             dof_handler.distribute_mg_dofs();
 
             pcout << "Number of DoFs: " << dof_handler.n_dofs() << std::endl;
 
             pcout << "  Initialize constraints..." << std::endl;
-            // Handle hanging nodes (created by adaptive h-refinement) to ensure solution continuity
+            /// Handle hanging nodes created by adaptive refinement to ensure continuity.
             constraints.clear();
             constraints.reinit(DoFTools::extract_locally_relevant_dofs(dof_handler));
             DoFTools::make_hanging_node_constraints(dof_handler, constraints);
 
             pcout << "  Interpolating boundary values..." << std::endl;
-            // Interpolate the Dirichlet (essential) boundary conditions from our ProblemData map
+            /// Interpolate Dirichlet boundary conditions from the ProblemData map.
             for (const auto &[boundary_id, function] : this->problem.dirichlet_boundaries)
             {
-                // Interpolates the specific function onto the nodes belonging to boundary_id
+                /// Interpolate the selected boundary function onto this boundary id.
                 VectorTools::interpolate_boundary_values(mapping, dof_handler, boundary_id, *function, constraints);
             }
 
@@ -66,8 +74,8 @@ namespace MFSolver
 
         {
             {
-                // Set up the core Matrix-Free storage.
-                // We ask it to compute gradients, JxW (Jacobian * quadrature weights), and x-y-z points on the fly.
+                /// Set up the fine-level MatrixFree storage with all update flags
+                /// needed by ADR cell and boundary evaluations.
                 typename MatrixFree<dim, double>::AdditionalData additional_data;
                 additional_data.tasks_parallel_scheme = MatrixFree<dim, double>::AdditionalData::TasksParallelScheme::partition_color;
                 additional_data.mapping_update_flags = update_gradients | update_JxW_values | update_quadrature_points | update_values;
@@ -76,13 +84,9 @@ namespace MFSolver
                 std::shared_ptr<MatrixFree<dim, double>>
                     system_mf_storage(new MatrixFree<dim, double>());
 
-                // Since the quadrature type decides whether simd is used or not, the choice of the former needs to depend on the latter
-                // TODO: Andrea sa
-                // if (simd_flag){
-                //     system_mf_storage->reinit(mapping, dof_handler, constraints, QGaussLobatto<1>(fe.degree + 1), additional_data);
-                // } else {
+                /// @todo Revisit the SIMD quadrature choice; the current path uses
+                /// QGauss for both vectorized and non-vectorized matrix-free runs.
                 system_mf_storage->reinit(mapping, dof_handler, constraints, QGauss<1>(fe.degree + 1), additional_data);
-                //}
 
                 system_matrix.initialize(system_mf_storage);
             }
@@ -97,8 +101,8 @@ namespace MFSolver
         timer.restart();
 
         {
-            // Now repeat the matrix-free initialization for every single level of the multigrid hierarchy.
-            // We use 'float' instead of 'double' here to save memory bandwidth during the coarse grid iterations.
+            /// Repeat matrix-free initialization for every multigrid level.
+            /// Float level operators reduce memory traffic during smoothing.
             const unsigned int nlevels = triangulation.n_global_levels();
             mg_matrices.resize(0, nlevels - 1);
 
@@ -129,13 +133,9 @@ namespace MFSolver
 
                 std::shared_ptr<MatrixFree<dim, float>> mg_mf_storage_level = std::make_shared<MatrixFree<dim, float>>();
 
-                // Since the quadrature type decides whether simd is used or not, the choice of the former needs to depend on the latter
-                // TODO: Andrea sa
-                // if (simd_flag){
-                //     mg_mf_storage_level->reinit(mapping, dof_handler, level_constraints, QGaussLobatto<1>(fe.degree + 1), additional_data);
-                // } else {
+                /// @todo Revisit the SIMD quadrature choice for multigrid levels;
+                /// the current path uses QGauss for every level.
                 mg_mf_storage_level->reinit(mapping, dof_handler, level_constraints, QGauss<1>(fe.degree + 1), additional_data);
-                //}
 
                 mg_matrices[level].initialize(mg_mf_storage_level, mg_constrained_dofs, level);
             }
@@ -208,13 +208,9 @@ namespace MFSolver
             additional_data.mapping_update_flags = update_gradients | update_JxW_values | update_quadrature_points | update_values;
             this->inhomogeneous_mf_storage = std::make_shared<MatrixFree<dim, double>>();
 
-            // Since the quadrature type decides whether simd is used or not, the choice of the former needs to depend on the latter
-            // TODO: Andrea sa
-            // if (simd_flag){
-            //     this->inhomogeneous_mf_storage->reinit(mapping, dof_handler, no_constraints, QGaussLobatto<1>(fe.degree + 1), additional_data);
-            // } else {
+            /// @todo Revisit the SIMD quadrature choice for the inhomogeneous
+            /// operator; the current path uses QGauss for all runs.
             this->inhomogeneous_mf_storage->reinit(mapping, dof_handler, no_constraints, QGauss<1>(fe.degree + 1), additional_data);
-            // }
             
             this->inhomogeneous_operator = std::make_shared<ADROperator<dim, double>>();
             this->inhomogeneous_operator->initialize(this->inhomogeneous_mf_storage);
@@ -233,8 +229,8 @@ namespace MFSolver
 
         system_rhs.compress(VectorOperation::add);
 
-        // Face terms use the same dynamic degree/quadrature convention as the
-        // cell evaluator above.
+        /// Face terms use the same dynamic degree/quadrature convention as the
+        /// cell evaluator above.
         FEFaceEvaluation<dim, -1, 0, 1, double> face_phi(*system_matrix.get_matrix_free());
 
         for (unsigned int face = 0; face < system_matrix.get_matrix_free()->n_boundary_face_batches(); ++face)
@@ -252,7 +248,7 @@ namespace MFSolver
                     Point<dim, VectorizedArray<double>> quadrature_point = face_phi.quadrature_point(q);
                     VectorizedArray<double> neumann_value = neumann->value(quadrature_point);
 
-                    face_phi.submit_value(neumann_value, q); // TODO: we need to check whether here we need mu again or not. See proof on miro
+                    face_phi.submit_value(neumann_value, q); ///< @todo Verify whether the Neumann contribution should include mu. See proof on Miro
                 }
 
                 face_phi.integrate(EvaluationFlags::values);
@@ -279,13 +275,11 @@ namespace MFSolver
 
         if (!this->mf_setup_initialized)
         {
-            // Grid Transfer: builds interpolation weights to move residual data to coarser grids (Restriction)
-            // and move algebraic corrections back up to finer grids (Prolongation).
+            /// Build transfer operators for restriction and prolongation.
             this->mg_transfer = std::make_shared<MGTransferMatrixFree<dim, float>>(mg_constrained_dofs);
             this->mg_transfer->build(dof_handler);
 
-            // Smoother: Chebyshev iteration squashes high-frequency errors. It's mathematically
-            // perfect for matrix-free because it entirely relies on matrix-vector multiplications.
+            /// Use Chebyshev smoothing because it relies only on matrix-vector products.
             this->mg_smoother = std::make_shared<mg::SmootherRelaxation<SmootherType, DVector<float>>>();
             MGLevelObject<typename SmootherType::AdditionalData> smoother_data;
             smoother_data.resize(0, triangulation.n_global_levels() - 1);
@@ -294,7 +288,7 @@ namespace MFSolver
             {
                 if (level > 0)
                 {
-                    // For intermediate and fine levels, do a quick 5-degree polynomial smoothing sweep
+                    /// Configure the smoothing sweep for intermediate and fine levels.
                     smoother_data[level].smoothing_range = this->problem.lvgt0_smoothing_range;
                     smoother_data[level].degree = this->problem.lvgt0_smoothing_degree;
                     smoother_data[level].eig_cg_n_iterations = this->problem.lvgt0_smoothing_eigenvalue_max_iterations;
@@ -305,19 +299,18 @@ namespace MFSolver
                     smoother_data[0].degree = numbers::invalid_unsigned_int;
                     smoother_data[0].eig_cg_n_iterations = mg_matrices[0].m();
                 }
-                // Inject the cached inverse diagonals we extracted during assemble()
+                /// Reuse cached inverse diagonals computed during assemble().
                 smoother_data[level].preconditioner = mg_matrices[level].get_matrix_diagonal_inverse();
             }
             this->mg_smoother->initialize(mg_matrices, smoother_data);
 
-            // Tell the coarse solver to just run the level 0 smoother we just configured above
+            /// Use the configured level-0 smoother as the coarse-grid solver.
             this->mg_coarse = std::make_shared<MGCoarseGridApplySmoother<DVector<float>>>();
             this->mg_coarse->initialize(*(this->mg_smoother));
 
             this->mg_matrix = std::make_shared<mg::Matrix<DVector<float>>>(mg_matrices);
 
-            // Hanging node interfaces: when transferring residual data between levels, these
-            // special operators correctly account for the spatial discontinuities where h-refinement occurred.
+            /// Interface operators account for discontinuities introduced by h-refinement.
             this->mg_interface_matrices = std::make_shared<MGLevelObject<MatrixFreeOperators::MGInterfaceOperator<LevelMatrixType>>>();
             this->mg_interface_matrices->resize(0, triangulation.n_global_levels() - 1);
             for (unsigned int level = 0; level < triangulation.n_global_levels(); ++level)
@@ -325,7 +318,7 @@ namespace MFSolver
 
             this->mg_interface = std::make_shared<mg::Matrix<DVector<float>>>(*(this->mg_interface_matrices));
 
-            // Assemble the full Multigrid V-Cycle Preconditioner structure
+            /// Assemble the full multigrid V-cycle preconditioner structure.
             this->mg = std::make_shared<Multigrid<DVector<float>>>(*(this->mg_matrix), *(this->mg_coarse), *(this->mg_transfer), *(this->mg_smoother), *(this->mg_smoother));
             this->mg->set_edge_matrices(*(this->mg_interface), *(this->mg_interface));
 
@@ -334,18 +327,15 @@ namespace MFSolver
             this->mf_setup_initialized = true;
         }
 
-        // Outer Iterative Krylov Solver: Since our ADR equation has an asymmetric advection term,
-        // standard Conjugate Gradient (CG) could fail here. We use GMRES instead.
-        // pcout << this->problem.solver_max_iterations << std::endl;
-        // pcout << this->problem.solver_tolerance_factor << std::endl;
+        /// Use GMRES because advection makes the ADR operator non-symmetric.
         const double adjusted_solver_tolerance =
             this->problem.solver_tolerance_factor * system_rhs.l2_norm();
         SolverControl solver_control(this->problem.solver_max_iterations, adjusted_solver_tolerance);
         solver_control.enable_history_data();
         SolverGMRES<DVector<double>> gmres(solver_control);
 
-        // Zero out constraints before solving so the GMRES internal vectors aren't corrupted,
-        // then distribute the exact boundary values back at the end
+        /// Zero out constraints before solving so the GMRES internal vectors aren't corrupted,
+        /// then distribute the exact boundary values back at the end.
         constraints.set_zero(solution);
         try
         {
@@ -371,24 +361,21 @@ namespace MFSolver
     void MatrixFreeADRSolver<dim>::output_results()
     {
         Timer timer;
-        // static unsigned int cycle = 0; // Using an internal counter since the method takes no arguments
-
         dealii::DataOut<dim> data_out;
 
-        // Matrix-free vectors need their ghost entries synchronized before
-        // DataOut samples the solution on cells owned by this rank.
+        /// Matrix-free vectors need their ghost entries synchronized before
+        /// DataOut samples the solution on cells owned by this rank.
         this->solution.update_ghost_values();
         data_out.attach_dof_handler(dof_handler);
         data_out.add_data_vector(this->solution, "solution");
         data_out.build_patches(mapping);
 
-        // Prefer cheap compression because these files are produced often in
-        // time-dependent runs; solver timings should not be dominated by I/O.
+        /// Prefer cheap compression so frequent VTU output does not dominate timings.
         dealii::DataOutBase::VtkFlags flags;
         flags.compression_level = dealii::DataOutBase::CompressionLevel::best_speed;
         data_out.set_flags(flags);
 
-        /*
+        /**
          * The first visualization output reserves the run directory. After that
          * all ranks keep reusing the same path, so rank-local VTU files, the
          * PVTU record, and log.txt describe one coherent run.
@@ -406,8 +393,8 @@ namespace MFSolver
             time_details << "Creating solution output (cpu/wall): " << timer.cpu_time() << "s/" << timer.wall_time() << "s" << std::endl;
             timer.restart();
 
-            // All ranks participate here. The shared output_dir ensures their VTU
-            // pieces and the PVTU index file describe one run rather than several.
+            /// All ranks participate; the shared output_dir keeps VTU pieces
+            /// and the PVTU index file attached to one run.
             data_out.write_vtu_with_pvtu_record(
                 this->output_dir, "/solution", this->timestep_number, MPI_COMM_WORLD);
 
@@ -482,13 +469,12 @@ namespace MFSolver
               << std::endl;
 
         this->start_time = MPI_Wtime();
-        GridGenerator::hyper_cube(triangulation, 0., 1., true); // `true` colorizes the boundaries: 0=left, 1=right, 2=bottom, 3=top, 4=back, 5=front
+        GridGenerator::hyper_cube(triangulation, 0., 1., true); ///< Colorize boundaries with deal.II's default hypercube ids.
         triangulation.refine_global(this->problem.refinement_level);
 
         if (this->problem.is_time_dependent)
         {
             pcout << "--- Time-Dependent Simulation ---" << std::endl;
-            // triangulation.refine_global(2); // refine it a bit for the simulation
             setup_system();
 
             if (this->problem.initial_condition != nullptr)
@@ -528,12 +514,6 @@ namespace MFSolver
         }
         else
         {
-            // for (unsigned int cycle = 0; cycle < 3; ++cycle) // let's do 3 cycles for the test
-            // {
-            //     pcout << "Cycle " << cycle << std::endl;
-            //     if (cycle > 0)
-            //         triangulation.refine_global(1);
-
             setup_system();
 
             pcout << "   Assembling..." << std::endl;
@@ -552,8 +532,6 @@ namespace MFSolver
                 pcout << "   L_infty Error vs Exact Solution: " << this->linfty_error << std::endl;
             }
 
-            //     pcout << "===========================================" << std::endl;
-            // }
         }
 
         this->end_time = MPI_Wtime();
@@ -562,11 +540,11 @@ namespace MFSolver
     template <int dim>
     void MatrixFreeADRSolver<dim>::output_to_file()
     {
-        // Only rank 0 should write to file.
+        /// Only rank 0 writes the scalar log file.
         if (Utilities::MPI::this_mpi_process(MPI_COMM_WORLD) != 0)
             return;
 
-        /*
+        /**
          * log.txt is the metadata companion of the VTU/PVTU files. It must be
          * written into the directory selected during output_results(), not into
          * whatever happens to be the newest test_N folder at the end of the run.
@@ -574,7 +552,7 @@ namespace MFSolver
         AssertThrow(!this->output_dir.empty(),
                     ExcMessage("output_results() must be called before output_to_file()"));
 
-        /*
+        /**
          * The table layout is shared with the matrix-based solver. This wrapper
          * only supplies the matrix-free run state that is private to this
          * concrete class: error norms, convergence flag, and elapsed time.

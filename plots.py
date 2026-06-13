@@ -1,5 +1,10 @@
 """@file plots.py
-@brief This file contains all the necessary functions for plotting.
+@brief Plot benchmark results produced by the matrix-based and matrix-free solvers.
+
+@details
+Loads solver log files, filters runs by command-line settings, aggregates
+matching samples, and renders comparison plots with optional theoretical
+scaling references.
 """
 
 import os

@@ -1,3 +1,12 @@
+/**
+ * @file function_types.hpp
+ * @brief Polymorphic scalar, vector, and gradient-aware function interfaces.
+ *
+ * @details The matrix-free kernels evaluate coefficients in both scalar and
+ * vectorized deal.II point types. These interfaces make that contract explicit
+ * for coefficients, exact solutions, and manufactured forcing terms.
+ */
+
 #pragma once
 
 #include <deal.II/base/function.h>
@@ -13,8 +22,8 @@ namespace MFSolver
     using namespace dealii;
 
     /**
-     * \brief Represents a function that takes a `dim`-dimensional vector and returns a real number.
-     * \tparam dim The dimensionality of the input vector.
+     * @brief Represents a function that takes a `dim`-dimensional vector and returns a real number.
+     * @tparam dim The dimensionality of the input vector.
      *
      * In order to overcome C++ limitations (we already tried to use `std::function`s miserably failing because of the non-polymorphism of the return type of the lambda wrapped Callable),
      * this class must be extended each time a different RealFunction is needed.
@@ -30,8 +39,7 @@ namespace MFSolver
      *         return value<double>(p, component);
      *     }
      *
-     *     // This methos should contain the actual formula that this RealFunction should compute.
-     *     // Yes, this is correct, it does not need to be marked as `override`.
+     *     // Implement the formula once for scalar and vectorized number types.
      *     template <typename Number>
      *     Number value(const Point<dim, Number> &p, const unsigned int component = 0) const {
      *         return ...;
@@ -44,20 +52,38 @@ namespace MFSolver
     {
     public:
         /**
-         * \brief Constructs a new instance of RealFunction.
+         * @brief Constructs a new instance of RealFunction.
          */
         RealFunction() : Function<dim>() {}
 
+        /**
+         * @brief Evaluate the scalar function at a standard deal.II point.
+         * @param p Evaluation point.
+         * @param component Component requested by the deal.II Function interface.
+         * @return Scalar function value.
+         */
         virtual double value(const Point<dim> &p, const unsigned int component = 0) const override = 0;
 
+        /**
+         * @brief Evaluate the scalar function at a float-vectorized point.
+         * @param p Vectorized evaluation point.
+         * @param component Component requested by the deal.II Function interface.
+         * @return Vectorized scalar function value.
+         */
         virtual VectorizedArray<float> value(const Point<dim, VectorizedArray<float>> &p, const unsigned int component = 0) const = 0;
 
+        /**
+         * @brief Evaluate the scalar function at a double-vectorized point.
+         * @param p Vectorized evaluation point.
+         * @param component Component requested by the deal.II Function interface.
+         * @return Vectorized scalar function value.
+         */
         virtual VectorizedArray<double> value(const Point<dim, VectorizedArray<double>> &p, const unsigned int component = 0) const = 0;
     };
 
     /**
-     * \brief Represents a function that takes a `dim`-dimensional vector and returns another `dim`-dimensional vector.
-     * \tparam dim The dimensionality of the input and output vector.
+     * @brief Represents a function that takes a `dim`-dimensional vector and returns another `dim`-dimensional vector.
+     * @tparam dim The dimensionality of the input and output vector.
      *
      * In order to overcome C++ limitations (we already tried to use `std::function`s miserably failing because of the non-polymorphism of the return type of the lambda wrapped Callable),
      * this class must be extended each time a different VectorFunction is needed.
@@ -75,8 +101,7 @@ namespace MFSolver
      *         return value<double>(p);
      *     }
      *
-     *     // This methos should contain the actual formula that this VectorFunction should compute.
-     *     // Yes, this is correct, it does not need to be marked as `override`.
+     *     // Implement the formula once for scalar and vectorized number types.
      *     template <typename Number>
      *     typename Super::value_type<Number> value(const Point<dim, Number> &p) const {
      *         return ...;
@@ -88,26 +113,41 @@ namespace MFSolver
     class VectorFunction : public TensorFunction<1, dim, double>
     {
     public:
-        // Using dealii's definition of value_type if we instantiated it with Number
+        /// Alias deal.II's vector-valued return type for the selected number type.
 
         template <typename Number>
         using value_type = typename TensorFunction<1, dim, Number>::value_type;
 
         /**
-         * \brief Constructs a new instance of VectorFunction.
+         * @brief Constructs a new instance of VectorFunction.
          */
         VectorFunction() : TensorFunction<1, dim, double>() {}
 
+        /**
+         * @brief Evaluate the vector field at a standard deal.II point.
+         * @param p Evaluation point.
+         * @return Vector-valued function value.
+         */
         virtual value_type<double> value(const Point<dim> &p) const override = 0;
 
+        /**
+         * @brief Evaluate the vector field at a float-vectorized point.
+         * @param p Vectorized evaluation point.
+         * @return Vectorized vector-field value.
+         */
         virtual value_type<VectorizedArray<float>> value(const Point<dim, VectorizedArray<float>> &p) const = 0;
 
+        /**
+         * @brief Evaluate the vector field at a double-vectorized point.
+         * @param p Vectorized evaluation point.
+         * @return Vectorized vector-field value.
+         */
         virtual value_type<VectorizedArray<double>> value(const Point<dim, VectorizedArray<double>> &p) const = 0;
     };
 
     /**
-     * \brief Represents a function that takes a `dim` dimensional vector and returns anothr `dim`-dimensional vector. Moreover, the represented function must be differentiable and it's gradientmust also be provided.
-     * \tparam dim The dimensionality of the input and output vector.
+     * @brief Represents a function that takes a `dim` dimensional vector and returns anothr `dim`-dimensional vector. Moreover, the represented function must be differentiable and it's gradientmust also be provided.
+     * @tparam dim The dimensionality of the input and output vector.
      *
      * In order to overcome C++ limitations (we already tried to use `std::function`s miserably failing because of the non-polymorphism of the return type of the lambda wrapped Callable),
      * this class must be extended each time a different VectorFunctionWithGradient is needed.
@@ -131,7 +171,7 @@ namespace MFSolver
      *         return gradient<double>(p);
      *     }
      *
-     *     // TODO: is this OK or does this break SIMD context?
+     *     // Forward the scalar divergence override to the templated implementation.
      *     virtual double divergence(const Point<dim> &p) const override
      *     {
      *         return divergence<double>(p);
@@ -157,39 +197,69 @@ namespace MFSolver
      * };
      * ```
      *
-     * \warning There are no checks that assert that the implementation of the gradient method effectively computes the gradient of the value method. Otherwise we would have just used that instead of having the user to implement it by itself.
+     * @warning There are no checks that assert that the implementation of the gradient method effectively computes the gradient of the value method. Otherwise we would have just used that instead of having the user to implement it by itself.
      */
     template <int dim>
     class VectorFunctionWithGradient : public VectorFunction<dim>
     {
     public:
         /**
-         * \brief Type alias representing the type of the value returned by this function.
+         * @brief Type alias representing the type of the value returned by this function.
          */
         template <typename Number>
         using value_type = typename VectorFunction<dim>::template value_type<Number>;
 
         /**
-         * \brief Type alias representing the type of the gradient of this function.
+         * @brief Type alias representing the type of the gradient of this function.
          */
         template <typename Number>
         using gradient_type = typename TensorFunction<1, dim, Number>::gradient_type;
 
         /**
-         * \brief Constructs a new instance of VectorFunctionWithGradient.
+         * @brief Constructs a new instance of VectorFunctionWithGradient.
          */
         VectorFunctionWithGradient() : VectorFunction<dim>() {}
 
+        /**
+         * @brief Evaluate the divergence at a standard deal.II point.
+         * @param p Evaluation point.
+         * @return Divergence of the vector field.
+         */
         virtual double divergence(const Point<dim> &p) const = 0;
 
+        /**
+         * @brief Evaluate the divergence at a float-vectorized point.
+         * @param p Vectorized evaluation point.
+         * @return Vectorized divergence value.
+         */
         virtual VectorizedArray<float> divergence(const Point<dim, VectorizedArray<float>> &p) const = 0;
 
+        /**
+         * @brief Evaluate the divergence at a double-vectorized point.
+         * @param p Vectorized evaluation point.
+         * @return Vectorized divergence value.
+         */
         virtual VectorizedArray<double> divergence(const Point<dim, VectorizedArray<double>> &p) const = 0;
 
+        /**
+         * @brief Evaluate the Jacobian of the vector field at a standard point.
+         * @param p Evaluation point.
+         * @return Gradient tensor of the vector field.
+         */
         virtual gradient_type<double> gradient(const Point<dim> &p) const override = 0;
 
+        /**
+         * @brief Evaluate the Jacobian at a float-vectorized point.
+         * @param p Vectorized evaluation point.
+         * @return Vectorized gradient tensor.
+         */
         virtual gradient_type<VectorizedArray<float>> gradient(const Point<dim, VectorizedArray<float>> &p) const = 0;
 
+        /**
+         * @brief Evaluate the Jacobian at a double-vectorized point.
+         * @param p Vectorized evaluation point.
+         * @return Vectorized gradient tensor.
+         */
         virtual gradient_type<VectorizedArray<double>> gradient(const Point<dim, VectorizedArray<double>> &p) const = 0;
     };
 

@@ -1,3 +1,12 @@
+/**
+ * @file main_rewritten.cpp
+ * @brief Experimental matrix-free Laplace prototype retained as reference code.
+ *
+ * @details This file contains an exploratory deal.II matrix-free Laplace
+ * example that predates the current ADR solver front ends. It is documented as
+ * reference material rather than as the production solver entry point.
+ */
+
 #include <deal.II/base/quadrature_lib.h>
 #include <deal.II/base/function.h>
 #include <deal.II/base/timer.h>
@@ -37,7 +46,10 @@ namespace MatrixFreeSolver
     const unsigned int degree_finite_element = 2;
     const unsigned int dimension = 3;
 
-    // This is one of the coefficients of the equation, we should probably add more in order to solve a full ADR problem
+    /**
+     * @brief Spatially varying coefficient used by the Laplace prototype.
+     * @tparam dim Spatial dimension of the finite element mesh.
+     */
     template <int dim>
     class Coefficient : public Function<dim>
     {
@@ -57,14 +69,19 @@ namespace MatrixFreeSolver
     template <typename Number>
     using DVector = LinearAlgebra::distributed::Vector<Number>;
 
-    // This already exists in matrix_free/operators.h, should we check if all the other operators used in the ADR already exist? Spiler: they don't
+    /**
+     * @brief Matrix-free Laplace operator used by the exploratory prototype.
+     * @tparam dim Spatial dimension.
+     * @tparam fe_degree Polynomial degree used by FEEvaluation.
+     * @tparam Number Scalar type used by the matrix-free evaluator.
+     */
     template <int dim, int fe_degree, typename Number>
     class LaplaceOperator : public MatrixFreeOperators::Base<dim, DVector<Number>>
     {
     public:
         using value_type = Number;
-        using Super = MatrixFreeOperators::Base<dim, DVector<Number>>;      // Base per tutti gli operatori MatrixFree.
-        using Phi = FEEvaluation<dim, fe_degree, fe_degree + 1, 1, Number>; // Tipo FEValues, serve per calcolare i valori delle funzioni sui punti di quadratura.
+        using Super = MatrixFreeOperators::Base<dim, DVector<Number>>;      ///< Base class shared by deal.II matrix-free operators.
+        using Phi = FEEvaluation<dim, fe_degree, fe_degree + 1, 1, Number>; ///< Evaluator used to sample finite-element values at quadrature points.
 
         LaplaceOperator() : Super()
         {
@@ -72,17 +89,17 @@ namespace MatrixFreeSolver
 
         void clear() override
         {
-            coefficient.reinit(0, 0); // Tabella 0x0
-            Super::clear();           // Svuota tutto
+            coefficient.reinit(0, 0); ///< Reset the cached coefficient table.
+            Super::clear();           ///< Clear the base matrix-free operator state.
         }
 
-        // Rende `coefficient` una tabella (numero celle)x(punti di quadratura per cella) che contiene i valori del coefficiente di cui sopra per ogni punto di quadratura
+        /// @brief Precompute coefficient values for every cell batch and quadrature point.
         void evaluate_coefficient(const Coefficient<dim> &coefficient_function)
         {
-            const unsigned int n_cells = this->data->n_cell_batches(); // 1 batch = un gruppo di celle, raggruppate come conto vettorizzato
+            const unsigned int n_cells = this->data->n_cell_batches(); ///< Number of vectorized cell batches owned by MatrixFree.
             Phi phi(*this->data);
 
-            coefficient.reinit(n_cells, phi.n_q_points); // la tabella diventa (numero celle)x(punti di quadratura per cella)
+            coefficient.reinit(n_cells, phi.n_q_points); ///< Store one coefficient value per cell batch and quadrature point.
 
             for (unsigned int cell = 0; cell < n_cells; ++cell)
             {
@@ -94,22 +111,19 @@ namespace MatrixFreeSolver
             }
         }
 
-        // this->data è un MatrixFree
-
-        // Calcola e memorizza la diagonale inversa dell'operatore
+        /// @brief Compute and store the inverse diagonal used by smoothers.
         virtual void compute_diagonal() override
         {
             this->inverse_diagonal_entries.reset(new DiagonalMatrix<DVector<Number>>());
             DVector<Number> &inverse_diagonal = this->inverse_diagonal_entries->get_vector();
-            this->data->initialize_dof_vector(inverse_diagonal); // Alloca abbastanza memoria per contenere tutti i DoF di qualcosa, la diagonale presumo ma non riesco a capire. Dove caspita viene passato il DoFHandler???
+            this->data->initialize_dof_vector(inverse_diagonal); ///< Allocate a vector compatible with the MatrixFree DoF layout.
 
-            MatrixFreeTools::compute_diagonal(*this->data, inverse_diagonal, &LaplaceOperator::local_compute_diagonal, this); // Calcola la matrice diagonale (il nome è fuorviante, viene poi invertito sotto, credo) dell'operatore Laplace utilizzando "local_compute_diagonal"
+            MatrixFreeTools::compute_diagonal(*this->data, inverse_diagonal, &LaplaceOperator::local_compute_diagonal, this); ///< Assemble diagonal entries by applying the local diagonal operation.
 
-            // MEtte a 1 tutti i nodi soggetti a vincoli, probabilmente per facilitare l'inversione della matrice, vedere la doc di compute_diagonal
+            /// Set constrained entries to one before diagonal inversion.
             this->set_constrained_entries_to_one(inverse_diagonal);
 
-            // Fino a prima di questo loop, era la diagonale, ora verrà invertita per ottenere la diagonale inversa
-            // Itera solo sugli elementi che ti appartengono
+            /// Invert the locally owned diagonal entries in place.
             for (unsigned int i = 0; i < inverse_diagonal.locally_owned_size(); ++i)
             {
                 Assert(inverse_diagonal.local_element(i) > 0., ExcMessage("No diagonal entry in a positive definite operator should be zero"));
@@ -118,13 +132,13 @@ namespace MatrixFreeSolver
         }
 
     private:
-        // dst += Op * src ??? In pratica chiama "local_apply" su tutte le celle in parallelo
+        /// @brief Apply this operator and accumulate the result into @p dst.
         virtual void apply_add(DVector<Number> &dst, const DVector<Number> &src) const override
         {
             this->data->cell_loop(&LaplaceOperator::local_apply, this, dst, src);
         }
 
-        // Applica qualcosa ad un range di celle, realisticamente "locali"
+        /// @brief Apply the local Laplace action over a MatrixFree cell range.
         void local_apply(const MatrixFree<dim, Number> &data, DVector<Number> &dst, const DVector<Number> &src, const std::pair<unsigned int, unsigned int> &cell_range) const
         {
             Phi phi(data);
@@ -148,7 +162,7 @@ namespace MatrixFreeSolver
             }
         }
 
-        // Ma questa calcola la weak form o no???
+        /// @brief Local operation used by MatrixFreeTools to recover diagonal entries.
         void local_compute_diagonal(Phi &phi) const
         {
             const unsigned int cell = phi.get_current_cell_index();
@@ -162,10 +176,14 @@ namespace MatrixFreeSolver
             phi.integrate(EvaluationFlags::gradients);
         }
 
-        // Tabella bidimensionale di VectorizedArrays
+        /// Cached coefficient values indexed by cell batch and quadrature point.
         Table<2, VectorizedArray<Number>> coefficient;
     };
 
+    /**
+     * @brief Standalone Laplace benchmark driver for the exploratory prototype.
+     * @tparam dim Spatial dimension of the benchmark problem.
+     */
     template <int dim>
     class LaplaceProblem
     {
@@ -210,7 +228,7 @@ namespace MatrixFreeSolver
                       << std::endl;
             }
 
-            // Do we solve an increasingly less coarse system? Multigrid?
+            /// Run a small refinement sequence to exercise setup, solve, and output.
             for (unsigned int cycle = 0; cycle < 9 - dim; ++cycle)
             {
                 pcout << "Cycle " << cycle << std::endl;
@@ -218,7 +236,7 @@ namespace MatrixFreeSolver
                 if (cycle == 0)
                 {
                     GridGenerator::hyper_cube(triangulation, 0., 1.);
-                    triangulation.refine_global(3 - dim); // Why do we do that? Is this just to have some material to work on at the first iterations?
+                    triangulation.refine_global(3 - dim); ///< Start from a non-degenerate coarse mesh for the chosen dimension.
                 }
 
                 triangulation.refine_global(1);
@@ -249,7 +267,7 @@ namespace MatrixFreeSolver
                 constraints.reinit(dof_handler.locally_owned_dofs(), DoFTools::extract_locally_relevant_dofs(dof_handler));
                 DoFTools::make_hanging_node_constraints(dof_handler, constraints);
 
-                VectorTools::interpolate_boundary_values(mapping, dof_handler, 0, Functions::ZeroFunction<dim>(), constraints); // Qui stiamo andando ad imporre cosa, di preciso? Dirichlet? BCs a zero ovunque???
+                VectorTools::interpolate_boundary_values(mapping, dof_handler, 0, Functions::ZeroFunction<dim>(), constraints); ///< Apply homogeneous Dirichlet data on boundary id 0.
                 constraints.close();
             }
 
@@ -258,7 +276,7 @@ namespace MatrixFreeSolver
             time.restart();
 
             {
-                { // Initialize the system matrix with the correct settings
+                { ///< Initialize the fine-level matrix-free operator.
                     typename MatrixFree<dim, double>::AdditionalData additional_data;
                     additional_data.tasks_parallel_scheme = MatrixFree<dim, double>::AdditionalData::TasksParallelScheme::partition_color;
                     additional_data.mapping_update_flags = update_gradients | update_JxW_values | update_quadrature_points;
@@ -278,7 +296,7 @@ namespace MatrixFreeSolver
             time_details << "Setup mf system (cpu/wall): " << time.cpu_time() << "s/" << time.wall_time() << "s" << std::endl;
             time.restart();
 
-            { // Initialize all multigrid matrices with correct data
+            { ///< Initialize all multigrid level operators.
                 const unsigned int nlevels = triangulation.n_global_levels();
                 mg_matrices.resize(0, nlevels - 1);
 
@@ -343,7 +361,7 @@ namespace MatrixFreeSolver
         void solve()
         {
             Timer time;
-            // Why do we use float instead of double???
+            /// Multigrid level vectors use float to reduce memory traffic in smoothing.
             MGTransferMatrixFree<dim, float> mg_transfer(mg_constrained_dofs);
             mg_transfer.build(dof_handler);
 
@@ -445,23 +463,23 @@ namespace MatrixFreeSolver
 #else
         Triangulation<dim> triangulation;
 #endif
-        // Split space in cubic cells
+        /// Finite element used to split the hypercube mesh into Q elements.
         const FE_Q<dim> fe;
         DoFHandler<dim> dof_handler;
 
-        // Mappa da una reference cell a QUALCOSA? MA PERCHé?
+        /// Mapping from reference cells to physical cells.
         const MappingQ1<dim> mapping;
 
-        // WHAT
+        /// Affine constraints for hanging nodes and boundary values.
         AffineConstraints<double> constraints;
 
-        using SystemMatrixType = LaplaceOperator<dim, degree_finite_element, double>; // In che senso usiamo un operatore come matrice? Sono stupido
+        using SystemMatrixType = LaplaceOperator<dim, degree_finite_element, double>; ///< Fine-level operator used as the linear system matrix.
         SystemMatrixType system_matrix;
 
-        // WHAT pt.2
+        /// Multigrid constraint bookkeeping across hierarchy levels.
         MGConstrainedDoFs mg_constrained_dofs;
 
-        using LevelMatrixType = LaplaceOperator<dim, degree_finite_element, float>; // Should we implement the ADR operator??? Why do we use float here???
+        using LevelMatrixType = LaplaceOperator<dim, degree_finite_element, float>; ///< Level operator type used by the multigrid smoother.
         MGLevelObject<LevelMatrixType> mg_matrices;
 
         DVector<double> solution;

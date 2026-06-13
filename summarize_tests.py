@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
-"""
-Summarize extensive test results into a formatted table.
+"""@file summarize_tests.py
+@brief Summarize extensive test results into a formatted table.
 
+@details
 The script treats the on-disk test tree as the source of the experiment
 configuration, and the log.txt files as the source of the measured quantities.
 Each test_N directory becomes one TestResult. Results with the same
