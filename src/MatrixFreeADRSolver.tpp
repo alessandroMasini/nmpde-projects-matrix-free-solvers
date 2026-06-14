@@ -84,8 +84,6 @@ namespace MFSolver
                 std::shared_ptr<MatrixFree<dim, double>>
                     system_mf_storage(new MatrixFree<dim, double>());
 
-                /// @todo Revisit the SIMD quadrature choice; the current path uses
-                /// QGauss for both vectorized and non-vectorized matrix-free runs.
                 system_mf_storage->reinit(mapping, dof_handler, constraints, QGauss<1>(fe.degree + 1), additional_data);
 
                 system_matrix.initialize(system_mf_storage);
@@ -133,8 +131,6 @@ namespace MFSolver
 
                 std::shared_ptr<MatrixFree<dim, float>> mg_mf_storage_level = std::make_shared<MatrixFree<dim, float>>();
 
-                /// @todo Revisit the SIMD quadrature choice for multigrid levels;
-                /// the current path uses QGauss for every level.
                 mg_mf_storage_level->reinit(mapping, dof_handler, level_constraints, QGauss<1>(fe.degree + 1), additional_data);
 
                 mg_matrices[level].initialize(mg_mf_storage_level, mg_constrained_dofs, level);
@@ -208,8 +204,6 @@ namespace MFSolver
             additional_data.mapping_update_flags = update_gradients | update_JxW_values | update_quadrature_points | update_values;
             this->inhomogeneous_mf_storage = std::make_shared<MatrixFree<dim, double>>();
 
-            /// @todo Revisit the SIMD quadrature choice for the inhomogeneous
-            /// operator; the current path uses QGauss for all runs.
             this->inhomogeneous_mf_storage->reinit(mapping, dof_handler, no_constraints, QGauss<1>(fe.degree + 1), additional_data);
             
             this->inhomogeneous_operator = std::make_shared<ADROperator<dim, double>>();
@@ -248,7 +242,7 @@ namespace MFSolver
                     Point<dim, VectorizedArray<double>> quadrature_point = face_phi.quadrature_point(q);
                     VectorizedArray<double> neumann_value = neumann->value(quadrature_point);
 
-                    face_phi.submit_value(neumann_value, q); ///< @todo Verify whether the Neumann contribution should include mu. See proof on Miro
+                    face_phi.submit_value(neumann_value, q);
                 }
 
                 face_phi.integrate(EvaluationFlags::values);

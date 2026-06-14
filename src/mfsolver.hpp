@@ -673,8 +673,6 @@ namespace MFSolver
         double h1_error = 0.0;
         double linfty_error = 0.0;
         bool converged = false;
-        /// @todo Reintroduce a theta-method parameter here if time integration
-        /// is generalized beyond the current implicit form.
 
         bool assemble_matrix_flag = true;
         std::shared_ptr<LA::MPI::PreconditionAMG> preconditioner_amg;

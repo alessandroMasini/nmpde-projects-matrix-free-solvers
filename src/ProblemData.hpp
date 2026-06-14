@@ -480,7 +480,6 @@ namespace ADR
 
         unsigned int num_levels; /**< Number of multigrid levels in the V-cycle. */
 
-        /// @todo Verify whether this parameter is still used by the solvers.
         unsigned int num_quadrature_points; /**< Number of quadrature points. */
 
         double lv0_smoothing_range; /**< The range between the largest and the smaller eigenvalue for the lower level of the multigrid V-Cycle. */
@@ -498,7 +497,6 @@ namespace ADR
 
         unsigned int refinement_level = 3; /**< Total number of times the grid is refined. This should be changed for problem to problem. */
         unsigned int n_additional_refinements = 0; /**< Extra global refinements requested on top of the problem default. */
-        /// @todo Verify where this refinement coefficient is consumed.
         unsigned int refinement_coefficient_per_level = 4; /**< Mesh refinement level (if generating a hyper_cube/hyper_ball) */
 
         /// @name PDE coefficients

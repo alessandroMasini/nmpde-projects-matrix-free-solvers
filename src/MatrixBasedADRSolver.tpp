@@ -72,7 +72,6 @@ namespace MFSolver
                         mpi_communicator);
 
     /// Handle hanging nodes potentially created by adaptive refinement to ensure continuity.
-    /// @todo Check if it is possible that adaptive refinement is actually carried out.
     constraints.clear();
     constraints.reinit(DoFTools::extract_locally_relevant_dofs(dof_handler));
     DoFTools::make_hanging_node_constraints(dof_handler, constraints);
