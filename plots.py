@@ -383,11 +383,25 @@ def collect_mf_speedup_curves(fixed_params, x, req_converged, compare, compare_v
         compare_values_info = [True, False]
         curves = {str(el): [] for el in compare_values}
 
+    # Main pairing table for mf_speedup:
+    #   setting_key -> {
+    #       "times": solver_name -> [total_t from repeated runs],
+    #       "x_values": solver_name -> [x value from the same repeated runs],
+    #       "compare_value": label used to choose the output curve
+    #   }
+    #
+    # defaultdict(lambda: {...}) means a missing setting_key automatically gets
+    # a fresh bucket with the nested lists below, so later code can append
+    # directly without first checking whether the setting has been seen.
     runs_by_setting = defaultdict(lambda: {
         "times": defaultdict(list),
         "x_values": defaultdict(list),
         "compare_value": None,
     })
+
+    # Matrix-based has no SIMD variant in the same sense as matrix-free. Its
+    # simd=0 timing is cached separately and later reused as the baseline for
+    # matching matrix-free settings, including matrix-free simd=1.
     matrix_based_simd0_cache = defaultdict(lambda: {
         "times": [],
         "x_values": [],
