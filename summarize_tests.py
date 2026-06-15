@@ -97,20 +97,55 @@ def resolve_tests_dir(args: argparse.Namespace) -> Path:
 
 
 def manifest_test_dir_candidates(raw_path: str, tests_dir: Path, repo_root: Path) -> List[Path]:
+    """Return plausible locations for one test directory named in a manifest.
+
+    The latest-run manifest has existed in more than one format:
+
+    - older solver-written records store a bare output directory path;
+    - newer shell-written ATTEMPT records store one or more output directories
+      in an output_dirs= field, and those paths are normalized by this same
+      helper through output_dir_candidates_from_attempt().
+
+    In both cases the raw path can be absolute, relative to the repository root,
+    or copied from a different tests root. The last case matters when results
+    are summarized from a relocated tree, for example from scratch storage:
+    a manifest entry may contain ``tests/.../test_N`` while the current
+    ``tests_dir`` points somewhere else. Returning candidates instead of one
+    path lets the caller keep the first existing directory without losing
+    compatibility with old manifests.
+    """
     test_dir = Path(raw_path)
     candidates = []
 
+    # First preserve the path exactly as the manifest intended it to be
+    # interpreted. Absolute paths already name a full location; relative paths
+    # were historically written relative to the repository root.
     if test_dir.is_absolute():
         candidates.append(test_dir)
     else:
         candidates.append(repo_root / test_dir)
 
+    # Also try to reinterpret any path that contains a "tests" component under
+    # the caller-selected tests_dir. This is the relocation case:
+    #
+    #   manifest:  /scratch_global/user/old_repo/tests/matrix_free/.../test_1
+    #   tests_dir: /tmp/copied_results/tests
+    #   candidate: /tmp/copied_results/tests/matrix_free/.../test_1
+    #
+    # The loop walks from the end so that, if a parent directory is also named
+    # "tests", the nearest tests component to test_N wins.
     parts = test_dir.parts
     for index in range(len(parts) - 1, -1, -1):
+        # index + 1 must exist because a manifest entry that ends exactly in
+        # ".../tests" is not a test directory and cannot be reconstructed.
         if parts[index] == tests_dir.name and index + 1 < len(parts):
             candidates.append(tests_dir.joinpath(*parts[index + 1:]))
             break
 
+    # The exact interpretation and relocated interpretation can be identical,
+    # for example when raw_path is already relative to the active repo root.
+    # Keep only the first occurrence so callers can try candidates in priority
+    # order without rechecking the same directory twice.
     unique_candidates = []
     seen = set()
     for candidate in candidates:
