@@ -652,6 +652,11 @@ def plot_average_results(fixed_params, x, y, req_converged, compare, compare_val
     # Utility variables for theoretical scaling lines
     p = []
     base_time = {}
+
+    # This dictionary contains all the collected data in a structured manner:
+    # key: compare_value, the value of the comparing attribute
+    # value: (xs, means, stds), which are nothing but the full range of x,
+    # y and relative stds bands for each point in the plot
     curve_stats = {}
     
     plt.figure(figsize=(10, 6))
@@ -720,6 +725,9 @@ def plot_average_results(fixed_params, x, y, req_converged, compare, compare_val
 
         if compare is not None:
             if theor_mode == "strong_scaling" and compare == "n_ranks":
+                # If we are comparing across ranks, in order to plot scaling it is necessary
+                # to get the time with the minimal number of ranks (min_rank_key), and to compute the ideal
+                # strong scaling from that
                 min_rank_key = min(curve_stats, key=lambda value: int(value))
                 min_rank = int(min_rank_key)
                 base_xs, base_means, _ = curve_stats[min_rank_key]
@@ -734,6 +742,8 @@ def plot_average_results(fixed_params, x, y, req_converged, compare, compare_val
 
                 # When comparing MPI ranks, every ideal line is the measured
                 # minimum-rank curve scaled by min_rank / current_rank.
+                # The multiplication by min_rank is necessary in the case the minimal
+                # number of ranks is different from 1.
                 elif compare == "n_ranks":
                     theoretical = base_means * min_rank / int(compare_value)
                     plt.plot(base_xs, theoretical, "--", color = p[i][0].get_color())
