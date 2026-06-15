@@ -277,18 +277,33 @@ def satisfies_fixed_params(file_data, fixed_params, compare, compare_values_info
     return True
 
 def actually_converged(file_data):
-    """Decide whether a run converged using the solver's own convergence flag.
+    """Return whether every recorded solver time slice converged.
 
-    The final residual is still useful for plotting, but it is not the
-    authoritative answer. SolverControl already decided whether the solve
-    converged, and the current log format writes that decision explicitly.
+    For current logs, reconstruct convergence from the final residual of each
+    recorded rel_t_step group. This avoids accepting a transient run just
+    because the last solve overwrote an earlier failure. Legacy logs do not
+    carry adjusted tolerances, so the best available check is the logged flag.
     """
     header, data = file_data
 
-    # The last row is enough because the convergence flag is repeated on every
-    # residual-history row by the C++ logger.
+    if "adj_tol" in header:
+        step_idx = column_index(header, "rel_t_step")
+        err_idx = column_index(header, "err")
+        tol_idx = column_index(header, "adj_tol")
+
+        for rel_t_step in np.unique(data[:, step_idx]):
+            step_rows = data[np.isclose(data[:, step_idx], rel_t_step)]
+            final_row = step_rows[-1]
+            if not final_row[err_idx] < final_row[tol_idx]:
+                return False
+
+        return True
+
+    # Older logs only have one repeated convergence flag and no per-solve
+    # adjusted tolerance. Requiring all logged flags is conservative if a file
+    # ever contains non-repeated flags and preserves behavior for repeated ones.
     converged_idx = column_index(header, "converged")
-    return bool(int(data[-1][converged_idx]))
+    return bool(np.all(data[:, converged_idx].astype(int)))
 
 
 def extract_data(dir_params, file_data, x, all):
@@ -523,19 +538,6 @@ def collect_mf_speedup_curves(fixed_params, x, req_converged, compare, compare_v
         return curves, potential, discarded, 1
 
     return curves, potential, discarded, 0
-
-
-def stop_searching(fixed_params, key, dir, compare, compare_values_flags, compare_values):
-    if not dir.is_dir():
-        return True
-
-    elif key in fixed_params and str(fixed_params[key]) != comparison_name(key, dir.name):
-        return True
-        
-    if compare_values_flags[0] and not compare_values_flags[1] and str(compare) == key and comparison_name(key, dir.name) not in compare_values:
-        return True
-    
-    return False
 
 
 def satisfies_dir_params(dir_params, fixed_params, compare, compare_values_info, compare_values):
