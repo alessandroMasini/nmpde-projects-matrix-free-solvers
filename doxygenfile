@@ -1,0 +1,7 @@
+# This wrapper keeps the lowercase command `doxygen doxygenfile` working while
+# avoiding a second, drifting copy of the full Doxygen configuration.
+#
+# Do not regenerate this file with `doxygen -g doxygenfile`; that command writes
+# a blank template and is not part of the documentation build.
+
+@INCLUDE = Doxyfile

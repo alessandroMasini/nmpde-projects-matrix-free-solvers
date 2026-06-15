@@ -66,3 +66,8 @@ plots
 
 # Test outputs
 core_threads_large
+
+# Documentation outputs
+/html/
+/latex/
+/doxygenfile.bak
