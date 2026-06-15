@@ -808,7 +808,7 @@ if __name__ == "__main__":
 
     # -------------------------------------------------------------------------
     # Fixed parameters
-    # Allowed: whatever can go as an x parameter
+    # Allowed: whatever can go as an x parameter or solver, problem
     # -------------------------------------------------------------------------
     for p in X_PARAMS + ["solver", "problem"]:
         parser.add_argument(
@@ -867,7 +867,7 @@ if __name__ == "__main__":
     )
 
     # -------------------------------------------------------------------------
-    # Add strong scaling line (allowed for n_threads/n_cores vs final_t)
+    # Add strong scaling line (allowed for n_cores/n_additional_refinements vs final_t)
     # Allowed: 1 for true, 0 for false
     # -------------------------------------------------------------------------
     parser.add_argument(
@@ -900,14 +900,6 @@ if __name__ == "__main__":
     # -------------------------------------------------------------------------
     # Output file
     # -------------------------------------------------------------------------
-    '''
-    parser.add_argument(
-        "--out",
-        type=str,
-        required=True,
-        help="Output file path for the generated plot (.png recommended).",
-    )
-    '''
     args = parser.parse_args()
     no_error = True
 
