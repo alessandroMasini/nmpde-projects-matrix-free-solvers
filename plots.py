@@ -65,7 +65,7 @@ def theoretical_refinement_times(xs, means, dim):
     # Each further point uses the plotted refinement value as ref(i), giving
     # t'(i) = 2^(dim * ref(i)) * t(0).
     theoretical = np.array([
-        (2 ** (dim * int(refinement))) * base_time
+        (2 ** (dim * int(refinement-xs[0]))) * base_time
         for refinement in xs
     ])
 
