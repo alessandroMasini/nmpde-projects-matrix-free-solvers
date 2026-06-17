@@ -417,21 +417,28 @@ namespace ADR
      * @tparam dim Spatial dimension of the problem.
      */
     template <int dim>
-    class MMSExactSolution : public MFSolver::RealFunction<dim> {
+    class MMSExactSolution : public MFSolver::RealFunction<dim>
+    {
     public:
-        virtual double value(const dealii::Point<dim> &p, const unsigned int = 0) const override {
+        virtual double value(const dealii::Point<dim> &p, const unsigned int = 0) const override
+        {
             double val = 1.0;
-            for (unsigned int d = 0; d < dim; ++d) val *= std::sin(M_PI * p[d]);
+            for (unsigned int d = 0; d < dim; ++d)
+                val *= std::sin(M_PI * p[d]);
             return val;
         }
-        virtual dealii::VectorizedArray<float> value(const dealii::Point<dim, dealii::VectorizedArray<float>> &p, const unsigned int = 0) const override {
+        virtual dealii::VectorizedArray<float> value(const dealii::Point<dim, dealii::VectorizedArray<float>> &p, const unsigned int = 0) const override
+        {
             dealii::VectorizedArray<float> val = dealii::make_vectorized_array<float>(1.0);
-            for (unsigned int d = 0; d < dim; ++d) val *= std::sin(static_cast<float>(M_PI) * p[d]);
+            for (unsigned int d = 0; d < dim; ++d)
+                val *= std::sin(static_cast<float>(M_PI) * p[d]);
             return val;
         }
-        virtual dealii::VectorizedArray<double> value(const dealii::Point<dim, dealii::VectorizedArray<double>> &p, const unsigned int = 0) const override {
+        virtual dealii::VectorizedArray<double> value(const dealii::Point<dim, dealii::VectorizedArray<double>> &p, const unsigned int = 0) const override
+        {
             dealii::VectorizedArray<double> val = dealii::make_vectorized_array<double>(1.0);
-            for (unsigned int d = 0; d < dim; ++d) val *= std::sin(M_PI * p[d]);
+            for (unsigned int d = 0; d < dim; ++d)
+                val *= std::sin(M_PI * p[d]);
             return val;
         }
     };
@@ -441,21 +448,28 @@ namespace ADR
      * @tparam dim Spatial dimension of the problem.
      */
     template <int dim>
-    class MMSForcingTerm : public MFSolver::RealFunction<dim> {
+    class MMSForcingTerm : public MFSolver::RealFunction<dim>
+    {
     public:
-        virtual double value(const dealii::Point<dim> &p, const unsigned int = 0) const override {
+        virtual double value(const dealii::Point<dim> &p, const unsigned int = 0) const override
+        {
             double val = 1.0;
-            for (unsigned int d = 0; d < dim; ++d) val *= std::sin(M_PI * p[d]);
+            for (unsigned int d = 0; d < dim; ++d)
+                val *= std::sin(M_PI * p[d]);
             return (dim * M_PI * M_PI + 1.0) * val;
         }
-        virtual dealii::VectorizedArray<float> value(const dealii::Point<dim, dealii::VectorizedArray<float>> &p, const unsigned int = 0) const override {
+        virtual dealii::VectorizedArray<float> value(const dealii::Point<dim, dealii::VectorizedArray<float>> &p, const unsigned int = 0) const override
+        {
             dealii::VectorizedArray<float> val = dealii::make_vectorized_array<float>(1.0);
-            for (unsigned int d = 0; d < dim; ++d) val *= std::sin(static_cast<float>(M_PI) * p[d]);
+            for (unsigned int d = 0; d < dim; ++d)
+                val *= std::sin(static_cast<float>(M_PI) * p[d]);
             return (static_cast<float>(dim * M_PI * M_PI + 1.0)) * val;
         }
-        virtual dealii::VectorizedArray<double> value(const dealii::Point<dim, dealii::VectorizedArray<double>> &p, const unsigned int = 0) const override {
+        virtual dealii::VectorizedArray<double> value(const dealii::Point<dim, dealii::VectorizedArray<double>> &p, const unsigned int = 0) const override
+        {
             dealii::VectorizedArray<double> val = dealii::make_vectorized_array<double>(1.0);
-            for (unsigned int d = 0; d < dim; ++d) val *= std::sin(M_PI * p[d]);
+            for (unsigned int d = 0; d < dim; ++d)
+                val *= std::sin(M_PI * p[d]);
             return (dim * M_PI * M_PI + 1.0) * val;
         }
     };
@@ -474,8 +488,8 @@ namespace ADR
     template <int dim>
     struct ProblemData
     {
-        std::string mesh_filename; /**< Filename from which to load the mesh. */
-        std::string problem_name;  /**< Name that the problem solution will saved with. */
+        std::string mesh_filename;  /**< Filename from which to load the mesh. */
+        std::string problem_name;   /**< Name that the problem solution will saved with. */
         unsigned int fe_degree = 1; /**< Degree of the FE_Q finite element used by both solver implementations. */
 
         unsigned int num_levels; /**< Number of multigrid levels in the V-cycle. */
@@ -495,8 +509,8 @@ namespace ADR
         unsigned int solver_max_iterations; /**< Maximum number of iterations when solving the algebraic system. */
         double solver_tolerance_factor;     /**< Factor to multiply to the l2 norm of the rhs of the algebraic system in order to get the absolute tolerance. */
 
-        unsigned int refinement_level = 3; /**< Total number of times the grid is refined. This should be changed for problem to problem. */
-        unsigned int n_additional_refinements = 0; /**< Extra global refinements requested on top of the problem default. */
+        unsigned int refinement_level = 3;                 /**< Total number of times the grid is refined. This should be changed for problem to problem. */
+        unsigned int n_additional_refinements = 0;         /**< Extra global refinements requested on top of the problem default. */
         unsigned int refinement_coefficient_per_level = 4; /**< Mesh refinement level (if generating a hyper_cube/hyper_ball) */
 
         /// @name PDE coefficients
@@ -506,8 +520,8 @@ namespace ADR
         std::shared_ptr<MFSolver::VectorFunctionWithGradient<dim>> beta; /**< Advection coefficient function: beta(x) (velocity field) */
         std::shared_ptr<MFSolver::RealFunction<dim>> gamma;              /**< Reaction coefficient function: gamma(x) (or k in some notations) */
 
-        std::shared_ptr<MFSolver::RealFunction<dim>> forcing_term; /**< Forcing term: f(x) */
-        std::shared_ptr<MFSolver::RealFunction<dim>> exact_solution = nullptr;          /**< Exact solution: u(x) */
+        std::shared_ptr<MFSolver::RealFunction<dim>> forcing_term;             /**< Forcing term: f(x) */
+        std::shared_ptr<MFSolver::RealFunction<dim>> exact_solution = nullptr; /**< Exact solution: u(x) */
         /// @}
 
         /// @name Time dependency parameters
@@ -643,7 +657,6 @@ namespace ADR
                 .solver_max_iterations = 100,
                 .solver_tolerance_factor = 1e-12,
 
-                /// @note IMPORTANT: We set mu = 5.0 to trigger the bug.
                 .mu = std::make_shared<ConstantRealFunction<dim>>(5.0),
                 .beta = std::make_shared<ConstantVectorFunctionWithGradient<dim>>(0.0),
                 .gamma = std::make_shared<ConstantRealFunction<dim>>(0.0),

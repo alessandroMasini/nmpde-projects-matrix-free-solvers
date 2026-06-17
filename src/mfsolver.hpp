@@ -272,7 +272,6 @@ namespace MFSolver
         }
 
         /**
-         * @todo Is this correct? Doesn't it compute the inverse diagonal?
          * @brief Compute the diagonal of the ADR operator.
          *
          * @note This method assumes that the ADROperator was correctly initialized (see deal.II tutorial step-37 for reference).
@@ -319,8 +318,6 @@ namespace MFSolver
          *
          * This code is extracted and reused by `local_apply` and
          * `local_compute_diagonal`.
-         * @todo Confirm that the same local action is appropriate for diagonal
-         * extraction in all ADR configurations.
          * Class methods gets automatically inlined by the compiler, therefore there should not be any performance loss due to the function call.
          */
         void lhs_computation(Phi &phi, const unsigned int cell) const
@@ -444,7 +441,7 @@ namespace MFSolver
 
     private:
         void setup_system() override;
-        void assemble() override; ///< Assemble the RHS; LHS initialization is handled TODO: where?.
+        void assemble() override;
         void solve() override;
         void output_results() override;
         void compute_error();
@@ -509,7 +506,8 @@ namespace MFSolver
      * @tparam dim Spatial dimension of the finite element cell.
      */
     template <int dim>
-    struct PerTaskData {
+    struct PerTaskData
+    {
         FullMatrix<double> cell_matrix;
         Vector<double> cell_rhs;
         std::vector<types::global_dof_index> dof_indices;
@@ -517,12 +515,12 @@ namespace MFSolver
         bool cell_is_locally_owned = false;
         bool assemble_matrix = true;
 
-        PerTaskData (const FiniteElement<dim> &fe)
-                    :
-                    cell_matrix (fe.dofs_per_cell, fe.dofs_per_cell),
-                    cell_rhs (fe.dofs_per_cell),
-                    dof_indices (fe.dofs_per_cell)
-            {}
+        PerTaskData(const FiniteElement<dim> &fe)
+            : cell_matrix(fe.dofs_per_cell, fe.dofs_per_cell),
+              cell_rhs(fe.dofs_per_cell),
+              dof_indices(fe.dofs_per_cell)
+        {
+        }
 
         /**
          * @brief Copy constructor used by WorkStream worker-local data pools.
@@ -536,14 +534,14 @@ namespace MFSolver
          * consumed by the sequential copier.
          */
         PerTaskData(const PerTaskData &data)
-            :
-            cell_matrix(data.cell_matrix.m(), data.cell_matrix.n()),
-            cell_rhs(data.cell_rhs.size()),
-            dof_indices(data.dof_indices.size()),
-            cell_level(numbers::invalid_unsigned_int),
-            cell_is_locally_owned(false),
-            assemble_matrix(data.assemble_matrix)
-            {}
+            : cell_matrix(data.cell_matrix.m(), data.cell_matrix.n()),
+              cell_rhs(data.cell_rhs.size()),
+              dof_indices(data.dof_indices.size()),
+              cell_level(numbers::invalid_unsigned_int),
+              cell_is_locally_owned(false),
+              assemble_matrix(data.assemble_matrix)
+        {
+        }
     };
 
     /**
@@ -551,22 +549,23 @@ namespace MFSolver
      * @tparam dim Spatial dimension of the finite element cell.
      */
     template <int dim>
-    struct ScratchData {
+    struct ScratchData
+    {
         FEValues<dim> fe_values;
         FEFaceValues<dim> fe_face_values;
         std::vector<double> old_solution_values;
-        
-        ScratchData (const FiniteElement<dim> &fe,
-                    const Quadrature<dim>    &quadrature,
+
+        ScratchData(const FiniteElement<dim> &fe,
+                    const Quadrature<dim> &quadrature,
                     const Quadrature<dim - 1> &face_quadrature,
-                    const UpdateFlags         update_flags,
-                    const UpdateFlags         face_update_flags)
-                    :
-                    fe_values (fe, quadrature, update_flags),
-                    fe_face_values(fe, face_quadrature, face_update_flags),
-                    old_solution_values(quadrature.size())
-            {}
-        
+                    const UpdateFlags update_flags,
+                    const UpdateFlags face_update_flags)
+            : fe_values(fe, quadrature, update_flags),
+              fe_face_values(fe, face_quadrature, face_update_flags),
+              old_solution_values(quadrature.size())
+        {
+        }
+
         /**
          * @brief Copy constructor that creates private evaluator caches.
          *
@@ -577,16 +576,16 @@ namespace MFSolver
          * WorkStream then gives each worker one of these private scratch
          * objects.
          */
-        ScratchData (const ScratchData &scratch)
-                    :
-                    fe_values (scratch.fe_values.get_fe(),
-                                scratch.fe_values.get_quadrature(),
-                                scratch.fe_values.get_update_flags()),
-                    fe_face_values(scratch.fe_face_values.get_fe(),
-                                   scratch.fe_face_values.get_quadrature(),
-                                   scratch.fe_face_values.get_update_flags()),
-                    old_solution_values(scratch.old_solution_values.size())
-            {}
+        ScratchData(const ScratchData &scratch)
+            : fe_values(scratch.fe_values.get_fe(),
+                        scratch.fe_values.get_quadrature(),
+                        scratch.fe_values.get_update_flags()),
+              fe_face_values(scratch.fe_face_values.get_fe(),
+                             scratch.fe_face_values.get_quadrature(),
+                             scratch.fe_face_values.get_update_flags()),
+              old_solution_values(scratch.old_solution_values.size())
+        {
+        }
     };
 
     /**
@@ -617,7 +616,7 @@ namespace MFSolver
         }
 
         ~MatrixBasedADRSolver() override {};
-        
+
         void run() override;
         void output_to_file() override;
 
