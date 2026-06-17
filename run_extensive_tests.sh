@@ -207,10 +207,8 @@ trap copy_scratch_results EXIT
 # File used as the manifest for this batch. Each completed solver run appends
 # its test_N output directory here.
 LATEST_RUN_MANIFEST="$TESTS_DIR/latest_run_tests.txt"
-LATEST_RUN_MANIFEST="$TESTS_DIR/latest_run_tests.txt"
 
 # Ensure the tests directory exists before truncating/creating the manifest.
-mkdir -p "$TESTS_DIR"
 mkdir -p "$TESTS_DIR"
 
 # Start this extensive run with an empty manifest. The ':' command does
