@@ -262,9 +262,10 @@ namespace MFSolver
         /// repetition, so separate it before refinement and parallel settings.
         problem.problem_name /
         std::to_string(problem.fe_degree) /
-        /// Store the additional refinement count, not the total mesh refinement.
-        /// This keeps the output tree aligned with run_extensive_tests.sh and
-        /// with plots.py/summarize_tests.py column names.
+        /// The directory stores the command-line experiment parameter: the
+        /// extra refinements requested on top of the problem's built-in default.
+        /// The total refinement level is still kept in problem.refinement_level
+        /// and is what setup_system() uses to refine the mesh.
         std::to_string(problem.n_additional_refinements) /
         /// MPI ranks and threads identify the parallel execution shape.
         std::to_string(Utilities::MPI::n_mpi_processes(MPI_COMM_WORLD)) /
@@ -356,10 +357,6 @@ namespace MFSolver
          * Each insertion is followed by an explicit space. That space is not
          * decoration: it is what makes split()-based parsing reliable when a
          * scientific-notation value exactly fills its formatted width.
-         *
-         * std::endl completes the deallog record for this row. That keeps the
-         * visual prefix column identical between the header and every data row,
-         * which is what makes the log.txt table line up in a text editor.
          */
         deallog << std::right
                 << std::setw(float_width) << std::setprecision(6) << std::scientific << problem.delta_t << ' '
@@ -394,8 +391,7 @@ namespace MFSolver
 
     if (conv_history.size() > 2)
     {
-      /// The last slice captures the final solver behavior and is the row most
-      /// scripts naturally inspect when they only need one status value.
+      /// The last slice captures the final solver behavior.
       size_t last_step = conv_history.size() - 1;
       write_history(1.0, solver_tolerances[last_step], conv_history[last_step]);
     }

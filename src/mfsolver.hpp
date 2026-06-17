@@ -122,7 +122,7 @@ namespace MFSolver
     using DVector = LinearAlgebra::distributed::Vector<T>;
 
     /**
-     * @brief Represents a range of cells.s
+     * @brief Represents a range of cells
      */
     using Range = std::pair<unsigned int, unsigned int>;
 
@@ -205,9 +205,7 @@ namespace MFSolver
          * @brief Directory reserved for this run.
          *
          * It is intentionally solver state, not recomputed from the filesystem
-         * later. Looking up "the latest test_N" after output has started is
-         * ambiguous in parallel runs and can send log.txt to a different folder
-         * than the solution files.
+         * later.
          */
         std::string output_dir;
     };

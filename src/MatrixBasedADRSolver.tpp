@@ -555,8 +555,7 @@ namespace MFSolver
 
     /**
      * log.txt is the metadata companion of the VTU/PVTU files. It must be
-     * written into the directory selected during output_results(), not into
-     * whatever happens to be the newest test_N folder at the end of the run.
+     * written into the directory selected during output_results().
      */
     AssertThrow(!this->output_dir.empty(),
                 ExcMessage("output_results() must be called before output_to_file()"));
