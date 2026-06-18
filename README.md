@@ -11,7 +11,7 @@ Authors:
 
 ## Usage
 
-In order to compile everything locally, we provide an handy script that will isntantiate the correct Apptainer containers and perform compilation inside them.
+In order to compile everything locally, we provide an handy script that will istantiate the correct Apptainer containers and perform compilation inside them.
 
     ./compile_locally.sh
 
